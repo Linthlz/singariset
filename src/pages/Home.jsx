@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
 import Reveal from '../components/Reveal.jsx';
 import CountUp from '../components/CountUp.jsx';
-import SearchBox from '../components/SearchBox.jsx';
+import HeroSlider from '../components/HeroSlider.jsx';
 import RisetCard from '../components/RisetCard.jsx';
-import Modal from '../components/Modal.jsx';
+import SmartImage from '../components/SmartImage.jsx';
 import {
   RISET, BIDANG, KECAMATAN, ROADMAP, PENDANAAN, BERITA, STATS, MITRA_LOGO
 } from '../data/singaData.js';
-import { bidangById, skemaById, rupiah, rupiahRingkas, tanggal, hariMenuju } from '../lib/format.js';
+import { tanggal, hariMenuju } from '../lib/format.js';
 
 const QUICK = [
   { ico: 'flask', t: 'Riset Daerah', s: '169 riset terkatalog dari 9 kecamatan Buleleng', h: '/riset' },
@@ -61,8 +61,6 @@ const FUND_STATUS = {
 
 export default function Home() {
   const [filt, setFilt] = useState({ q: '', bidang: '', kec: '', status: '' });
-  const [fundModal, setFundModal] = useState(null);
-  const [newsModal, setNewsModal] = useState(null);
 
   const dirHits = useMemo(() => {
     const q = filt.q.toLowerCase();
@@ -78,92 +76,12 @@ export default function Home() {
     });
   }, [filt]);
   const dirShown = dirHits.slice(0, 6);
-
-  const pagu = STATS.anggaran2025, real = STATS.serapan2025;
-  const pctSerap = Math.round((real / pagu) * 100);
-
-  const RING = [
-    { l: 'Total dimonitor', v: STATS.risetAktif, d: 'Riset tahun anggaran 2025', c: '' },
-    { l: 'On track', v: RISET.filter((r) => r.status === 'ontrack').length, d: 'Sesuai timeline kontrak', c: 'border-l-success' },
-    { l: 'Warning / koreksi', v: RISET.filter((r) => r.status === 'warning').length, d: 'Perlu perbaikan dokumen', c: 'border-l-warning' },
-    { l: 'Delayed / SP', v: RISET.filter((r) => r.status === 'delayed').length, d: 'Melewati batas termin', c: 'border-l-danger' }
-  ];
+  const beritaSorot = BERITA.slice(0, 3);
 
   return (
     <>
-      {/* ===== 1.1 HERO ===== */}
-      <section className="relative overflow-hidden py-12 text-white sm:py-18" style={{ backgroundImage: 'linear-gradient(135deg,#7A1616 0%,#6B1414 42%,#3B0A0A 100%)' }}>
-        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-50" viewBox="0 0 1200 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <g stroke="rgba(249,199,79,.34)" strokeWidth="1" fill="none">
-            <path d="M120 420L300 300L470 360L640 220L820 280L980 170L1120 240" />
-            <path d="M80 200L260 150L430 250L610 120L790 190L950 90" />
-            <path d="M300 300L260 150M470 360L430 250M640 220L610 120M820 280L790 190M980 170L950 90" />
-            <path d="M120 420L80 200M1120 240L1180 380M300 300L470 360M640 220L820 280" />
-          </g>
-          <g fill="rgba(249,199,79,.72)">
-            {[[120, 420], [300, 300], [470, 360], [640, 220], [820, 280], [980, 170], [1120, 240], [80, 200], [260, 150], [430, 250], [610, 120], [790, 190], [950, 90], [1180, 380]].map((p, i) => (
-              <circle key={i} cx={p[0]} cy={p[1]} r={4 + (i % 3)} />
-            ))}
-          </g>
-        </svg>
-        <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(650px 380px at 88% 8%, rgba(249,199,79,.22), transparent 62%), radial-gradient(520px 320px at 4% 96%, rgba(198,40,40,.42), transparent 66%)' }} />
-
-        <div className="relative z-10 mx-auto max-w-[1240px] px-5">
-          <div className="grid items-center gap-9 lg:grid-cols-[1.08fr_.92fr]">
-            <div>
-              <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 py-1.5 pl-1.5 pr-3.5 text-[.77rem] font-semibold text-white/94 backdrop-blur">
-                <b className="rounded-full bg-gold-500 px-2.5 py-1 text-[.68rem] font-extrabold tracking-wide text-[#4A2D00]">BRIDA</b>
-                Kabupaten Buleleng · Provinsi Bali
-              </span>
-              <h1 className="mb-4 text-[clamp(1.9rem,4.4vw,3.05rem)] font-extrabold leading-[1.1] text-white">
-                Satu Pintu Riset Daerah untuk{' '}
-                <span style={{ backgroundImage: 'linear-gradient(180deg,#FFDE8A,#F9C74F)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  Kebijakan Berbasis Bukti
-                </span>{' '}di Bali Utara
-              </h1>
-              <p className="mb-6.5 max-w-[590px] text-[1.045rem] text-white/85">
-                Menghubungkan peneliti perguruan tinggi, organisasi perangkat daerah, subak, kelompok sadar wisata,
-                dan pelaku UMKM dalam satu ekosistem riset terapan yang terukur, transparan, dan berdampak
-                bagi 9 kecamatan serta 148 desa/kelurahan Kabupaten Buleleng.
-              </p>
-
-              <div className="mb-5 max-w-[590px]">
-                <SearchBox variant="hero" />
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 text-[.78rem] text-white/60">
-                <span>Populer:</span>
-                {['IoT Subak', 'Konservasi Lovina', 'Kopi Robusta Wanagiri', 'Satu Data Buleleng'].map((t) => (
-                  <Link key={t} to={`/riset?q=${encodeURIComponent(t)}`} className="rounded-full border border-white/16 bg-white/9 px-3 py-1.25 text-[.765rem] text-white/90 no-underline transition hover:border-gold-500 hover:bg-gold-500/20 hover:text-white">
-                    {t}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <aside className="rounded-2xl border border-white/16 bg-white/7 p-5.5 backdrop-blur-md" aria-label="Ringkasan ekosistem riset">
-              <div className="mb-3.5 text-[.72rem] font-bold uppercase tracking-widest text-gold-500">Ekosistem Riset Hari Ini</div>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  ['169', 'Riset daerah terdaftar'],
-                  ['34', 'Riset aktif dimonitor'],
-                  ['412', 'Peneliti terdaftar'],
-                  ['27', 'Policy brief tersedia']
-                ].map(([v, l]) => (
-                  <div key={l} className="rounded-lg border border-white/10 bg-black/16 px-3.5 py-3">
-                    <div className="font-head text-[1.62rem] font-extrabold leading-tight tabular-nums text-white">{v}</div>
-                    <div className="mt-0.5 text-[.72rem] leading-tight text-white/68">{l}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-3.5 flex items-start gap-2.5 border-t border-white/14 pt-3.5 text-[.78rem] text-white/72">
-                <span className="mt-1.5 h-2 w-2 flex-none animate-pulse-dot rounded-full bg-emerald-400" />
-                <span><b className="text-white">Batch I Hibah Riset Prioritas 2026</b> dibuka — pengajuan ditutup 28 November 2025.</span>
-              </div>
-            </aside>
-          </div>
-        </div>
-      </section>
+      {/* ===== 1.1 HERO — slider gambar otomatis 7 detik ===== */}
+      <HeroSlider />
 
       {/* ===== 1.2 QUICK ACCESS ===== */}
       <section className="relative z-20 -mt-8">
@@ -305,33 +223,45 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== 1.7 PETA JALAN RISET ===== */}
-      <section className="py-14 sm:py-18" id="petajalan">
+      {/* ===== 1.7 PETA JALAN RISET — panel merah ===== */}
+      <section className="py-14 text-white sm:py-18" style={{ backgroundImage: 'linear-gradient(160deg,#5C1010 0%,#6B1414 45%,#3E0B0B 100%)' }} id="petajalan">
         <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <Reveal className="mb-7 flex flex-wrap items-end justify-between gap-4">
             <div className="max-w-[640px]">
-              <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peta Jalan Riset 2025–2029</span>
-              <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Lima tahap menuju ekosistem riset mandiri Bali Utara</h2>
-              <p className="mb-0 text-[1.02rem] text-ink-2">Peta jalan ini menjadi rujukan penilaian kesesuaian setiap usulan riset — indikator pertama dalam matriks evaluasi tim pakar BRIDA.</p>
+              <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-gold-500 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peta Jalan Riset 2025–2029</span>
+              <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)] text-white">Lima tahap menuju ekosistem riset mandiri Bali Utara</h2>
+              <p className="mb-0 text-[1.02rem] text-white/78">Peta jalan ini menjadi rujukan penilaian kesesuaian setiap usulan riset — indikator pertama dalam matriks evaluasi tim pakar BRIDA.</p>
             </div>
-            <Link to="/roadmap" className="rounded-lg border border-line-strong bg-white px-5 py-2.5 text-sm font-semibold text-maroon-800 no-underline transition hover:border-maroon-800 hover:bg-maroon-50">
+            <Link to="/roadmap" className="rounded-lg bg-gold-500 px-5 py-2.5 text-sm font-semibold text-[#4A2D00] no-underline transition hover:bg-gold-600">
               Detail peta jalan per sektor →
             </Link>
           </Reveal>
+
           <Reveal className="grid gap-3.5 lg:grid-cols-5">
             {ROADMAP.map((r) => (
-              <div key={r.tahun} className={`flex flex-col overflow-hidden rounded-xl border bg-white shadow-card ${r.status === 'current' ? 'border-gold-500 shadow-[0_0_0_3px_#FFF3CD]' : 'border-line'}`}>
-                <div className="p-3.5" style={{ backgroundImage: 'linear-gradient(140deg,#8E1B1B,#C62828)' }}>
-                  <div className="text-[.7rem] font-bold uppercase tracking-widest text-white/80">{r.tahun}{r.status === 'current' ? ' · berjalan' : ''}</div>
-                  <div className="mt-0.5 font-head text-[1.02rem] font-extrabold text-white">{r.tema}</div>
+              <div
+                key={r.tahun}
+                className={`flex flex-col overflow-hidden rounded-xl border bg-white/7 backdrop-blur-sm transition hover:bg-white/10 ${
+                  r.status === 'current' ? 'border-gold-500 shadow-[0_0_0_3px_rgba(249,199,79,.22)]' : 'border-white/15'
+                }`}
+              >
+                <div className={`px-4 py-3.5 ${r.status === 'current' ? 'bg-gold-500 text-[#4A2D00]' : 'bg-white/10 text-white'}`}>
+                  <div className={`text-[.7rem] font-bold uppercase tracking-widest ${r.status === 'current' ? 'text-[#4A2D00]/75' : 'text-white/70'}`}>
+                    {r.tahun}{r.status === 'current' ? ' · berjalan' : ''}
+                  </div>
+                  <div className="mt-0.5 font-head text-[1.02rem] font-extrabold">{r.tema}</div>
                 </div>
                 <div className="flex-1 p-4">
-                  <p className="mb-2.5 text-[.82rem]">{r.target}</p>
-                  <ul className="m-0 pl-4.5 text-[.81rem]">
-                    {r.butir.map((b) => <li key={b} className="mb-1.75">{b}</li>)}
+                  <p className="mb-2.5 text-[.82rem] text-white/80">{r.target}</p>
+                  <ul className="m-0 list-none space-y-1.75 p-0 text-[.81rem]">
+                    {r.butir.map((b) => (
+                      <li key={b} className="flex items-start gap-2 text-white/75">
+                        <span className="mt-1.5 h-1 w-1 flex-none rounded-full bg-gold-500" />{b}
+                      </li>
+                    ))}
                   </ul>
                 </div>
-                <div className="border-t border-line bg-surface-1 px-4 py-2.75 text-[.76rem] text-ink-3">{r.indikator}</div>
+                <div className="border-t border-white/12 px-4 py-2.75 text-[.76rem] text-white/60">{r.indikator}</div>
               </div>
             ))}
           </Reveal>
@@ -344,7 +274,7 @@ export default function Home() {
           <Reveal className="mb-8.5 max-w-[760px]">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peluang Pendanaan Riset</span>
             <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Skema hibah dan insentif yang sedang dibuka</h2>
-            <p className="text-[1.02rem] text-ink-2">Pantau tenggat, plafon dana, dan syarat administratif tiap skema. Pengajuan dilakukan melalui formulir kolaborasi dalam portal ini.</p>
+            <p className="text-[1.02rem] text-ink-2">Pantau tenggat dan persyaratan tiap skema. Rincian pagu serta tata cara pengajuan mengikuti pengumuman resmi di situs penyelenggara masing-masing.</p>
           </Reveal>
           <Reveal className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {PENDANAAN.map((f) => {
@@ -359,10 +289,6 @@ export default function Home() {
                   </div>
                   <h3 className="text-[1rem] leading-snug">{f.nama}</h3>
                   <p className="mb-3 text-[.8rem] text-ink-3">{f.penyelenggara}</p>
-                  <div className="mb-3">
-                    <div className="font-head text-[1.5rem] font-extrabold leading-tight text-maroon-800">{rupiahRingkas(f.plafon)}</div>
-                    <small className="text-[.78rem] font-semibold text-ink-3">plafon maksimal per judul riset</small>
-                  </div>
                   <div className={`mb-3 flex items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-[.8rem] ${dlCls}`}>
                     <Icon name="clock" size={16} />
                     <span>{sisa < 0 ? `Pendaftaran ditutup ${tanggal(f.deadline)}` : <>Ditutup {tanggal(f.deadline)} · <b>{sisa} hari lagi</b></>}</span>
@@ -374,8 +300,19 @@ export default function Home() {
                   </ul>
                   <p className="mb-3.5 text-[.79rem] text-ink-3">{f.ket}</p>
                   <div className="mt-auto flex gap-2">
-                    <Link to={`/kolaborasi?skema=${f.skema}`} className="flex-1 rounded-lg bg-maroon-800 px-3 py-2 text-center text-[.82rem] font-semibold text-white no-underline hover:bg-maroon-600">Ajukan usulan</Link>
-                    <button type="button" onClick={() => setFundModal(f)} className="rounded-lg border border-line-strong px-3 py-2 text-[.82rem] font-semibold text-ink-2 hover:border-maroon-600 hover:text-maroon-800">Syarat</button>
+                    <a
+                      href={f.situs} target="_blank" rel="noopener noreferrer"
+                      className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-maroon-800 px-3 py-2 text-center text-[.82rem] font-semibold text-white no-underline hover:bg-maroon-600"
+                    >
+                      Kunjungi penyelenggara <Icon name="external" size={14} />
+                    </a>
+                    <a
+                      href={f.situs} target="_blank" rel="noopener noreferrer"
+                      title={`Syarat lengkap di situs ${f.situsNama}`}
+                      className="flex items-center gap-1.5 rounded-lg border border-line-strong px-3 py-2 text-[.82rem] font-semibold text-ink-2 no-underline hover:border-maroon-600 hover:text-maroon-800"
+                    >
+                      Syarat <Icon name="external" size={13} />
+                    </a>
                   </div>
                 </article>
               );
@@ -387,76 +324,35 @@ export default function Home() {
       {/* ===== 1.9 BERITA & DISEMINASI ===== */}
       <section className="py-14 sm:py-18" id="berita">
         <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-6 max-w-[640px]">
-            <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Berita &amp; Diseminasi Riset</span>
-            <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Kabar terkini ekosistem riset Buleleng</h2>
-            <p className="mb-0 text-[1.02rem] text-ink-2">Pengumuman pendanaan, hasil monev, adopsi kebijakan, dan agenda diseminasi dari BRIDA Kabupaten Buleleng.</p>
+          <Reveal className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div className="max-w-[640px]">
+              <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Berita &amp; Diseminasi Riset</span>
+              <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Kabar terkini ekosistem riset Buleleng</h2>
+              <p className="mb-0 text-[1.02rem] text-ink-2">Pengumuman pendanaan, hasil monev, adopsi kebijakan, dan agenda diseminasi dari BRIDA Kabupaten Buleleng.</p>
+            </div>
+            <Link to="/berita" className="rounded-lg border border-line-strong bg-white px-5 py-2.5 text-sm font-semibold text-maroon-800 no-underline transition hover:border-maroon-800 hover:bg-maroon-50">
+              Lihat semua berita →
+            </Link>
           </Reveal>
           <Reveal className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {BERITA.map((n, i) => {
+            {beritaSorot.map((n, i) => {
               const c = KAT_WARNA[n.kategori] || '#8E1B1B';
               return (
                 <article key={n.id} className="flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-card transition hover:-translate-y-1 hover:shadow-pop">
-                  <div className="relative aspect-video overflow-hidden" style={{ backgroundImage: `linear-gradient(140deg,${c},#3B0A0A)` }}>
-                    <svg viewBox="0 0 400 225" aria-hidden="true" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full">
-                      <g stroke="rgba(249,199,79,.3)" fill="none" strokeWidth="1">
-                        <circle cx={60 + i * 30} cy="70" r="46" /><circle cx="300" cy="150" r="66" />
-                        <path d="M0 180L100 120L200 160L300 90L400 140" />
-                      </g>
-                      <g fill="rgba(249,199,79,.55)"><circle cx="100" cy="120" r="4" /><circle cx="200" cy="160" r="5" /><circle cx="300" cy="90" r="4" /></g>
-                    </svg>
+                  <SmartImage src={n.gambar} alt={n.judul} seed={i} className="aspect-video">
                     <span className="absolute left-3 top-3 z-10 rounded-full bg-white/92 px-2.5 py-1 text-[.715rem] font-bold" style={{ color: c }}>{n.kategori}</span>
-                  </div>
+                  </SmartImage>
                   <div className="flex flex-1 flex-col p-4.5">
                     <div className="mb-1.75 flex items-center gap-1.75 text-[.74rem] font-semibold text-ink-3"><Icon name="calendar" size={13} />{tanggal(n.tanggal)} · {n.penulis}</div>
                     <h3 className="text-[.98rem] leading-snug">{n.judul}</h3>
                     <p className="mb-3.5 flex-1 text-[.835rem] line-clamp-3">{n.ringkas}</p>
-                    <button type="button" onClick={() => setNewsModal(n)} className="flex items-center gap-1.5 self-start rounded-lg py-1.5 pl-0 text-[.8rem] font-semibold text-ink-2 hover:text-maroon-800">
+                    <Link to="/berita" className="flex items-center gap-1.5 self-start rounded-lg py-1.5 text-[.8rem] font-semibold text-maroon-800 no-underline hover:underline">
                       Baca selengkapnya <Icon name="arrow" size={14} />
-                    </button>
+                    </Link>
                   </div>
                 </article>
               );
             })}
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ===== 1.11 RINGKASAN MONEV TERPADU ===== */}
-      <section className="py-14 text-white sm:py-18" style={{ backgroundImage: 'linear-gradient(160deg,#5C1010 0%,#6B1414 45%,#3E0B0B 100%)' }} id="monev-ringkas">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-6 flex flex-wrap items-end justify-between gap-4">
-            <div className="max-w-[640px]">
-              <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-gold-500 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Ringkasan Monev Terpadu</span>
-              <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)] text-white">Status 34 riset yang sedang dimonitor</h2>
-              <p className="mb-0 text-[1.02rem] text-white/78">Ikhtisar capaian termin, deviasi jadwal, dan serapan anggaran riset daerah tahun berjalan.</p>
-            </div>
-            <Link to="/dashboard/opd" className="rounded-lg bg-gold-500 px-5 py-2.5 text-sm font-semibold text-[#4A2D00] no-underline transition hover:bg-gold-600">Buka modul MONEV lengkap →</Link>
-          </Reveal>
-
-          <Reveal className="mb-5.5 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {RING.map((m) => (
-              <div key={m.l} className={`rounded-xl border border-white/15 bg-white/7 p-4.5 ${m.c ? `border-l-4 ${m.c}` : ''}`}>
-                <div className="text-[.765rem] font-bold uppercase tracking-wide text-white/60">{m.l}</div>
-                <CountUp value={m.v} className="mt-1 font-head text-[1.95rem] font-extrabold leading-tight text-white" />
-                <div className="mt-1 text-[.755rem] text-white/55">{m.d}</div>
-              </div>
-            ))}
-          </Reveal>
-
-          <Reveal className="rounded-xl border border-white/15 bg-white/6 p-5.5">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="m-0 text-[1.02rem] text-white">Serapan anggaran riset daerah 2025</h3>
-              <span className="rounded-full bg-gold-500 px-2.5 py-1 text-[.715rem] font-bold text-[#4A2D00]">{pctSerap}% terserap</span>
-            </div>
-            <div className="mb-1.5 flex justify-between text-[.76rem] font-semibold text-white/70">
-              <span>Realisasi terhadap pagu <b className="text-white">{rupiahRingkas(pagu)}</b></span>
-              <b className="text-white">{rupiahRingkas(real)} ({pctSerap}%)</b>
-            </div>
-            <div className="h-2.5 overflow-hidden rounded-full bg-white/16">
-              <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pctSerap}%`, backgroundImage: 'linear-gradient(90deg,#F9C74F,#FFDE8A)' }} />
-            </div>
-            <p className="mb-0 mt-3.5 text-[.83rem] text-white/78">Sisa pagu digunakan untuk termin III riset berjalan, insentif publikasi, dan pembiayaan diseminasi hasil riset kepada masyarakat sasaran.</p>
           </Reveal>
         </div>
       </section>
@@ -495,43 +391,6 @@ export default function Home() {
         </div>
       </section>
 
-      {fundModal && (
-        <Modal title={fundModal.nama} onClose={() => setFundModal(null)} footer={
-          <Link to={`/kolaborasi?skema=${fundModal.skema}`} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white no-underline hover:bg-maroon-600">Ajukan usulan pada skema ini</Link>
-        }>
-          <dl className="mb-4.5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.75 text-[.845rem]">
-            <dt className="font-semibold text-ink-3">Penyelenggara</dt><dd className="m-0 font-semibold">{fundModal.penyelenggara}</dd>
-            <dt className="font-semibold text-ink-3">Skema</dt><dd className="m-0 font-semibold">{skemaById(fundModal.skema).nama}</dd>
-            <dt className="font-semibold text-ink-3">Plafon</dt><dd className="m-0 font-semibold">{rupiah(fundModal.plafon)} per judul</dd>
-            <dt className="font-semibold text-ink-3">Kuota</dt><dd className="m-0 font-semibold">{fundModal.kuota} judul riset</dd>
-            <dt className="font-semibold text-ink-3">Batas pengajuan</dt><dd className="m-0 font-semibold">{tanggal(fundModal.deadline)}</dd>
-            <dt className="font-semibold text-ink-3">Bidang sasaran</dt><dd className="m-0 font-semibold">{fundModal.bidangTarget.map((x) => bidangById(x).nama).join(', ')}</dd>
-          </dl>
-          <h4>Persyaratan administratif</h4>
-          <ul className="m-0 list-none space-y-1.5 p-0 text-[.81rem]">
-            {fundModal.syarat.map((s) => <li key={s} className="flex items-start gap-2 text-ink-2"><Icon name="check" size={14} className="mt-0.5 flex-none text-success" />{s}</li>)}
-          </ul>
-          <div className="mt-4 flex items-start gap-3 rounded-xl border border-info-bg bg-info-bg px-4 py-3.5 text-[.855rem] text-[#1E3A8A]">
-            <Icon name="info" size={19} className="mt-0.5 flex-none text-info" /><p className="m-0">{fundModal.ket}</p>
-          </div>
-        </Modal>
-      )}
-
-      {newsModal && (
-        <Modal title={newsModal.judul} onClose={() => setNewsModal(null)} footer={
-          <Link to="/#berita" onClick={() => setNewsModal(null)} className="rounded-lg border border-line-strong px-5 py-2.5 text-sm font-semibold text-maroon-800 no-underline hover:bg-maroon-50">Berita lainnya</Link>
-        }>
-          <div className="mb-4 flex items-center gap-2.5">
-            <span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">{newsModal.kategori}</span>
-            <span className="text-[.78rem] text-ink-3">{tanggal(newsModal.tanggal)} · {newsModal.penulis}</span>
-          </div>
-          <p>{newsModal.ringkas}</p>
-          <div className="mt-4 flex items-start gap-3 rounded-xl border border-maroon-100 bg-maroon-50 px-4 py-3.5 text-[.855rem] text-maroon-900">
-            <Icon name="info" size={19} className="mt-0.5 flex-none text-maroon-800" />
-            <p className="m-0"><strong className="mr-1">Catatan prototipe.</strong>Naskah berita lengkap akan ditarik dari sistem manajemen konten BRIDA pada implementasi tahap berikutnya.</p>
-          </div>
-        </Modal>
-      )}
     </>
   );
 }

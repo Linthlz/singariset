@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import LionMark from './LionMark.jsx';
 import Icon from './Icon.jsx';
-import { useEffect, useState } from 'react';
+import { SOSMED_RESMI } from '../data/singaData.js';
 
 function ToTop() {
   const [show, setShow] = useState(false);
@@ -23,11 +24,37 @@ function ToTop() {
   );
 }
 
+const SOSMED = [
+  { id: 'instagram', label: 'Instagram BRIDA Buleleng', href: SOSMED_RESMI.instagram },
+  { id: 'facebook', label: 'Facebook BRIDA Buleleng', href: SOSMED_RESMI.facebook },
+  { id: 'tiktok', label: 'TikTok BRIDA Buleleng', href: SOSMED_RESMI.tiktok },
+  { id: 'youtube', label: 'YouTube BRIDA Buleleng', href: SOSMED_RESMI.youtube }
+];
+
 export default function Footer() {
   return (
     <>
-      <footer className="bg-[#2A0808] pt-13 text-[.855rem] text-white/72" id="kontak">
-        <div className="mx-auto max-w-[1240px] px-5">
+      <footer className="relative overflow-hidden bg-[#2A0808] text-[.855rem] text-white/72" id="kontak">
+        {/* Latar gambar — taruh berkas di public/images/footer/footer-bg.jpg.
+            Bila belum ada, gradasi di bawahnya tetap tampil rapi. */}
+        <div
+          className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-30"
+          style={{ backgroundImage: "url('/images/footer/footer-bg.jpg')" }}
+          aria-hidden="true"
+        />
+        {/* Overlay agar teks tetap terbaca di atas gambar apa pun */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'linear-gradient(180deg, rgba(42,8,8,.93) 0%, rgba(42,8,8,.88) 45%, rgba(26,4,4,.97) 100%)' }}
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(680px 320px at 82% 6%, rgba(249,199,79,.16), transparent 64%)' }}
+          aria-hidden="true"
+        />
+
+        <div className="relative z-10 mx-auto max-w-[1240px] px-5 pt-13">
           <div className="grid grid-cols-1 gap-8 pb-9 sm:grid-cols-2 lg:grid-cols-[1.7fr_1fr_1fr_1.35fr]">
             <div>
               <div className="mb-4 flex items-start gap-3">
@@ -41,9 +68,12 @@ export default function Footer() {
                 Portal digital terpadu riset, inovasi, kolaborasi, dan tata kelola kebijakan berbasis bukti ilmiah Kabupaten Buleleng — dikelola oleh Badan Riset dan Inovasi Daerah (BRIDA).
               </p>
               <div className="mt-4 flex gap-2">
-                {['mail', 'globe', 'video'].map((ic) => (
-                  <a key={ic} href="#" aria-label="Kanal BRIDA" className="grid h-8.5 w-8.5 place-items-center rounded-lg bg-white/8 text-white/80 transition hover:bg-gold-500 hover:text-[#4A2D00]">
-                    <Icon name={ic} size={16} />
+                {SOSMED.map((s) => (
+                  <a
+                    key={s.id} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
+                    className="grid h-9 w-9 place-items-center rounded-lg border border-white/12 bg-white/8 text-white/80 backdrop-blur transition hover:border-gold-500 hover:bg-gold-500 hover:text-[#4A2D00]"
+                  >
+                    <Icon name={s.id} size={16} />
                   </a>
                 ))}
               </div>
@@ -54,7 +84,7 @@ export default function Footer() {
               <ul className="m-0 list-none space-y-2.5 p-0">
                 <li><Link to="/kolaborasi" className="text-white/72 hover:text-gold-500">Pengajuan Kolaborasi</Link></li>
                 <li><Link to="/#pendanaan" className="text-white/72 hover:text-gold-500">Peluang Pendanaan</Link></li>
-                <li><Link to="/dashboard/opd" className="text-white/72 hover:text-gold-500">Monitoring &amp; Evaluasi</Link></li>
+                <li><Link to="/publikasi" className="text-white/72 hover:text-gold-500">Publikasi &amp; Dokumentasi</Link></li>
                 <li><Link to="/register" className="text-white/72 hover:text-gold-500">Daftar Akun Mitra</Link></li>
                 <li><Link to="/riset" className="text-white/72 hover:text-gold-500">Direktori Riset Daerah</Link></li>
               </ul>
@@ -67,7 +97,7 @@ export default function Footer() {
                 <li><Link to="/etika-regulasi#sop" className="text-white/72 hover:text-gold-500">SOP Pencairan &amp; SPJ</Link></li>
                 <li><Link to="/etika-regulasi#pengaduan" className="text-white/72 hover:text-gold-500">Pengaduan &amp; Whistleblowing</Link></li>
                 <li><Link to="/roadmap" className="text-white/72 hover:text-gold-500">Peta Jalan 2025–2029</Link></li>
-                <li><Link to="/riset" className="text-white/72 hover:text-gold-500">Data Terbuka Riset</Link></li>
+                <li><Link to="/berita" className="text-white/72 hover:text-gold-500">Berita &amp; Diseminasi</Link></li>
               </ul>
             </div>
 

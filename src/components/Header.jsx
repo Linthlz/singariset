@@ -1,17 +1,31 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import LionMark from './LionMark.jsx';
 import Icon from './Icon.jsx';
 import SearchBox from './SearchBox.jsx';
 import { ROLES, useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 
+/* Navigasi dikelompokkan agar bilah atas tidak penuh. */
 const NAV_ITEMS = [
   { label: 'Beranda', href: '/' },
-  { label: 'Riset Daerah', href: '/riset' },
-  { label: 'Peta Jalan', href: '/roadmap' },
-  { label: 'Kolaborasi', href: '/kolaborasi' },
-  { label: 'Etika & Regulasi', href: '/etika-regulasi' }
+  {
+    label: 'Riset',
+    anak: [
+      { label: 'Direktori Riset Daerah', href: '/riset', ikon: 'flask', ket: 'Katalog riset yang didanai BRIDA' },
+      { label: 'Peta Jalan Riset', href: '/roadmap', ikon: 'target', ket: 'Prioritas riset daerah 2025–2029' },
+      { label: 'Publikasi & Dokumentasi', href: '/publikasi', ikon: 'camera', ket: 'Foto, video, dan narasi hasil riset' }
+    ]
+  },
+  {
+    label: 'Informasi',
+    anak: [
+      { label: 'Berita & Diseminasi', href: '/berita', ikon: 'doc', ket: 'Kabar terkini ekosistem riset' },
+      { label: 'Peluang Pendanaan', href: '/#pendanaan', ikon: 'money', ket: 'Skema hibah dan insentif' },
+      { label: 'Etika & Regulasi', href: '/etika-regulasi', ikon: 'shield', ket: 'Klirens etik, SOP, pengaduan' }
+    ]
+  },
+  { label: 'Kolaborasi', href: '/kolaborasi' }
 ];
 
 function navClass({ isActive }) {
@@ -20,6 +34,67 @@ function navClass({ isActive }) {
   }`;
 }
 
+/* ---------- Dropdown navigasi ---------- */
+function NavDropdown({ item, terbuka, setTerbuka }) {
+  const ref = useRef(null);
+  const { pathname } = useLocation();
+  const aktif = item.anak.some((a) => a.href !== '/' && pathname.startsWith(a.href.split('#')[0]) && a.href.split('#')[0] !== '/');
+
+  useEffect(() => {
+    function onDoc(e) { if (ref.current && !ref.current.contains(e.target)) setTerbuka(null); }
+    function onKey(e) { if (e.key === 'Escape') setTerbuka(null); }
+    document.addEventListener('click', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('click', onDoc); document.removeEventListener('keydown', onKey); };
+  }, [setTerbuka]);
+
+  return (
+    <div
+      className="relative"
+      ref={ref}
+      onMouseEnter={() => setTerbuka(item.label)}
+      onMouseLeave={() => setTerbuka(null)}
+    >
+      <button
+        type="button"
+        aria-haspopup="true"
+        aria-expanded={terbuka === item.label}
+        onClick={(e) => { e.stopPropagation(); setTerbuka(terbuka === item.label ? null : item.label); }}
+        className={`flex items-center gap-1 rounded-lg px-3 py-2 text-[.855rem] font-semibold whitespace-nowrap transition ${
+          aktif || terbuka === item.label ? 'bg-maroon-50 text-maroon-800' : 'text-ink-2 hover:bg-surface-1 hover:text-maroon-800'
+        }`}
+      >
+        {item.label}
+        <Icon name="chevronDown" size={14} className={`transition-transform duration-200 ${terbuka === item.label ? 'rotate-180' : ''}`} />
+      </button>
+
+      {terbuka === item.label && (
+        <div className="absolute left-0 top-full z-[70] w-[310px] pt-2">
+          <div className="overflow-hidden rounded-2xl border border-line bg-white p-1.5 shadow-pop">
+            {item.anak.map((a) => (
+              <Link
+                key={a.href}
+                to={a.href}
+                onClick={() => setTerbuka(null)}
+                className="flex items-start gap-3 rounded-lg px-3 py-2.5 no-underline transition hover:bg-surface-1"
+              >
+                <span className="mt-0.5 grid h-8 w-8 flex-none place-items-center rounded-lg bg-maroon-50 text-maroon-800">
+                  <Icon name={a.ikon} size={16} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[.855rem] font-semibold text-ink">{a.label}</span>
+                  <span className="block text-[.745rem] leading-snug text-ink-3">{a.ket}</span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Menu akun ---------- */
 function AccountMenu({ onNavigate }) {
   const { user, logout } = useAuth();
   const toast = useToast();
@@ -52,7 +127,7 @@ function AccountMenu({ onNavigate }) {
         className="flex items-center gap-2 rounded-full border border-line-strong bg-white px-2.5 py-1.5 text-[.79rem] font-semibold text-ink-2 transition hover:border-maroon-600 hover:text-maroon-800"
       >
         <span className="grid h-6 w-6 flex-none place-items-center rounded-full bg-maroon-800 text-[.66rem] font-extrabold text-white">{peran.init}</span>
-        <span className="hidden max-w-[140px] truncate sm:inline">{user.nama.split(',')[0]}</span>
+        <span className="hidden max-w-[120px] truncate sm:inline">{user.nama.split(',')[0]}</span>
         <Icon name="arrowDown" size={13} />
       </button>
 
@@ -82,19 +157,51 @@ function AccountMenu({ onNavigate }) {
 
 export default function Header() {
   const { isAuth } = useAuth();
+  const { pathname } = useLocation();
   const [stuck, setStuck] = useState(false);
+  const [tersembunyi, setTersembunyi] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSearch, setMobileSearch] = useState(false);
+  const [dropdown, setDropdown] = useState(null);
+  const [grupMobile, setGrupMobile] = useState(null);
+  const lastY = useRef(0);
 
+  /* Sembunyi saat gulir ke bawah, muncul lagi saat gulir ke atas. */
   useEffect(() => {
-    function onScroll() { setStuck(window.scrollY > 8); }
-    onScroll();
+    lastY.current = window.scrollY;
+
+    function onScroll() {
+      const y = window.scrollY;
+      const selisih = y - lastY.current;
+      setStuck(y > 8);
+
+      // Abaikan getaran kecil agar bilah tidak berkedip.
+      if (Math.abs(selisih) < 6) return;
+
+      if (y > 140 && selisih > 0) {
+        setTersembunyi(true);
+        setDropdown(null);
+      } else if (selisih < 0) {
+        setTersembunyi(false);
+      }
+      lastY.current = y;
+    }
+
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  /* Tutup semua menu ketika pindah halaman. */
+  useEffect(() => {
+    setDropdown(null);
+    setMobileOpen(false);
+    setMobileSearch(false);
+    setGrupMobile(null);
+    setTersembunyi(false);
+  }, [pathname]);
+
   return (
-    <>
+    <div className={`sticky top-0 z-[60] transition-transform duration-300 ease-out ${tersembunyi ? '-translate-y-full' : 'translate-y-0'}`}>
       <div className="bg-maroon-900 py-1.5 text-[.76rem] text-white/82">
         <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-center gap-3.5 px-5 sm:justify-between">
           <div className="flex items-center gap-2">
@@ -109,7 +216,7 @@ export default function Header() {
         </div>
       </div>
 
-      <header className={`sticky top-0 z-[60] border-b border-line bg-white/96 backdrop-blur-md transition-shadow ${stuck ? 'shadow-lift' : ''}`}>
+      <header className={`border-b border-line bg-white/96 backdrop-blur-md transition-shadow ${stuck ? 'shadow-lift' : ''}`}>
         <div className="mx-auto flex max-w-[1240px] items-center gap-4 px-5 py-2.5">
           <Link to="/" className="mr-auto flex items-center gap-3 no-underline">
             <LionMark size={42} />
@@ -120,9 +227,11 @@ export default function Header() {
           </Link>
 
           <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Navigasi utama">
-            {NAV_ITEMS.map((n) => (
-              <NavLink key={n.href} to={n.href} end={n.href === '/'} className={navClass}>{n.label}</NavLink>
-            ))}
+            {NAV_ITEMS.map((n) =>
+              n.anak
+                ? <NavDropdown key={n.label} item={n} terbuka={dropdown} setTerbuka={setDropdown} />
+                : <NavLink key={n.href} to={n.href} end={n.href === '/'} className={navClass}>{n.label}</NavLink>
+            )}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -158,10 +267,36 @@ export default function Header() {
         )}
 
         {mobileOpen && (
-          <nav className="flex flex-col gap-0.5 border-t border-line bg-white px-5 pb-4 pt-2.5 shadow-lift lg:hidden" aria-label="Navigasi mobile">
-            {NAV_ITEMS.map((n) => (
-              <NavLink key={n.href} to={n.href} end={n.href === '/'} onClick={() => setMobileOpen(false)} className={navClass}>{n.label}</NavLink>
-            ))}
+          <nav className="flex max-h-[70vh] flex-col gap-0.5 overflow-y-auto border-t border-line bg-white px-5 pb-4 pt-2.5 shadow-lift lg:hidden" aria-label="Navigasi mobile">
+            {NAV_ITEMS.map((n) =>
+              n.anak ? (
+                <div key={n.label}>
+                  <button
+                    type="button"
+                    onClick={() => setGrupMobile(grupMobile === n.label ? null : n.label)}
+                    aria-expanded={grupMobile === n.label}
+                    className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-[.855rem] font-semibold text-ink-2 hover:bg-surface-1 hover:text-maroon-800"
+                  >
+                    {n.label}
+                    <Icon name="chevronDown" size={15} className={`transition-transform ${grupMobile === n.label ? 'rotate-180' : ''}`} />
+                  </button>
+                  {grupMobile === n.label && (
+                    <div className="mb-1 ml-3 border-l border-line pl-3">
+                      {n.anak.map((a) => (
+                        <Link key={a.href} to={a.href} onClick={() => setMobileOpen(false)}
+                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[.83rem] font-semibold text-ink-2 no-underline hover:bg-surface-1 hover:text-maroon-800">
+                          <Icon name={a.ikon} size={15} className="flex-none text-maroon-800" />
+                          {a.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <NavLink key={n.href} to={n.href} end={n.href === '/'} onClick={() => setMobileOpen(false)} className={navClass}>{n.label}</NavLink>
+              )
+            )}
+
             {!isAuth && (
               <div className="mt-2 flex gap-2">
                 <Link to="/login" onClick={() => setMobileOpen(false)}
@@ -173,6 +308,6 @@ export default function Header() {
           </nav>
         )}
       </header>
-    </>
+    </div>
   );
 }

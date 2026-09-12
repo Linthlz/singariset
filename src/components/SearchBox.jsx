@@ -62,7 +62,11 @@ export default function SearchBox({ variant = 'hero', placeholder, onNavigate })
           onChange={(e) => { setQ(e.target.value); setOpen(true); setCursor(-1); }}
           onFocus={() => q.trim().length >= 2 && setOpen(true)}
           onKeyDown={onKeyDown}
-          className={isHero ? 'min-w-0 flex-1 border-none bg-transparent py-1.5 text-[.93rem] outline-none' : 'min-w-0 flex-1 border-none bg-transparent text-sm outline-none'}
+          className={
+            isHero
+              ? 'min-w-0 flex-1 border-none bg-transparent py-1.5 text-[.93rem] text-ink outline-none placeholder:text-ink-3'
+              : 'min-w-0 flex-1 border-none bg-transparent text-sm text-ink outline-none placeholder:text-ink-3'
+          }
         />
         {isHero && (
           <button type="button" onClick={submit} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-maroon-600">

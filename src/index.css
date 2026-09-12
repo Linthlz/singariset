@@ -70,3 +70,32 @@
 @keyframes pulseDot { 70% { box-shadow: 0 0 0 9px rgba(74,222,128,0); } 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); } }
 .animate-toast-in { animation: toastIn .28s cubic-bezier(.2,.9,.3,1); }
 .animate-pulse-dot { animation: pulseDot 2.2s infinite; box-shadow: 0 0 0 0 rgba(74,222,128,.6); }
+
+/* Teks hero saat slide berganti */
+@keyframes heroIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Transisi antar halaman */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+.page-enter { animation: pageIn .42s cubic-bezier(.22,.8,.3,1); }
+
+/* Bilah kemajuan tipis saat berpindah halaman */
+@keyframes routeBar {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.route-bar { transform-origin: left; animation: routeBar .45s ease-out forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

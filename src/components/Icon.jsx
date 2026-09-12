@@ -46,18 +46,29 @@ const PATHS = {
   award: '<circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5L7 21l5-2.5L17 21l-1.5-7.5"/>',
   refresh: '<path d="M20 11a8 8 0 10-2.3 6.3"/><path d="M20 4v7h-7"/>',
   eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
-  eyeOff: '<path d="M10.6 6.1A8.6 8.6 0 0112 6c6 0 9.5 6 9.5 6a15.6 15.6 0 01-3 3.6M6.4 7.3A15.5 15.5 0 002.5 12S6 18 12 18c1.4 0 2.6-.3 3.7-.8"/><path d="M9.9 9.9a3 3 0 004.2 4.2"/><path d="M3 3l18 18"/>'
+  eyeOff: '<path d="M10.6 6.1A8.6 8.6 0 0112 6c6 0 9.5 6 9.5 6a15.6 15.6 0 01-3 3.6M6.4 7.3A15.5 15.5 0 002.5 12S6 18 12 18c1.4 0 2.6-.3 3.7-.8"/><path d="M9.9 9.9a3 3 0 004.2 4.2"/><path d="M3 3l18 18"/>',
+  instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="4.6"/><circle cx="12" cy="12" r="3.9"/><circle cx="17.2" cy="6.8" r="1.05" fill="currentColor" stroke="none"/>',
+  facebook: '<path d="M13.9 21v-7.5h2.5l.5-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1v2.1H8v3h2.6V21z"/>',
+  tiktok: '<path d="M16.9 2.2h-3.2v13a2.3 2.3 0 11-2.3-2.3c.2 0 .5 0 .7.1V9.7a5.7 5.7 0 00-.7 0 5.6 5.6 0 105.6 5.6V8.6a6.9 6.9 0 004.1 1.3V6.7a3.9 3.9 0 01-3.1-3.1 4 4 0 01-.1-1.4z"/>',
+  youtube: '<rect x="2.6" y="6" width="18.8" height="12" rx="3.6"/><path d="M10.4 9.6l4.6 2.4-4.6 2.4z"/>',
+  play: '<circle cx="12" cy="12" r="9"/><path d="M10.2 8.6l5.2 3.4-5.2 3.4z"/>',
+  camera: '<path d="M3.5 8.5h3l1.4-2.2h7.2l1.4 2.2h3a1.5 1.5 0 011.5 1.5v8a1.5 1.5 0 01-1.5 1.5h-16A1.5 1.5 0 012 18v-8a1.5 1.5 0 011.5-1.5z"/><circle cx="12" cy="13.5" r="3.4"/>'
 };
+
+/* Logo merek digambar sebagai bidang penuh, bukan garis, agar bentuknya
+   tetap dikenali pada ukuran kecil. */
+const SOLID = new Set(['facebook', 'tiktok']);
 
 export default function Icon({ name, size = 20, className = '' }) {
   const body = PATHS[name] || PATHS.info;
+  const solid = SOLID.has(name);
   return (
     <svg
       viewBox="0 0 24 24"
       width={size}
       height={size}
-      fill="none"
-      stroke="currentColor"
+      fill={solid ? 'currentColor' : 'none'}
+      stroke={solid ? 'none' : 'currentColor'}
       strokeWidth="1.9"
       strokeLinecap="round"
       strokeLinejoin="round"

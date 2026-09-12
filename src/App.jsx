@@ -1,10 +1,13 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import PageTransition from './components/PageTransition.jsx';
 import Home from './pages/Home.jsx';
 import Riset from './pages/Riset.jsx';
 import RisetDetail from './pages/RisetDetail.jsx';
 import Roadmap from './pages/Roadmap.jsx';
+import Berita from './pages/Berita.jsx';
+import Publikasi from './pages/Publikasi.jsx';
 import Kolaborasi from './pages/Kolaborasi.jsx';
 import EtikaRegulasi from './pages/EtikaRegulasi.jsx';
 import Login from './pages/Login.jsx';
@@ -34,13 +37,15 @@ export default function App() {
 
       {/* Portal publik */}
       <Route element={<Layout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/riset" element={<Riset />} />
-        <Route path="/riset/:id" element={<RisetDetail />} />
-        <Route path="/roadmap" element={<Roadmap />} />
-        <Route path="/kolaborasi" element={<Kolaborasi />} />
-        <Route path="/etika-regulasi" element={<EtikaRegulasi />} />
-        <Route path="*" element={<NotFound />} />
+        <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+        <Route path="/riset" element={<PageTransition><Riset /></PageTransition>} />
+        <Route path="/riset/:id" element={<PageTransition><RisetDetail /></PageTransition>} />
+        <Route path="/roadmap" element={<PageTransition><Roadmap /></PageTransition>} />
+        <Route path="/berita" element={<PageTransition><Berita /></PageTransition>} />
+        <Route path="/publikasi" element={<PageTransition><Publikasi /></PageTransition>} />
+        <Route path="/kolaborasi" element={<PageTransition><Kolaborasi /></PageTransition>} />
+        <Route path="/etika-regulasi" element={<PageTransition><EtikaRegulasi /></PageTransition>} />
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Route>
     </Routes>
   );

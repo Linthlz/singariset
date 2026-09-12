@@ -370,7 +370,7 @@ export const RISET = [
 
 export const PENDANAAN = [
   {
-    id: 'FND-01', nama: 'Hibah Riset Prioritas Daerah Buleleng 2026 — Batch I',
+    id: 'FND-01', situs: 'https://bulelengkab.go.id', situsNama: 'BRIDA Kabupaten Buleleng', nama: 'Hibah Riset Prioritas Daerah Buleleng 2026 — Batch I',
     penyelenggara: 'BRIDA Kabupaten Buleleng', skema: 'hibah-daerah',
     plafon: 300000000, kuota: 18, deadline: '2025-11-28', status: 'open',
     bidangTarget: ['pertanian', 'pariwisata', 'kelautan'],
@@ -378,7 +378,7 @@ export const PENDANAAN = [
     ket: 'Diprioritaskan untuk isu ketahanan pangan, hilirisasi komoditas, dan pariwisata berkelanjutan Bali Utara.'
   },
   {
-    id: 'FND-02', nama: 'Insentif Riset Terapan & Hilirisasi Produk Lokal',
+    id: 'FND-02', situs: 'https://bulelengkab.go.id', situsNama: 'BRIDA Kabupaten Buleleng', nama: 'Insentif Riset Terapan & Hilirisasi Produk Lokal',
     penyelenggara: 'BRIDA × Dinas Perindag Buleleng', skema: 'insentif',
     plafon: 150000000, kuota: 24, deadline: '2025-10-17', status: 'closing',
     bidangTarget: ['pertanian', 'sosial'],
@@ -386,7 +386,7 @@ export const PENDANAAN = [
     ket: 'Fokus pada peningkatan nilai tambah komoditas unggulan: kopi, mangga, anggur, endek, dan produk perikanan.'
   },
   {
-    id: 'FND-03', nama: 'Riset Kolaboratif Pentahelix Bali Utara',
+    id: 'FND-03', situs: 'https://bulelengkab.go.id', situsNama: 'BRIDA Kabupaten Buleleng', nama: 'Riset Kolaboratif Pentahelix Bali Utara',
     penyelenggara: 'BRIDA × Konsorsium Perguruan Tinggi', skema: 'kolaboratif',
     plafon: 450000000, kuota: 8, deadline: '2025-12-12', status: 'open',
     bidangTarget: ['smartcity', 'kelautan', 'pariwisata'],
@@ -394,7 +394,7 @@ export const PENDANAAN = [
     ket: 'Skema unggulan untuk riset lintas sektor berdampak luas dengan pembiayaan bersama industri atau lembaga mitra.'
   },
   {
-    id: 'FND-04', nama: 'Kemitraan Riset BRIN — Fasilitasi Daerah',
+    id: 'FND-04', situs: 'https://brin.go.id', situsNama: 'Badan Riset dan Inovasi Nasional', nama: 'Kemitraan Riset BRIN — Fasilitasi Daerah',
     penyelenggara: 'BRIN × BRIDA Buleleng', skema: 'brin',
     plafon: 500000000, kuota: 5, deadline: '2026-01-30', status: 'soon',
     bidangTarget: ['smartcity', 'kelautan'],
@@ -402,7 +402,7 @@ export const PENDANAAN = [
     ket: 'Pendaftaran dibuka melalui portal BRIN dengan surat rekomendasi BRIDA Kabupaten Buleleng.'
   },
   {
-    id: 'FND-05', nama: 'Beasiswa Riset Tesis & Disertasi Bertema Buleleng',
+    id: 'FND-05', situs: 'https://bulelengkab.go.id', situsNama: 'BRIDA Kabupaten Buleleng', nama: 'Beasiswa Riset Tesis & Disertasi Bertema Buleleng',
     penyelenggara: 'BRIDA Kabupaten Buleleng', skema: 'mandiri',
     plafon: 25000000, kuota: 30, deadline: '2025-11-07', status: 'closing',
     bidangTarget: ['sosial', 'pertanian', 'pariwisata'],
@@ -410,7 +410,7 @@ export const PENDANAAN = [
     ket: 'Mendorong regenerasi peneliti muda dengan objek kajian wilayah Buleleng.'
   },
   {
-    id: 'FND-06', nama: 'Dana Diseminasi & Publikasi Jurnal Terakreditasi',
+    id: 'FND-06', situs: 'https://bulelengkab.go.id', situsNama: 'BRIDA Kabupaten Buleleng', nama: 'Dana Diseminasi & Publikasi Jurnal Terakreditasi',
     penyelenggara: 'BRIDA Kabupaten Buleleng', skema: 'insentif',
     plafon: 15000000, kuota: 40, deadline: '2025-12-20', status: 'open',
     bidangTarget: ['pertanian', 'pariwisata', 'smartcity', 'kelautan', 'sosial'],
@@ -419,42 +419,91 @@ export const PENDANAAN = [
   }
 ];
 
+/* --------------------------------------------------------------------------
+   CATATAN TAUTAN SOSIAL MEDIA
+   Tautan di bawah masih PLACEHOLDER. Ganti dengan URL unggahan asli milik
+   BRIDA / Pemkab Buleleng sebelum portal dipublikasikan, agar pembaca tidak
+   diarahkan ke akun yang keliru.
+   -------------------------------------------------------------------------- */
+export const SOSMED_RESMI = {
+  instagram: 'https://www.instagram.com/',
+  facebook: 'https://www.facebook.com/',
+  tiktok: 'https://www.tiktok.com/',
+  youtube: 'https://www.youtube.com/'
+};
+
 export const BERITA = [
   {
     id: 'N-01', kategori: 'Kebijakan', tanggal: '2025-09-04',
     judul: 'Bupati Buleleng Tetapkan Perbup Standar Wisata Bahari Lovina Berbasis Hasil Riset',
     ringkas: 'Rekomendasi dari riset BRD-2025-002 resmi diadopsi menjadi Peraturan Bupati yang mengatur zonasi, kuota perahu, dan sertifikasi operator dolphin watching di kawasan Lovina.',
-    penulis: 'Humas BRIDA Buleleng'
+    penulis: 'Humas BRIDA Buleleng',
+    gambar: '/images/berita/berita-01.jpg',
+    isi: [
+      'Pemerintah Kabupaten Buleleng resmi menetapkan Peraturan Bupati tentang standar penyelenggaraan atraksi wisata bahari di kawasan Lovina. Regulasi ini merupakan adopsi langsung dari rekomendasi riset BRD-2025-002 yang dikerjakan tim peneliti Universitas Udayana bersama Pokdarwis Kalibukbuk dan Dinas Pariwisata.',
+      'Perbup mengatur tiga hal pokok: zonasi jarak aman perahu terhadap mamalia laut, kuota perahu per sesi pengamatan, serta kewajiban sertifikasi bagi operator. Ketiganya disusun dari observasi perilaku lumba-lumba selama 90 sesi dan analisis daya dukung kawasan.',
+      'Kepala BRIDA menyebut penetapan ini sebagai contoh konkret bagaimana riset daerah dapat langsung menjadi instrumen kebijakan. Sebanyak 86 operator perahu dan empat kelompok Pokdarwis akan mengikuti pelatihan sertifikasi bertahap mulai triwulan berikutnya.'
+    ]
   },
   {
     id: 'N-02', kategori: 'Pendanaan', tanggal: '2025-08-28',
     judul: 'Hibah Riset Prioritas Daerah 2026 Batch I Dibuka, Pagu Total Rp 5,4 Miliar',
     ringkas: 'BRIDA membuka 18 kuota pendanaan riset dengan plafon hingga Rp 300 juta per judul. Pengusul wajib menautkan proposal pada sasaran RPJMD Buleleng 2025–2029.',
-    penulis: 'Subbag Perencanaan BRIDA'
+    penulis: 'Subbag Perencanaan BRIDA',
+    gambar: '/images/berita/berita-02.jpg',
+    isi: [
+      'Badan Riset dan Inovasi Daerah Kabupaten Buleleng membuka Batch I Hibah Riset Prioritas Daerah Tahun Anggaran 2026. Tersedia 18 kuota pendanaan yang diperebutkan peneliti dari perguruan tinggi dan lembaga litbang mitra.',
+      'Pengusul wajib menautkan substansi proposal pada salah satu sasaran RPJMD Buleleng 2025–2029, serta melibatkan minimal satu mitra lapangan — baik organisasi perangkat daerah, kelompok subak, pokdarwis, maupun pelaku UMKM.',
+      'Seluruh berkas diajukan melalui portal SINGA RISET BULELENG. Proses verifikasi dipangkas menjadi maksimal 14 hari kerja karena seluruh telaah kini dilakukan secara digital.'
+    ]
   },
   {
     id: 'N-03', kategori: 'Monev', tanggal: '2025-08-19',
     judul: 'Monev Tahap III: 34 Riset Daerah Dievaluasi Tim Pakar di Kantor BRIDA',
     ringkas: 'Sebanyak 34 riset aktif memaparkan capaian termin kedua. Tim pakar mencatat 5 riset berstatus koreksi dan memberikan tenggat perbaikan dokumen 14 hari kerja.',
-    penulis: 'Tim Monev BRIDA'
+    penulis: 'Tim Monev BRIDA',
+    gambar: '/images/berita/berita-03.jpg',
+    isi: [
+      'Siklus monitoring dan evaluasi tahap ketiga tahun anggaran 2025 digelar selama tiga hari di kantor BRIDA Kabupaten Buleleng. Seluruh 34 riset aktif memaparkan capaian termin kedua di hadapan tim pakar lintas disiplin.',
+      'Penilaian menggunakan matriks enam indikator: kesesuaian roadmap, kualitas metodologi, ketercapaian target fisik, kepatuhan jadwal, akuntabilitas anggaran, dan potensi dampak lapangan.',
+      'Hasilnya, lima riset berstatus koreksi dan satu riset menerima Surat Peringatan pertama atas keterlambatan laporan. Seluruhnya diberi tenggat perbaikan dokumen 14 hari kerja sebelum pencairan termin berikutnya.'
+    ]
   },
   {
     id: 'N-04', kategori: 'Kolaborasi', tanggal: '2025-08-11',
     judul: 'BRIDA Buleleng dan Undiksha Perbarui Perjanjian Kerja Sama Riset Terapan',
     ringkas: 'Kerja sama mencakup penempatan mahasiswa magang riset di OPD, akses laboratorium bersama, serta komitmen 12 policy brief per tahun untuk kebutuhan perencanaan daerah.',
-    penulis: 'Humas BRIDA Buleleng'
+    penulis: 'Humas BRIDA Buleleng',
+    gambar: '/images/berita/berita-04.jpg',
+    isi: [
+      'Perjanjian kerja sama antara BRIDA Kabupaten Buleleng dan Universitas Pendidikan Ganesha diperbarui untuk periode lima tahun ke depan. Penandatanganan berlangsung di Gedung Rektorat Undiksha.',
+      'Cakupan kerja sama meliputi penempatan mahasiswa magang riset di organisasi perangkat daerah, pemanfaatan bersama fasilitas laboratorium, serta komitmen penyusunan minimal 12 policy brief setiap tahun.',
+      'Policy brief tersebut akan menjadi bahan rujukan penyusunan Rencana Kerja OPD, sehingga perencanaan pembangunan daerah bersandar pada bukti ilmiah yang terverifikasi.'
+    ]
   },
   {
     id: 'N-05', kategori: 'Inovasi', tanggal: '2025-07-30',
     judul: 'Purwarupa Irigasi Presisi Subak Sukasada Hemat Air 27% pada Musim Tanam Pertama',
     ringkas: 'Uji lapangan di tiga tempek subak menunjukkan penghematan air signifikan tanpa mengubah pola pembagian air adat. Dinas Pertanian menyiapkan replikasi di dua kecamatan.',
-    penulis: 'Redaksi Singa Riset'
+    penulis: 'Redaksi Singa Riset',
+    gambar: '/images/berita/berita-05.jpg',
+    isi: [
+      'Sistem irigasi presisi berbasis sensor kelembapan tanah yang dipasang di tiga tempek Subak Padanggalak mencatat penghematan air rata-rata 27 persen pada musim tanam pertama 2025.',
+      'Yang membuat sistem ini diterima krama subak adalah desainnya yang tidak mengubah struktur pembagian air menurut awig-awig. Otomatisasi hanya bekerja pada tingkat petak, sementara giliran air tetap mengikuti keputusan pekaseh.',
+      'Dinas Pertanian Kabupaten Buleleng menyiapkan replikasi sistem serupa di dua kecamatan lain, dengan catatan perlu analisis sensitivitas biaya operasional agar kelompok tani mampu merawatnya secara mandiri.'
+    ]
   },
   {
     id: 'N-06', kategori: 'Diseminasi', tanggal: '2025-07-18',
     judul: 'Seminar Hasil Riset Daerah 2025 Hadirkan 40 Paparan dan Pameran Purwarupa',
     ringkas: 'Kegiatan tahunan mempertemukan peneliti, kepala OPD, kelompok subak, dan pelaku UMKM untuk menjodohkan hasil riset dengan kebutuhan lapangan di sembilan kecamatan.',
-    penulis: 'Panitia Seminar BRIDA'
+    penulis: 'Panitia Seminar BRIDA',
+    gambar: '/images/berita/berita-06.jpg',
+    isi: [
+      'Seminar Hasil Riset Daerah 2025 berlangsung dua hari dengan 40 paparan ilmiah dan pameran purwarupa hasil riset terapan. Acara dibuka Bupati Buleleng dan diikuti lebih dari 300 peserta.',
+      'Selain paparan, panitia menyediakan sesi temu mitra yang mempertemukan peneliti dengan kepala OPD, pengurus subak, pengelola desa wisata, dan pelaku UMKM untuk menjodohkan hasil riset dengan kebutuhan lapangan.',
+      'Sejumlah purwarupa yang dipamerkan — mulai dari alat ukur kelembapan tanah hingga produk olahan mangga — langsung mendapat permintaan uji coba dari kelompok masyarakat di sembilan kecamatan.'
+    ]
   }
 ];
 
@@ -636,6 +685,97 @@ export const TREN_TAHUNAN = [
   { tahun: 2023, riset: 29, anggaran: 2760000000 },
   { tahun: 2024, riset: 38, anggaran: 4120000000 },
   { tahun: 2025, riset: 34, anggaran: 5480000000 }
+];
+
+/* ==========================================================================
+   DOKUMENTASI PUBLIKASI RISET
+   Arsip visual tiap riset: foto lapangan, video, dan narasi pelaksanaan.
+
+   Foto  : taruh berkas di public/images/dokumentasi/ sesuai nama di `foto`.
+   Video : cukup isi tautan YouTube pada `video` — tidak perlu unggah berkas.
+           Kosongkan (null) bila belum ada video.
+   ========================================================================== */
+export const DOKUMENTASI = [
+  {
+    id: 'DOK-01', risetId: 'BRD-2025-001',
+    judul: 'Pemasangan Node Sensor Irigasi Presisi di Subak Padanggalak',
+    bidang: 'pertanian', kecamatan: 'sukasada', tanggal: '2025-08-12',
+    narasi: 'Dua belas node sensor kelembapan tanah dipasang pada tiga tempek Subak Padanggalak. Pemasangan dilakukan bersama pekaseh dan krama subak agar penempatan alat tidak mengganggu jalur air adat. Setiap node mengirim data kelembapan tiap 15 menit ke dashboard Dinas Pertanian, sekaligus menyalakan katup otomatis ketika ambang batas kekeringan tercapai. Pada musim tanam pertama, sistem mencatat penghematan air rata-rata 27 persen dibanding petak kontrol.',
+    foto: [
+      { src: '/images/dokumentasi/dok-brd001-1.jpg', ket: 'Pemasangan node sensor di pematang tempek hulu' },
+      { src: '/images/dokumentasi/dok-brd001-2.jpg', ket: 'Kalibrasi katup otomatis bersama krama subak' },
+      { src: '/images/dokumentasi/dok-brd001-3.jpg', ket: 'Dashboard pemantauan debit harian di kantor dinas' }
+    ],
+    video: null,
+    galeriVideo: 'Demo purwarupa katup adaptif (tautan menyusul)'
+  },
+  {
+    id: 'DOK-02', risetId: 'BRD-2025-002',
+    judul: 'Observasi Perilaku Lumba-lumba dan Uji Coba Zonasi Perahu Lovina',
+    bidang: 'pariwisata', kecamatan: 'banjar', tanggal: '2025-07-22',
+    narasi: 'Tim peneliti melakukan 90 sesi observasi focal follow untuk memetakan reaksi mamalia laut terhadap jarak dan jumlah perahu. Hasilnya menjadi dasar penetapan zona jarak aman dan kuota perahu per sesi. Uji coba penerapan zonasi dilakukan bersama 86 operator perahu Kalibukbuk selama tiga pekan, disertai pelatihan aba-aba komunikasi antarperahu agar manuver tidak memecah kelompok lumba-lumba.',
+    foto: [
+      { src: '/images/dokumentasi/dok-brd002-1.jpg', ket: 'Sesi observasi perilaku mamalia laut dari perahu pemantau' },
+      { src: '/images/dokumentasi/dok-brd002-2.jpg', ket: 'Sosialisasi zonasi jarak aman bersama operator perahu' },
+      { src: '/images/dokumentasi/dok-brd002-3.jpg', ket: 'Simulasi pola manuver perahu sesuai kuota per sesi' }
+    ],
+    video: null,
+    galeriVideo: 'Rekaman uji coba zonasi (tautan menyusul)'
+  },
+  {
+    id: 'DOK-03', risetId: 'BRD-2025-005',
+    judul: 'Instalasi Modul Biorock Bertenaga Surya di Perairan Pemuteran',
+    bidang: 'kelautan', kecamatan: 'gerokgak', tanggal: '2025-06-18',
+    narasi: 'Delapan modul biorock dipasang pada kedalaman 5–8 meter di area restorasi seluas 1,8 hektare. Rangka baja dialiri arus rendah dari panel surya terapung untuk mempercepat pengendapan mineral pada permukaan struktur. Pecalang segara Pemuteran dilibatkan sejak tahap perakitan hingga pengawasan rutin, sehingga aturan perlindungan area restorasi dapat dituangkan ke dalam awig-awig desa adat.',
+    foto: [
+      { src: '/images/dokumentasi/dok-brd005-1.jpg', ket: 'Perakitan rangka modul biorock di pantai' },
+      { src: '/images/dokumentasi/dok-brd005-2.jpg', ket: 'Penurunan modul ke area restorasi' },
+      { src: '/images/dokumentasi/dok-brd005-3.jpg', ket: 'Pengukuran laju pertumbuhan karang bulanan' },
+      { src: '/images/dokumentasi/dok-brd005-4.jpg', ket: 'Panel surya terapung penyuplai arus rendah' }
+    ],
+    video: null,
+    galeriVideo: 'Dokumentasi bawah air area restorasi (tautan menyusul)'
+  },
+  {
+    id: 'DOK-04', risetId: 'BRD-2025-003',
+    judul: 'Uji Fermentasi dan Pengeringan Kopi Robusta Wanagiri',
+    bidang: 'pertanian', kecamatan: 'sukasada', tanggal: '2025-07-29',
+    narasi: 'Eksperimen faktorial tiga metode fermentasi dan tiga durasi pengeringan dijalankan di unit pengolahan Koperasi Tani Sari Gunung. Setiap kombinasi diuji organoleptik oleh panelis bersertifikat Q-Grader untuk mengejar target cupping score di atas 80. Selain protokol teknis, riset ini menyusun identitas merek kolektif agar petani subak abian memperoleh nilai tambah yang lebih besar dibanding menjual ceri gelondongan.',
+    foto: [
+      { src: '/images/dokumentasi/dok-brd003-1.jpg', ket: 'Proses fermentasi terkontrol di unit koperasi' },
+      { src: '/images/dokumentasi/dok-brd003-2.jpg', ket: 'Penjemuran dengan naungan para-para bertingkat' },
+      { src: '/images/dokumentasi/dok-brd003-3.jpg', ket: 'Sesi uji organoleptik bersama panelis Q-Grader' }
+    ],
+    video: null,
+    galeriVideo: 'Alur pascapanen kopi robusta (tautan menyusul)'
+  },
+  {
+    id: 'DOK-05', risetId: 'BRD-2025-004',
+    judul: 'Stasiun Sensor Peringatan Dini Banjir Sungai Buleleng',
+    bidang: 'smartcity', kecamatan: 'buleleng', tanggal: '2025-05-30',
+    narasi: 'Enam stasiun sensor ketinggian muka air dipasang dari hulu hingga hilir Sungai Buleleng dan dikalibrasi terhadap AWLR eksisting milik balai wilayah sungai. Data dialirkan ke dashboard BPBD serta memicu pesan siaga ke kelian banjar melalui WhatsApp gateway. Reliabilitas notifikasi diuji lewat simulasi 30 skenario debit sebelum sistem dinyatakan siap operasional bagi 11 banjar di bantaran sungai.',
+    foto: [
+      { src: '/images/dokumentasi/dok-brd004-1.jpg', ket: 'Pemasangan sensor ultrasonik pada jembatan hulu' },
+      { src: '/images/dokumentasi/dok-brd004-2.jpg', ket: 'Kalibrasi pembacaan terhadap AWLR eksisting' },
+      { src: '/images/dokumentasi/dok-brd004-3.jpg', ket: 'Simulasi diseminasi peringatan bersama kelian banjar' }
+    ],
+    video: null,
+    galeriVideo: 'Simulasi peringatan dini banjir (tautan menyusul)'
+  },
+  {
+    id: 'DOK-06', risetId: 'BRD-2025-011',
+    judul: 'Eksperimen Pewarna Alam untuk Tenun Endek Jinengdalem',
+    bidang: 'sosial', kecamatan: 'sawan', tanggal: '2025-08-06',
+    narasi: 'Empat belas formula pewarna alam dikembangkan dari flora lokal Buleleng, lalu diuji ketahanan lunturnya mengikuti standar SNI ISO 105. Perajin tenun dilibatkan langsung dalam proses pencelupan agar formula yang dihasilkan dapat direproduksi dengan peralatan yang benar-benar mereka miliki. Katalog desain kontemporer disusun mengikuti preferensi pasar hospitality yang diuji pada 180 responden.',
+    foto: [
+      { src: '/images/dokumentasi/dok-brd011-1.jpg', ket: 'Ekstraksi bahan pewarna dari flora lokal' },
+      { src: '/images/dokumentasi/dok-brd011-2.jpg', ket: 'Proses pencelupan benang bersama perajin' },
+      { src: '/images/dokumentasi/dok-brd011-3.jpg', ket: 'Uji ketahanan luntur warna di laboratorium' },
+      { src: '/images/dokumentasi/dok-brd011-4.jpg', ket: 'Purwarupa kain endek dengan desain kontemporer' }
+    ],
+    video: null,
+    galeriVideo: 'Proses menenun endek pewarna alam (tautan menyusul)'
+  }
 ];
 
 export const MITRA_LOGO = [
