@@ -108,7 +108,7 @@ function ScoreMatrix({ r }) {
           return (
             <div key={ind.id} className="py-3.5 first:pt-0 last:pb-0">
               <div className="mb-1.5 flex items-baseline justify-between gap-3">
-                <span className="text-[.87rem] font-semibold text-ink">{ind.nama} <span className="font-normal text-ink-3">— {ind.ket}</span></span>
+                <span className="text-[.87rem] font-semibold text-ink">{ind.nama} <span className="font-normal text-ink-3">({ind.ket})</span></span>
                 <div className="flex flex-none items-baseline gap-2">
                   <span className="text-[.74rem] font-semibold text-ink-3">Bobot {ind.bobot}%</span>
                   <span className="text-[.87rem] font-extrabold tabular-nums text-maroon-800">{val}</span>
@@ -158,13 +158,13 @@ function EvidenceRepo({ r }) {
     <div>
       <div
         role="button" tabIndex={0}
-        onClick={() => toast('info', 'Mode prototipe', 'Unggahan berkas disimulasikan — pada sistem produksi berkas dikirim ke penyimpanan resmi BRIDA.')}
+        onClick={() => toast('info', 'Mode prototipe', 'Unggahan berkas disimulasikan. Pada sistem produksi, berkas dikirim ke penyimpanan resmi BRIDA.')}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toast('info', 'Mode prototipe', 'Unggahan berkas disimulasikan pada versi ini.'); } }}
         className="cursor-pointer rounded-xl border-2 border-dashed border-line-strong bg-surface-1 p-6.5 text-center transition hover:border-maroon-600 hover:bg-maroon-50"
       >
         <Icon name="upload" size={38} className="mx-auto mb-2.5 text-maroon-600" />
         <div className="mb-0.5 font-bold text-ink">Seret berkas ke sini atau klik untuk memilih</div>
-        <div className="text-[.8rem] text-ink-3">Laporan (PDF), foto lapangan bergeotag (JPG/PNG), tautan video demo — maksimal 10 MB per berkas</div>
+        <div className="text-[.8rem] text-ink-3">Laporan (PDF), foto lapangan bergeotag (JPG/PNG), tautan video demo, maksimal 10 MB per berkas</div>
       </div>
 
       {files.length > 0 ? (
@@ -215,7 +215,7 @@ function Sorotan({ r }) {
             <div><dt className="font-semibold text-ink-3">Sisa dana</dt><dd className="m-0 font-semibold">{rupiahRingkas(r.anggaran - r.terserap)}</dd></div>
           </dl>
 
-          <h4 className="mb-3 text-[.92rem]">Milestone tracker — 7 tahap</h4>
+          <h4 className="mb-3 text-[.92rem]">Milestone Tracker 7 Tahap</h4>
           <MilestoneTracker r={r} />
         </section>
 
@@ -363,7 +363,7 @@ export default function MonevModule() {
             <label htmlFor="mvPilih" className="text-[.83rem] font-semibold text-ink-2">Riset dipantau</label>
             <select id="mvPilih" value={selected.id} onChange={(e) => setSelectedId(e.target.value)}
               className="input-base w-auto min-w-[260px] max-w-full">
-              {RISET.map((r) => <option key={r.id} value={r.id}>{r.id} — {r.judul.slice(0, 44)}…</option>)}
+              {RISET.map((r) => <option key={r.id} value={r.id}>{r.id}: {r.judul.slice(0, 44)}…</option>)}
             </select>
           </div>
         </div>

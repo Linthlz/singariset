@@ -63,7 +63,7 @@ export default function Riset() {
       <PageHero
         crumb="Riset Daerah"
         title="Direktori Riset Daerah"
-        lead="Katalog lengkap riset yang dibiayai dan difasilitasi BRIDA Kabupaten Buleleng — saring berdasarkan bidang prioritas, kecamatan, skema pendanaan, dan status monitoring."
+        lead="Katalog lengkap riset yang dibiayai dan difasilitasi BRIDA Kabupaten Buleleng. Saring berdasarkan bidang prioritas, kecamatan, skema pendanaan, dan status monitoring."
         badges={[
           <span key="1" className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">{RISET.length} riset terkatalog</span>,
           <span key="2" className="rounded-full bg-gold-500 px-3 py-1.5 text-[.8rem] font-semibold text-[#4A2D00]">9 kecamatan Buleleng</span>

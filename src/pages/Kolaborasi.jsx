@@ -124,10 +124,10 @@ export default function Kolaborasi() {
     Array.from(list).forEach((f) => {
       const isPdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
       let err = null;
-      if (!isPdf) err = 'Ditolak — hanya berkas PDF yang diterima.';
-      else if (f.size > MAX_FILE) err = `Ditolak — ukuran ${fmtSize(f.size)} melampaui batas 10 MB.`;
+      if (!isPdf) err = 'Ditolak, hanya berkas PDF yang diterima.';
+      else if (f.size > MAX_FILE) err = `Ditolak, ukuran ${fmtSize(f.size)} melampaui batas 10 MB.`;
       next.push({ name: f.name, size: f.size, err });
-      if (err) toast('danger', 'Berkas ditolak', `${f.name} — ${err}`);
+      if (err) toast('danger', 'Berkas ditolak', `${f.name}: ${err}`);
     });
     setFiles((fs) => [...fs, ...next]);
   }
@@ -147,7 +147,7 @@ export default function Kolaborasi() {
       setDraftInfo(`Draf tersimpan pada ${new Date().toLocaleTimeString('id-ID')} di peramban Anda. Draf tidak terkirim ke BRIDA sampai tombol kirim ditekan.`);
       toast('success', 'Draf tersimpan', 'Isian formulir disimpan di peramban ini dan akan dipulihkan saat Anda kembali.');
     } catch {
-      toast('danger', 'Gagal menyimpan draf', 'Peramban menolak penyimpanan lokal — kemungkinan sedang dalam mode privat.');
+      toast('danger', 'Gagal menyimpan draf', 'Peramban menolak penyimpanan lokal, kemungkinan sedang dalam mode privat.');
     }
   }
 
@@ -199,7 +199,7 @@ export default function Kolaborasi() {
           <div className="mt-5 flex flex-wrap gap-2.5">
             <span className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">Batch I Tahun Anggaran 2026</span>
             <span className={`rounded-full px-3 py-1.5 text-[.8rem] font-semibold ${sisaHari > 0 ? 'bg-gold-500 text-[#4A2D00]' : 'bg-danger text-white'}`}>
-              {sisaHari > 0 ? `Tenggat 28 November 2025 · ${sisaHari} hari lagi` : 'Batch I telah ditutup — usulan dialihkan ke Batch II'}
+              {sisaHari > 0 ? `Tenggat 28 November 2025 · ${sisaHari} hari lagi` : 'Batch I telah ditutup, usulan dialihkan ke Batch II'}
             </span>
           </div>
         </div>
@@ -255,7 +255,7 @@ export default function Kolaborasi() {
 
               <Field label="Anggota tim peneliti" hint="Maksimal 4 anggota dosen dan 3 mahasiswa untuk skema hibah daerah.">
                 <textarea className="input-base min-h-[96px]" value={form.anggota} onChange={(e) => setField('anggota', e.target.value)}
-                  placeholder={'Satu nama per baris, lengkap dengan NIDN/NIM dan peran. Contoh:\nDr. Ni Luh Pastini, M.Cs. — 0021078502 — Anggota (analisis data)'} />
+                  placeholder={'Satu nama per baris, lengkap dengan NIDN/NIM dan peran. Contoh:\nDr. Ni Luh Pastini, M.Cs., 0021078502, Anggota (analisis data)'} />
               </Field>
             </Reveal>
 
@@ -285,7 +285,7 @@ export default function Kolaborasi() {
                 <Field label="Lokasi pelaksanaan" required error={err('kecamatan')}>
                   <select className="input-base" value={form.kecamatan} onChange={(e) => setField('kecamatan', e.target.value)} onBlur={() => blurField('kecamatan')}>
                     <option value="">Pilih kecamatan pelaksanaan</option>
-                    {KECAMATAN.map((k) => <option key={k.id} value={k.id}>{k.nama} — {k.fokus}</option>)}
+                    {KECAMATAN.map((k) => <option key={k.id} value={k.id}>{k.nama} ({k.fokus})</option>)}
                     <option value="lintas">Lintas kecamatan (kabupaten)</option>
                   </select>
                 </Field>
@@ -309,7 +309,7 @@ export default function Kolaborasi() {
                 <div className="mt-1.5 flex justify-between">
                   <span className="text-[.78rem] text-ink-3">Minimal 100 kata. Bagian ini menjadi bahan telaah substansi tim pakar.</span>
                   <span className={`text-[.76rem] font-semibold tabular-nums ${urgWords >= 100 ? 'text-success' : urgWords > 0 ? 'text-warning' : 'text-ink-3'}`}>
-                    {urgWords} kata{urgWords < 100 ? ` — kurang ${100 - urgWords}` : ' — memenuhi syarat'}
+                    {urgWords} kata{urgWords < 100 ? `, kurang ${100 - urgWords}` : ', memenuhi syarat'}
                   </span>
                 </div>
               </Field>
@@ -534,10 +534,10 @@ export default function Kolaborasi() {
           </dl>
           <h4>Tahap berikutnya</h4>
           <ol className="m-0 mt-3 list-none space-y-3 p-0 text-[.85rem]">
-            {['Verifikasi administrasi — hasil dikirim ke surel dalam 3 hari kerja.',
-              'Telaah substansi — tim pakar menilai kesesuaian roadmap dan metodologi.',
-              'Klirens etik — pemeriksaan kelayakan etik dan uji orisinalitas naskah.',
-              'Penetapan — pengumuman penerima dan penandatanganan kontrak riset.'].map((s, i) => (
+            {['Verifikasi administrasi: hasil dikirim ke surel dalam 3 hari kerja.',
+              'Telaah substansi: tim pakar menilai kesesuaian roadmap dan metodologi.',
+              'Klirens etik: pemeriksaan kelayakan etik dan uji orisinalitas naskah.',
+              'Penetapan: pengumuman penerima dan penandatanganan kontrak riset.'].map((s, i) => (
               <li key={i} className="relative pl-8"><span className="absolute left-0 top-[-1px] grid h-6.5 w-6.5 place-items-center rounded-full bg-maroon-800 text-[.74rem] font-extrabold text-white">{i + 1}</span>{s}</li>
             ))}
           </ol>

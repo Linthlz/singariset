@@ -206,7 +206,7 @@ export default function Header() {
         <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-center gap-3.5 px-5 sm:justify-between">
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-4 flex-none rounded-sm" style={{ background: 'linear-gradient(180deg,#C62828 50%,#fff 50%)' }} aria-hidden="true" />
-            <span>Portal Resmi <b>BRIDA Kabupaten Buleleng</b> — Pemerintah Kabupaten Buleleng, Provinsi Bali</span>
+            <span>Portal Resmi <b>BRIDA Kabupaten Buleleng</b>, Pemerintah Kabupaten Buleleng, Provinsi Bali</span>
           </div>
           <div className="hidden gap-4 sm:flex">
             <Link to="/etika-regulasi#pengaduan" className="text-white/90 hover:text-gold-500">Pengaduan Riset</Link>

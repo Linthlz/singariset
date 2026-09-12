@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
+/* Lama animasi CSS .page-enter dan .route-bar di index.css (1,1 detik).
+   Nilai ini disamakan agar bilah kemajuan hilang tepat saat isi halaman
+   selesai memudar masuk, bukan lebih cepat maupun lebih lambat. */
+const LAMA_TRANSISI = 1100;
+
 /**
- * Transisi antar halaman: isi halaman memudar-naik saat rute berganti,
- * disertai bilah kemajuan tipis di bagian atas layar.
+ * Transisi antar halaman: isi halaman memudar-naik secara perlahan saat
+ * rute berganti, disertai bilah kemajuan tipis di bagian atas layar.
  */
 export default function PageTransition({ children }) {
   const { pathname } = useLocation();
@@ -11,7 +16,7 @@ export default function PageTransition({ children }) {
 
   useEffect(() => {
     setMemuat(true);
-    const t = setTimeout(() => setMemuat(false), 450);
+    const t = setTimeout(() => setMemuat(false), LAMA_TRANSISI);
     return () => clearTimeout(t);
   }, [pathname]);
 

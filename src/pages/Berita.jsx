@@ -63,7 +63,7 @@ export default function Berita() {
       <PageHero
         crumb="Berita & Diseminasi"
         title="Berita & Diseminasi Riset"
-        lead="Kabar terkini ekosistem riset Kabupaten Buleleng — pengumuman pendanaan, hasil monitoring, adopsi kebijakan, hingga agenda diseminasi hasil riset kepada masyarakat."
+        lead="Kabar terkini ekosistem riset Kabupaten Buleleng, mulai dari pengumuman pendanaan, hasil monitoring, adopsi kebijakan, hingga agenda diseminasi hasil riset kepada masyarakat."
         badges={[
           <span key="1" className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">{BERITA.length} kabar terbit</span>,
           <span key="2" className="rounded-full bg-gold-500 px-3 py-1.5 text-[.8rem] font-semibold text-[#4A2D00]">Humas BRIDA Buleleng</span>

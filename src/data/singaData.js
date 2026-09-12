@@ -370,7 +370,7 @@ export const RISET = [
 
 export const PENDANAAN = [
   {
-    id: 'FND-01', situs: 'https://bulelengkab.go.id', situsNama: 'BRIDA Kabupaten Buleleng', nama: 'Hibah Riset Prioritas Daerah Buleleng 2026 — Batch I',
+    id: 'FND-01', situs: 'https://bulelengkab.go.id', situsNama: 'BRIDA Kabupaten Buleleng', nama: 'Hibah Riset Prioritas Daerah Buleleng 2026 Batch I',
     penyelenggara: 'BRIDA Kabupaten Buleleng', skema: 'hibah-daerah',
     plafon: 300000000, kuota: 18, deadline: '2025-11-28', status: 'open',
     bidangTarget: ['pertanian', 'pariwisata', 'kelautan'],
@@ -394,7 +394,7 @@ export const PENDANAAN = [
     ket: 'Skema unggulan untuk riset lintas sektor berdampak luas dengan pembiayaan bersama industri atau lembaga mitra.'
   },
   {
-    id: 'FND-04', situs: 'https://brin.go.id', situsNama: 'Badan Riset dan Inovasi Nasional', nama: 'Kemitraan Riset BRIN — Fasilitasi Daerah',
+    id: 'FND-04', situs: 'https://brin.go.id', situsNama: 'Badan Riset dan Inovasi Nasional', nama: 'Kemitraan Riset BRIN Fasilitasi Daerah',
     penyelenggara: 'BRIN × BRIDA Buleleng', skema: 'brin',
     plafon: 500000000, kuota: 5, deadline: '2026-01-30', status: 'soon',
     bidangTarget: ['smartcity', 'kelautan'],
@@ -453,7 +453,7 @@ export const BERITA = [
     gambar: '/images/berita/berita-02.jpg',
     isi: [
       'Badan Riset dan Inovasi Daerah Kabupaten Buleleng membuka Batch I Hibah Riset Prioritas Daerah Tahun Anggaran 2026. Tersedia 18 kuota pendanaan yang diperebutkan peneliti dari perguruan tinggi dan lembaga litbang mitra.',
-      'Pengusul wajib menautkan substansi proposal pada salah satu sasaran RPJMD Buleleng 2025–2029, serta melibatkan minimal satu mitra lapangan — baik organisasi perangkat daerah, kelompok subak, pokdarwis, maupun pelaku UMKM.',
+      'Pengusul wajib menautkan substansi proposal pada salah satu sasaran RPJMD Buleleng 2025–2029, serta melibatkan minimal satu mitra lapangan, baik organisasi perangkat daerah, kelompok subak, pokdarwis, maupun pelaku UMKM.',
       'Seluruh berkas diajukan melalui portal SINGA RISET BULELENG. Proses verifikasi dipangkas menjadi maksimal 14 hari kerja karena seluruh telaah kini dilakukan secara digital.'
     ]
   },
@@ -502,7 +502,7 @@ export const BERITA = [
     isi: [
       'Seminar Hasil Riset Daerah 2025 berlangsung dua hari dengan 40 paparan ilmiah dan pameran purwarupa hasil riset terapan. Acara dibuka Bupati Buleleng dan diikuti lebih dari 300 peserta.',
       'Selain paparan, panitia menyediakan sesi temu mitra yang mempertemukan peneliti dengan kepala OPD, pengurus subak, pengelola desa wisata, dan pelaku UMKM untuk menjodohkan hasil riset dengan kebutuhan lapangan.',
-      'Sejumlah purwarupa yang dipamerkan — mulai dari alat ukur kelembapan tanah hingga produk olahan mangga — langsung mendapat permintaan uji coba dari kelompok masyarakat di sembilan kecamatan.'
+      'Sejumlah purwarupa yang dipamerkan, mulai dari alat ukur kelembapan tanah hingga produk olahan mangga, langsung mendapat permintaan uji coba dari kelompok masyarakat di sembilan kecamatan.'
     ]
   }
 ];
@@ -656,7 +656,7 @@ export const SEKTOR_ROADMAP = [
     target: ['20 desa energi mandiri pada 2029', 'Bauran EBT fasilitas publik 25%', 'Pengurangan sampah ke TPA 30%'],
     riset: 3 },
   { id: 'hilirisasi', nama: 'Hilirisasi Komoditas & UMKM', ikon: 'factory',
-    deskripsi: 'Menaikkan nilai tambah komoditas unggulan Buleleng — kopi, mangga, anggur, rumput laut, dan tenun — melalui standarisasi mutu, kemasan, dan akses pasar.',
+    deskripsi: 'Menaikkan nilai tambah komoditas unggulan Buleleng, yaitu kopi, mangga, anggur, rumput laut, dan tenun, melalui standarisasi mutu, kemasan, dan akses pasar.',
     target: ['10 produk berindikasi geografis', 'Nilai tambah komoditas naik 40%', '100 UMKM naik kelas'],
     riset: 4 },
   { id: 'smartisland', nama: 'Smart Island & Tata Kelola Data', ikon: 'cpu',

@@ -36,7 +36,7 @@ export default function KecamatanMap() {
       <div>
         <svg viewBox="0 0 900 330" role="img" aria-label="Peta sebaran riset di 9 kecamatan Kabupaten Buleleng" className="w-full rounded-xl border border-line bg-surface-2">
           <text x="450" y="26" textAnchor="middle" style={{ font: '600 11px var(--font-sans)', fill: '#6B7280', letterSpacing: '.14em' }}>
-            LAUT BALI — PESISIR UTARA
+            LAUT BALI · PESISIR UTARA
           </text>
           {KECAMATAN.map((k) => (
             <polygon
@@ -52,7 +52,7 @@ export default function KecamatanMap() {
               onClick={() => setActive(k.id)}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActive(k.id); } }}
             >
-              <title>{k.nama} — {k.riset} riset · {k.fokus}</title>
+              <title>{k.nama}: {k.riset} riset · {k.fokus}</title>
             </polygon>
           ))}
           {KECAMATAN.map((k) => {
@@ -112,7 +112,7 @@ export default function KecamatanMap() {
                 ))}
               </>
             ) : (
-              <p className="m-0 text-[.82rem] text-ink-2">Belum ada riset katalog aktif — kecamatan ini menjadi prioritas penjaringan usulan batch berikutnya.</p>
+              <p className="m-0 text-[.82rem] text-ink-2">Belum ada riset katalog aktif. Kecamatan ini menjadi prioritas penjaringan usulan batch berikutnya.</p>
             )}
             <Link to={`/riset?kecamatan=${kAktif.id}`} className="mt-2.5 block rounded-lg border border-line-strong px-3 py-2 text-center text-[.83rem] font-semibold text-maroon-800 no-underline hover:border-maroon-800 hover:bg-maroon-50">
               Lihat semua riset {kAktif.nama}

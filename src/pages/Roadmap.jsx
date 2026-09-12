@@ -9,7 +9,7 @@ export default function Roadmap() {
       <PageHero
         crumb="Peta Jalan Riset"
         title="Peta Jalan Riset 2025–2029"
-        lead="Lima tahap menuju ekosistem riset mandiri Bali Utara — dari fondasi tata kelola hingga Buleleng sebagai pusat unggulan riset Smart Island."
+        lead="Lima tahap menuju ekosistem riset mandiri Bali Utara, dari fondasi tata kelola hingga Buleleng sebagai pusat unggulan riset Smart Island."
         badges={[
           <span key="1" className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">5 tahun perencanaan</span>,
           <span key="2" className="rounded-full bg-gold-500 px-3 py-1.5 text-[.8rem] font-semibold text-[#4A2D00]">5 sektor prioritas</span>
@@ -21,7 +21,7 @@ export default function Roadmap() {
           <Reveal className="mb-8 max-w-[720px]">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Garis Waktu</span>
             <h2 className="text-[1.6rem]">Tahapan tahunan 2025–2029</h2>
-            <p className="mb-0 text-ink-2">Setiap usulan riset dinilai kesesuaiannya terhadap tahap berjalan pada garis waktu ini — indikator pertama dalam matriks evaluasi tim pakar BRIDA.</p>
+            <p className="mb-0 text-ink-2">Setiap usulan riset dinilai kesesuaiannya terhadap tahap berjalan pada garis waktu ini, indikator pertama dalam matriks evaluasi tim pakar BRIDA.</p>
           </Reveal>
 
           <div className="relative pl-7.5 before:absolute before:bottom-2 before:left-2.25 before:top-2 before:w-0.5 before:rounded-full" style={{ }}>

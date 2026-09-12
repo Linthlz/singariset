@@ -38,7 +38,7 @@ export default function Publikasi() {
       <PageHero
         crumb="Publikasi & Dokumentasi"
         title="Publikasi & Dokumentasi Riset"
-        lead="Arsip visual pelaksanaan riset daerah — foto lapangan, rekaman video, dan narasi proses dari hulu sampai hasilnya dipakai masyarakat Buleleng."
+        lead="Arsip visual pelaksanaan riset daerah, berupa foto lapangan, rekaman video, dan narasi proses dari hulu sampai hasilnya dipakai masyarakat Buleleng."
         badges={[
           <span key="1" className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">{DOKUMENTASI.length} riset terdokumentasi</span>,
           <span key="2" className="rounded-full bg-gold-500 px-3 py-1.5 text-[.8rem] font-semibold text-[#4A2D00]">{totalFoto} foto lapangan</span>

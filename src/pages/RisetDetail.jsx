@@ -70,7 +70,7 @@ export default function RisetDetail() {
             <Reveal className="rounded-xl border border-line bg-white p-6 shadow-card">
               <h2 className="text-[1.15rem]">Tim Peneliti</h2>
               <ul className="m-0 list-none space-y-2 p-0 text-[.87rem]">
-                <li className="flex items-start gap-2.5"><Icon name="user" size={16} className="mt-0.5 flex-none text-maroon-800" /><span><b>{r.peneliti}</b> — Ketua Peneliti · NIDN {r.nidn}</span></li>
+                <li className="flex items-start gap-2.5"><Icon name="user" size={16} className="mt-0.5 flex-none text-maroon-800" /><span><b>{r.peneliti}</b> · Ketua Peneliti · NIDN {r.nidn}</span></li>
                 {r.tim.map((t) => (
                   <li key={t} className="flex items-start gap-2.5"><Icon name="user" size={16} className="mt-0.5 flex-none text-ink-3" /><span>{t}</span></li>
                 ))}

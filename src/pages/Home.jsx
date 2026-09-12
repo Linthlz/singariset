@@ -230,7 +230,7 @@ export default function Home() {
             <div className="max-w-[640px]">
               <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-gold-500 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peta Jalan Riset 2025–2029</span>
               <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)] text-white">Lima tahap menuju ekosistem riset mandiri Bali Utara</h2>
-              <p className="mb-0 text-[1.02rem] text-white/78">Peta jalan ini menjadi rujukan penilaian kesesuaian setiap usulan riset — indikator pertama dalam matriks evaluasi tim pakar BRIDA.</p>
+              <p className="mb-0 text-[1.02rem] text-white/78">Peta jalan ini menjadi rujukan penilaian kesesuaian setiap usulan riset, indikator pertama dalam matriks evaluasi tim pakar BRIDA.</p>
             </div>
             <Link to="/roadmap" className="rounded-lg bg-gold-500 px-5 py-2.5 text-sm font-semibold text-[#4A2D00] no-underline transition hover:bg-gold-600">
               Detail peta jalan per sektor →

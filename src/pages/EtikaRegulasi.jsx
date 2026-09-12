@@ -9,7 +9,7 @@ const KLIRENS = [
   { t: 'Ruang Lingkup Klirens Etik', d: 'Setiap riset yang melibatkan subjek manusia, data pribadi masyarakat, sumber daya hayati, atau kearifan lokal (awig-awig, tradisi adat) wajib memperoleh surat keterangan lolos kaji etik dari Komite Klirens Etik Riset Buleleng sebelum pengumpulan data lapangan dimulai.' },
   { t: 'Susunan Komite', d: 'Komite beranggotakan 7 pakar lintas disiplin: metodologi penelitian, hukum, kesehatan masyarakat, sosial-budaya, dan perwakilan adat Buleleng. Masa tugas komite 2 tahun dan dapat diperpanjang satu periode.' },
   { t: 'Prosedur Pengajuan', d: 'Peneliti mengunggah protokol riset, instrumen pengumpulan data, formulir persetujuan (informed consent), dan rencana mitigasi risiko melalui portal ini. Telaah komite berlangsung maksimal 10 hari kerja sejak berkas dinyatakan lengkap.' },
-  { t: 'Sanksi Pelanggaran', d: 'Riset yang terbukti melanggar prinsip etik — termasuk pengumpulan data tanpa persetujuan, eksploitasi kearifan lokal tanpa kompensasi wajar, atau manipulasi data — dapat dikenai penghentian kontrak, pengembalian dana, dan pencatatan pada daftar hitam pengusul riset daerah.' }
+  { t: 'Sanksi Pelanggaran', d: 'Riset yang terbukti melanggar prinsip etik, termasuk pengumpulan data tanpa persetujuan, eksploitasi kearifan lokal tanpa kompensasi wajar, atau manipulasi data, dapat dikenai penghentian kontrak, pengembalian dana, dan pencatatan pada daftar hitam pengusul riset daerah.' }
 ];
 
 const SOP = [
@@ -83,7 +83,7 @@ export default function EtikaRegulasi() {
       <section id="klirens" className="scroll-mt-24 py-14">
         <div className="mx-auto max-w-[1240px] px-5">
           <Reveal className="mb-6 max-w-[720px]">
-            <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">5.1 — Klirens Etik</span>
+            <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">5.1 Klirens Etik</span>
             <h2 className="text-[1.6rem]">Pedoman Komite Klirens Etik Riset Buleleng</h2>
             <p className="mb-0 text-ink-2">Menjaga agar setiap riset yang melibatkan masyarakat, data pribadi, atau kearifan lokal Buleleng dilakukan secara etis, aman, dan menghormati hak subjek riset.</p>
           </Reveal>
@@ -94,7 +94,7 @@ export default function EtikaRegulasi() {
       <section id="sop" className="scroll-mt-24 bg-surface-1 py-14">
         <div className="mx-auto max-w-[1240px] px-5">
           <Reveal className="mb-6 max-w-[720px]">
-            <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">5.2 — SOP Keuangan</span>
+            <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">5.2 SOP Keuangan</span>
             <h2 className="text-[1.6rem]">Standar Operasional Prosedur Pencairan Dana &amp; SPJ</h2>
             <p className="mb-0 text-ink-2">Memastikan akuntabilitas setiap rupiah dana riset daerah, dari pencairan termin hingga pertanggungjawaban dan pengembalian sisa dana.</p>
           </Reveal>
@@ -105,7 +105,7 @@ export default function EtikaRegulasi() {
       <section id="pengaduan" className="scroll-mt-24 py-14">
         <div className="mx-auto max-w-[1240px] px-5">
           <Reveal className="mb-6 max-w-[720px]">
-            <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">5.3 — Whistleblowing</span>
+            <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">5.3 Whistleblowing</span>
             <h2 className="text-[1.6rem]">Sistem Pengaduan &amp; Whistleblowing Kebocoran Riset</h2>
             <p className="mb-0 text-ink-2">Kanal pelaporan rahasia bagi siapa pun yang mengetahui indikasi penyimpangan dana, manipulasi data, atau pelanggaran etik dalam pelaksanaan riset daerah.</p>
           </Reveal>

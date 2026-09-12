@@ -38,14 +38,14 @@ export default function Footer() {
         {/* Latar gambar — taruh berkas di public/images/footer/footer-bg.jpg.
             Bila belum ada, gradasi di bawahnya tetap tampil rapi. */}
         <div
-          className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-30"
-          style={{ backgroundImage: "url('/images/footer/footer-bg.jpg')" }}
+          className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-70"
+          style={{ backgroundImage: "url('/images/footer/1.jpeg')" }}
           aria-hidden="true"
         />
         {/* Overlay agar teks tetap terbaca di atas gambar apa pun */}
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ background: 'linear-gradient(180deg, rgba(42,8,8,.93) 0%, rgba(42,8,8,.88) 45%, rgba(26,4,4,.97) 100%)' }}
+          style={{ background: 'linear-gradient(180deg, rgba(42,8,8,.62) 0%, rgba(42,8,8,.55) 45%, rgba(26,4,4,.72) 100%)' }}
           aria-hidden="true"
         />
         <div
@@ -65,7 +65,7 @@ export default function Footer() {
                 </span>
               </div>
               <p className="max-w-[38ch] text-[.85rem] text-white/68">
-                Portal digital terpadu riset, inovasi, kolaborasi, dan tata kelola kebijakan berbasis bukti ilmiah Kabupaten Buleleng — dikelola oleh Badan Riset dan Inovasi Daerah (BRIDA).
+                Portal digital terpadu riset, inovasi, kolaborasi, dan tata kelola kebijakan berbasis bukti ilmiah Kabupaten Buleleng, dikelola oleh Badan Riset dan Inovasi Daerah (BRIDA).
               </p>
               <div className="mt-4 flex gap-2">
                 {SOSMED.map((s) => (

@@ -139,7 +139,7 @@ function Pengguna() {
   function ubahStatus(email, status) {
     setAkun((list) => list.map((a) => (a.email === email ? { ...a, status } : a)));
     const label = status === 'aktif' ? 'diverifikasi dan diaktifkan' : 'dinonaktifkan';
-    toast('success', 'Status akun diperbarui', `Akun ${email} ${label}. (Prototipe — perubahan hanya di sesi ini.)`);
+    toast('success', 'Status akun diperbarui', `Akun ${email} ${label}. (Prototipe, perubahan hanya di sesi ini.)`);
     setDetail(null);
   }
 
@@ -210,7 +210,7 @@ function Pengguna() {
       </Card>
 
       {detail && (
-        <Modal title={`Kelola akun — ${detail.nama}`} onClose={() => setDetail(null)} footer={
+        <Modal title={`Kelola akun: ${detail.nama}`} onClose={() => setDetail(null)} footer={
           <>
             {detail.status !== 'aktif' && (
               <button type="button" onClick={() => ubahStatus(detail.email, 'aktif')}

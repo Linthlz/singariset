@@ -9,49 +9,70 @@ const POPULER = ['IoT Subak', 'Konservasi Lovina', 'Kopi Robusta Wanagiri', 'Sat
 
 export default function HeroSlider() {
   const [aktif, setAktif] = useState(0);
-  const [jeda, setJeda] = useState(false);
   const total = HERO_SLIDES.length;
   const timerRef = useRef(null);
 
   const ke = useCallback((i) => setAktif(((i % total) + total) % total), [total]);
 
+  // Slide berganti otomatis setiap HERO_INTERVAL, tanpa jeda saat kursor
+  // berada di atas hero (pergantian tetap berjalan meski pengguna membaca
+  // atau mengarahkan kursor ke tombol pencarian).
   useEffect(() => {
-    if (jeda || total <= 1) return;
-    // Hormati preferensi pengguna yang meminimalkan animasi.
-    const diam = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (diam) return;
+    if (total <= 1) return;
+    if (typeof document !== 'undefined' && document.hidden) return;
 
     timerRef.current = setInterval(() => setAktif((a) => (a + 1) % total), HERO_INTERVAL);
-    return () => clearInterval(timerRef.current);
-  }, [jeda, total]);
+
+    // Jangan buang waktu putaran saat tab tidak aktif; lanjutkan saat kembali.
+    function onVisibility() {
+      clearInterval(timerRef.current);
+      if (!document.hidden) {
+        timerRef.current = setInterval(() => setAktif((a) => (a + 1) % total), HERO_INTERVAL);
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      clearInterval(timerRef.current);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [total]);
 
   const slide = HERO_SLIDES[aktif];
 
   return (
     <section
       className="relative overflow-hidden bg-maroon-950 text-white"
-      onMouseEnter={() => setJeda(true)}
-      onMouseLeave={() => setJeda(false)}
       aria-roledescription="carousel"
       aria-label="Sorotan utama portal"
     >
-      {/* Lapisan gambar */}
-      {HERO_SLIDES.map((s, i) => (
-        <div
-          key={s.gambar}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-out ${i === aktif ? 'opacity-100' : 'opacity-0'}`}
-          aria-hidden={i !== aktif}
-        >
-          <SmartImage src={s.gambar} alt={s.alt} seed={i} className="h-full w-full" />
-        </div>
-      ))}
+      {/* Lapisan gambar — perpindahan lambat dan halus (crossfade panjang
+          disertai zoom perlahan/Ken Burns) agar terasa sinematik. */}
+      {HERO_SLIDES.map((s, i) => {
+        const iniAktif = i === aktif;
+        return (
+          <div
+            key={s.gambar}
+            className={`absolute inset-0 transition-opacity duration-1800 ease-in-out ${iniAktif ? 'opacity-100' : 'opacity-0'}`}
+            aria-hidden={!iniAktif}
+          >
+            <SmartImage
+              src={s.gambar}
+              alt={s.alt}
+              seed={i}
+              className="h-full w-full"
+              imgClassName={`transition-transform ease-linear ${iniAktif ? 'scale-110 duration-9000' : 'scale-100 duration-0'}`}
+            />
+          </div>
+        );
+      })}
 
       {/* Overlay agar teks tetap terbaca di atas foto apa pun */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'linear-gradient(100deg, rgba(58,9,9,.94) 0%, rgba(74,13,13,.86) 42%, rgba(74,13,13,.55) 68%, rgba(74,13,13,.35) 100%)'
+            'linear-gradient(100deg, rgba(58,9,9,.72) 0%, rgba(74,13,13,.56) 42%, rgba(74,13,13,.32) 68%, rgba(74,13,13,.14) 100%)'
         }}
       />
       <div
@@ -68,7 +89,7 @@ export default function HeroSlider() {
               Kabupaten Buleleng · Provinsi Bali
             </span>
 
-            <div key={aktif} className="animate-[heroIn_.7s_ease-out]">
+            <div key={aktif} className="animate-[heroIn_1.3s_cubic-bezier(.16,1,.3,1)]">
               <h1 className="mb-4 text-[clamp(1.9rem,4.4vw,3.05rem)] font-extrabold leading-[1.1] text-white">
                 {slide.judul}{' '}
                 <span style={{ backgroundImage: 'linear-gradient(180deg,#FFDE8A,#F9C74F)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -150,7 +171,7 @@ export default function HeroSlider() {
             </div>
             <div className="mt-3.5 flex items-start gap-2.5 border-t border-white/14 pt-3.5 text-[.78rem] text-white/72">
               <span className="mt-1.5 h-2 w-2 flex-none animate-pulse-dot rounded-full bg-emerald-400" />
-              <span><b className="text-white">Batch I Hibah Riset Prioritas 2026</b> dibuka — pengajuan ditutup 28 November 2025.</span>
+              <span><b className="text-white">Batch I Hibah Riset Prioritas 2026</b> dibuka, pengajuan ditutup 28 November 2025.</span>
             </div>
           </aside>
         </div>
