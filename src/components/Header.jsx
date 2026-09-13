@@ -25,7 +25,7 @@ const NAV_ITEMS = [
       { label: 'Etika & Regulasi', href: '/etika-regulasi', ikon: 'shield', ket: 'Klirens etik, SOP, pengaduan' }
     ]
   },
-  { label: 'Kolaborasi', href: '/kolaborasi' }
+  { label: 'Kolaborasi', href: '/kolaborasi', mitraSaja: true }
 ];
 
 function navClass({ isActive }) {
@@ -142,8 +142,16 @@ function AccountMenu({ onNavigate }) {
           <Link to={peran.beranda} onClick={() => { setOpen(false); onNavigate?.(); }} role="menuitem"
             className="mt-1.5 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[.85rem] font-semibold text-ink no-underline hover:bg-surface-1">
             <Icon name="chart" size={16} className="text-maroon-800" />
-            {user.role === 'mitra' ? 'Ajukan kolaborasi riset' : 'Buka dashboard'}
+            Buka dashboard
           </Link>
+
+          {user.role === 'mitra' && (
+            <Link to="/kolaborasi" onClick={() => { setOpen(false); onNavigate?.(); }} role="menuitem"
+              className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[.85rem] font-semibold text-ink no-underline hover:bg-surface-1">
+              <Icon name="doc" size={16} className="text-maroon-800" />
+              Ajukan kolaborasi riset
+            </Link>
+          )}
 
           <button type="button" onClick={keluar} role="menuitem"
             className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-[.85rem] font-semibold text-danger hover:bg-danger-bg">
@@ -156,8 +164,9 @@ function AccountMenu({ onNavigate }) {
 }
 
 export default function Header() {
-  const { isAuth } = useAuth();
+  const { isAuth, hasRole } = useAuth();
   const { pathname } = useLocation();
+  const navItems = NAV_ITEMS.filter((n) => !n.mitraSaja || hasRole('mitra'));
   const [stuck, setStuck] = useState(false);
   const [tersembunyi, setTersembunyi] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -227,7 +236,7 @@ export default function Header() {
           </Link>
 
           <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Navigasi utama">
-            {NAV_ITEMS.map((n) =>
+            {navItems.map((n) =>
               n.anak
                 ? <NavDropdown key={n.label} item={n} terbuka={dropdown} setTerbuka={setDropdown} />
                 : <NavLink key={n.href} to={n.href} end={n.href === '/'} className={navClass}>{n.label}</NavLink>
@@ -268,7 +277,7 @@ export default function Header() {
 
         {mobileOpen && (
           <nav className="flex max-h-[70vh] flex-col gap-0.5 overflow-y-auto border-t border-line bg-white px-5 pb-4 pt-2.5 shadow-lift lg:hidden" aria-label="Navigasi mobile">
-            {NAV_ITEMS.map((n) =>
+            {navItems.map((n) =>
               n.anak ? (
                 <div key={n.label}>
                   <button

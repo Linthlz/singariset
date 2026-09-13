@@ -14,6 +14,7 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import OpdDashboard from './pages/dashboard/OpdDashboard.jsx';
 import AdminDashboard from './pages/dashboard/AdminDashboard.jsx';
+import MitraDashboard from './pages/dashboard/MitraDashboard.jsx';
 import NotFound from './pages/NotFound.jsx';
 
 export default function App() {
@@ -32,6 +33,10 @@ export default function App() {
         path="/dashboard/admin"
         element={<ProtectedRoute allow={['admin']}><AdminDashboard /></ProtectedRoute>}
       />
+      <Route
+        path="/dashboard/mitra"
+        element={<ProtectedRoute allow={['mitra']}><MitraDashboard /></ProtectedRoute>}
+      />
       {/* Tautan lama modul monev kini mengarah ke dashboard OPD */}
       <Route path="/monev" element={<Navigate to="/dashboard/opd" replace />} />
 
@@ -43,7 +48,10 @@ export default function App() {
         <Route path="/roadmap" element={<PageTransition><Roadmap /></PageTransition>} />
         <Route path="/berita" element={<PageTransition><Berita /></PageTransition>} />
         <Route path="/publikasi" element={<PageTransition><Publikasi /></PageTransition>} />
-        <Route path="/kolaborasi" element={<PageTransition><Kolaborasi /></PageTransition>} />
+        <Route
+          path="/kolaborasi"
+          element={<ProtectedRoute allow={['mitra']}><PageTransition><Kolaborasi /></PageTransition></ProtectedRoute>}
+        />
         <Route path="/etika-regulasi" element={<PageTransition><EtikaRegulasi /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Route>

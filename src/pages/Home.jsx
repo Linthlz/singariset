@@ -1,14 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
 import Reveal from '../components/Reveal.jsx';
 import CountUp from '../components/CountUp.jsx';
 import HeroSlider from '../components/HeroSlider.jsx';
-import RisetCard from '../components/RisetCard.jsx';
+import KecamatanMap from '../components/KecamatanMap.jsx';
 import SmartImage from '../components/SmartImage.jsx';
+import Modal from '../components/Modal.jsx';
 import {
-  RISET, BIDANG, KECAMATAN, ROADMAP, PENDANAAN, BERITA, STATS, MITRA_LOGO
+  ROADMAP, STATS, MITRA_LOGO
 } from '../data/singaData.js';
+import { useContent } from '../context/ContentContext.jsx';
 import { tanggal, hariMenuju } from '../lib/format.js';
 
 const QUICK = [
@@ -40,14 +42,6 @@ const PILAR = [
     li: ['Policy brief wajib per riset', 'Pelacakan adopsi kebijakan', 'Evaluasi manfaat bagi sasaran'] }
 ];
 
-const STATUSES = [
-  { id: '', l: 'Semua status' },
-  { id: 'ontrack', l: 'On Track' },
-  { id: 'warning', l: 'Warning / Koreksi' },
-  { id: 'delayed', l: 'Delayed' },
-  { id: 'selesai', l: 'Selesai & Adopsi' }
-];
-
 const KAT_WARNA = {
   Kebijakan: '#8E1B1B', Pendanaan: '#15803D', Monev: '#B45309',
   Kolaborasi: '#1D4ED8', Inovasi: '#0E7490', Diseminasi: '#7C3AED'
@@ -59,24 +53,110 @@ const FUND_STATUS = {
   soon: { l: 'Akan Dibuka', c: 'bg-info-bg text-info', border: 'before:bg-gold-500' }
 };
 
-export default function Home() {
-  const [filt, setFilt] = useState({ q: '', bidang: '', kec: '', status: '' });
+/* Kartu berita bergaya foto penuh — seluruh kartu bisa diklik untuk membuka detail. */
+function NewsCard({ n, i, big, onOpen }) {
+  const c = KAT_WARNA[n.kategori] || '#8E1B1B';
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(n)}
+      className={`group relative block w-full overflow-hidden rounded-2xl border border-line text-left shadow-card transition hover:-translate-y-1 hover:shadow-pop ${
+        big ? 'aspect-[4/3] sm:aspect-[16/11] lg:aspect-auto lg:h-full lg:min-h-[420px]' : 'aspect-[4/3]'
+      }`}
+    >
+      <div className="absolute inset-0">
+        <SmartImage src={n.gambar} alt={n.judul} seed={i} className="h-full w-full" imgClassName="transition duration-500 group-hover:scale-105" />
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+      <span
+        className="absolute left-4 top-4 z-10 rounded-full px-2.5 py-1 text-[.7rem] font-bold uppercase tracking-wide text-white"
+        style={{ background: c }}
+      >
+        {n.kategori}
+      </span>
+      <div className="absolute inset-x-0 bottom-0 z-10 p-4.5 sm:p-5.5">
+        <h3 className={`mb-1.5 leading-snug text-white ${big ? 'text-[1.2rem] sm:text-[1.55rem]' : 'text-[1rem]'}`}>{n.judul}</h3>
+        <div className="flex items-center gap-1.5 text-[.78rem] font-semibold text-white/78">
+          <Icon name="calendar" size={13} />{tanggal(n.tanggal)}
+        </div>
+      </div>
+    </button>
+  );
+}
 
-  const dirHits = useMemo(() => {
-    const q = filt.q.toLowerCase();
-    return RISET.filter((r) => {
-      if (filt.bidang && r.bidang !== filt.bidang) return false;
-      if (filt.kec && r.kecamatan !== filt.kec) return false;
-      if (filt.status && r.status !== filt.status) return false;
-      if (q) {
-        const hay = `${r.judul} ${r.peneliti} ${r.tags.join(' ')} ${r.abstrak} ${r.institusi}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [filt]);
-  const dirShown = dirHits.slice(0, 6);
-  const beritaSorot = BERITA.slice(0, 3);
+/** Logo mitra dengan jaring pengaman — kotak polos bila berkas logo belum diunggah. */
+function MitraLogo({ src }) {
+  const [gagal, setGagal] = useState(!src);
+  if (gagal) return <div className="h-full w-full rounded-lg border border-dashed border-line-strong" aria-hidden="true" />;
+  return (
+    <img
+      src={src} alt="" loading="lazy" onError={() => setGagal(true)}
+      className="max-h-14 max-w-full object-contain grayscale transition duration-300 hover:grayscale-0"
+    />
+  );
+}
+
+/** Baris logo mitra yang bergeser otomatis ke kiri (marquee) dan bisa digeser manual. */
+function MitraCarousel({ items }) {
+  const trackRef = useRef(null);
+  const pausedRef = useRef(false);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const id = setInterval(() => {
+      if (pausedRef.current) return;
+      const half = track.scrollWidth / 2;
+      if (track.scrollLeft >= half - 4) track.scrollLeft -= half;
+      track.scrollBy({ left: 176, behavior: 'smooth' });
+    }, 2200);
+    return () => clearInterval(id);
+  }, []);
+
+  function geser(arah) {
+    const track = trackRef.current;
+    if (!track) return;
+    track.scrollBy({ left: arah * 352, behavior: 'smooth' });
+  }
+
+  return (
+    <div className="relative" onMouseEnter={() => { pausedRef.current = true; }} onMouseLeave={() => { pausedRef.current = false; }}>
+      <button
+        type="button" onClick={() => geser(-1)} aria-label="Geser logo mitra ke kiri"
+        className="absolute left-0 top-1/2 z-10 hidden h-10 w-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-line bg-white text-maroon-800 shadow-lift transition hover:border-maroon-600 hover:bg-maroon-50 sm:grid"
+      >
+        <Icon name="arrow" size={16} className="rotate-180" />
+      </button>
+
+      <div ref={trackRef} className="no-scrollbar flex gap-4 overflow-x-auto scroll-smooth px-1 py-1">
+        {[...items, ...items].map((m, i) => (
+          <div
+            key={`${m.id}-${i}`}
+            className="grid h-24 w-40 flex-none place-items-center rounded-xl border border-line bg-white p-4 transition hover:-translate-y-0.5 hover:border-gold-500 hover:shadow-lift"
+          >
+            <MitraLogo src={m.logo} />
+          </div>
+        ))}
+      </div>
+
+      <button
+        type="button" onClick={() => geser(1)} aria-label="Geser logo mitra ke kanan"
+        className="absolute right-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 translate-x-1/2 place-items-center rounded-full border border-line bg-white text-maroon-800 shadow-lift transition hover:border-maroon-600 hover:bg-maroon-50 sm:grid"
+      >
+        <Icon name="arrow" size={16} />
+      </button>
+    </div>
+  );
+}
+
+export default function Home() {
+  const { berita: BERITA, pendanaan: PENDANAAN } = useContent();
+  const [detailBerita, setDetailBerita] = useState(null);
+  const mitraTrackRef = useRef(null);
+
+  const beritaSorot = BERITA.slice(0, 5);
+  const beritaBesar = beritaSorot[0];
+  const beritaKecil = beritaSorot.slice(1, 5);
 
   return (
     <>
@@ -124,7 +204,7 @@ export default function Home() {
       </section>
 
       {/* ===== 1.4 EMPAT PILAR ===== */}
-      <section className="bg-surface-1 py-14 sm:py-18" id="pilar">
+      <section className="py-14 sm:py-18" id="pilar">
         <div className="mx-auto max-w-[1240px] px-5">
           <Reveal className="mb-8.5 max-w-[760px]">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Profil Sinergi Riset</span>
@@ -149,77 +229,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== 1.5 DIREKTORI RISET ===== */}
-      <section className="py-14 sm:py-18" id="direktori">
+      {/* ===== 1.5a PETA SEBARAN RISET — section tersendiri ===== */}
+      <section className="py-14 sm:py-18" id="peta-sebaran">
         <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-5.5 flex flex-wrap items-end justify-between gap-4">
-            <div className="max-w-[640px]">
-              <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Direktori Riset Daerah</span>
-              <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Katalog riset yang sedang berjalan di Buleleng</h2>
-              <p className="mb-0 text-[1.02rem] text-ink-2">Saring berdasarkan bidang prioritas, kecamatan pelaksanaan, atau status monitoring untuk menemukan riset yang relevan dengan kebutuhan instansi dan komunitas Anda.</p>
-            </div>
-            <Link to="/riset" className="rounded-lg border border-line-strong bg-white px-5 py-2.5 text-sm font-semibold text-maroon-800 no-underline transition hover:border-maroon-800 hover:bg-maroon-50">
-              Buka direktori lengkap →
-            </Link>
+          <Reveal className="mb-6 text-center">
+            <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peta Sebaran Riset</span>
+            <h2 className="mx-auto max-w-[46ch] text-[clamp(1.45rem,2.7vw,2.05rem)]">Sebaran riset di 9 kecamatan Kabupaten Buleleng</h2>
+            <p className="mx-auto mb-0 max-w-[62ch] text-[1.02rem] text-ink-2">Klik salah satu wilayah pada peta untuk membuka detail fokus riset, sebaran per bidang prioritas, dan judul riset yang sedang berjalan di kecamatan tersebut.</p>
           </Reveal>
-
-          <Reveal className="mb-5.5 rounded-xl border border-line-strong bg-surface-2 p-5">
-            <div className="flex flex-col gap-3.5">
-              <div className="flex flex-wrap gap-2.5">
-                <label className="sr-only" htmlFor="dirSearch">Cari dalam direktori riset</label>
-                <input
-                  id="dirSearch" type="search" placeholder="Cari judul riset, nama peneliti, atau kata kunci…"
-                  value={filt.q} onChange={(e) => setFilt((f) => ({ ...f, q: e.target.value }))}
-                  className="min-w-[240px] flex-1 rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-sm outline-none focus:border-maroon-600 focus:ring-3 focus:ring-maroon-600/12"
-                />
-                <select value={filt.bidang} onChange={(e) => setFilt((f) => ({ ...f, bidang: e.target.value }))} className="min-w-[190px] rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-sm outline-none focus:border-maroon-600">
-                  <option value="">Semua bidang prioritas</option>
-                  {BIDANG.map((b) => <option key={b.id} value={b.id}>{b.nama}</option>)}
-                </select>
-                <select value={filt.kec} onChange={(e) => setFilt((f) => ({ ...f, kec: e.target.value }))} className="min-w-[170px] rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-sm outline-none focus:border-maroon-600">
-                  <option value="">Semua kecamatan</option>
-                  {KECAMATAN.map((k) => <option key={k.id} value={k.id}>{k.nama}</option>)}
-                </select>
-              </div>
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Saring status riset">
-                {STATUSES.map((s) => {
-                  const n = s.id ? RISET.filter((r) => r.status === s.id).length : RISET.length;
-                  const active = filt.status === s.id;
-                  return (
-                    <button
-                      key={s.id || 'all'} type="button" aria-pressed={active}
-                      onClick={() => setFilt((f) => ({ ...f, status: s.id }))}
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.75 text-[.8rem] font-semibold transition ${
-                        active ? 'border-maroon-800 bg-maroon-800 text-white' : 'border-line-strong bg-white text-ink-2 hover:border-maroon-600 hover:text-maroon-800'
-                      }`}
-                    >
-                      {s.l} <span className="opacity-70">{n}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-2.5">
-                <span className="text-[.8rem] text-ink-3">
-                  {dirHits.length
-                    ? <>Menampilkan <b>{dirShown.length}</b> dari <b>{dirHits.length}</b> riset yang cocok.</>
-                    : 'Tidak ada riset yang cocok dengan filter saat ini.'}
-                </span>
-                <button type="button" onClick={() => setFilt({ q: '', bidang: '', kec: '', status: '' })} className="rounded-lg px-3 py-1.5 text-[.82rem] font-semibold text-ink-2 hover:bg-surface-1">
-                  Atur ulang filter
-                </button>
-              </div>
-            </div>
+        </div>
+        <div className="mx-auto max-w-[2280px] px-5">
+          <Reveal>
+            <KecamatanMap />
           </Reveal>
-
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {dirShown.length ? dirShown.map((r) => <RisetCard key={r.id} r={r} />) : (
-              <div className="col-span-full py-13 text-center text-ink-3">
-                <Icon name="search" size={46} className="mx-auto mb-3.5 opacity-40" />
-                <h3 className="text-[1.02rem] text-ink-2">Tidak ada riset yang cocok</h3>
-                <p>Longgarkan filter atau gunakan kata kunci lain.</p>
-              </div>
-            )}
-          </div>
         </div>
       </section>
 
@@ -269,7 +291,7 @@ export default function Home() {
       </section>
 
       {/* ===== 1.8 PELUANG PENDANAAN ===== */}
-      <section className="bg-surface-1 py-14 sm:py-18" id="pendanaan">
+      <section className="py-14 sm:py-18" id="pendanaan">
         <div className="mx-auto max-w-[1240px] px-5">
           <Reveal className="mb-8.5 max-w-[760px]">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peluang Pendanaan Riset</span>
@@ -334,26 +356,16 @@ export default function Home() {
               Lihat semua berita →
             </Link>
           </Reveal>
-          <Reveal className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {beritaSorot.map((n, i) => {
-              const c = KAT_WARNA[n.kategori] || '#8E1B1B';
-              return (
-                <article key={n.id} className="flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-card transition hover:-translate-y-1 hover:shadow-pop">
-                  <SmartImage src={n.gambar} alt={n.judul} seed={i} className="aspect-video">
-                    <span className="absolute left-3 top-3 z-10 rounded-full bg-white/92 px-2.5 py-1 text-[.715rem] font-bold" style={{ color: c }}>{n.kategori}</span>
-                  </SmartImage>
-                  <div className="flex flex-1 flex-col p-4.5">
-                    <div className="mb-1.75 flex items-center gap-1.75 text-[.74rem] font-semibold text-ink-3"><Icon name="calendar" size={13} />{tanggal(n.tanggal)} · {n.penulis}</div>
-                    <h3 className="text-[.98rem] leading-snug">{n.judul}</h3>
-                    <p className="mb-3.5 flex-1 text-[.835rem] line-clamp-3">{n.ringkas}</p>
-                    <Link to="/berita" className="flex items-center gap-1.5 self-start rounded-lg py-1.5 text-[.8rem] font-semibold text-maroon-800 no-underline hover:underline">
-                      Baca selengkapnya <Icon name="arrow" size={14} />
-                    </Link>
-                  </div>
-                </article>
-              );
-            })}
-          </Reveal>
+          {beritaBesar && (
+            <Reveal className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+              <NewsCard n={beritaBesar} i={0} big onOpen={setDetailBerita} />
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                {beritaKecil.map((n, i) => (
+                  <NewsCard key={n.id} n={n} i={i + 1} onOpen={setDetailBerita} />
+                ))}
+              </div>
+            </Reveal>
+          )}
         </div>
       </section>
 
@@ -365,15 +377,8 @@ export default function Home() {
             <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Perguruan tinggi, pemerintah, komunitas, dan dunia usaha</h2>
             <p className="text-[1.02rem] text-ink-2">Lebih dari 30 lembaga litbang dan perguruan tinggi bekerja sama dengan dinas teknis, kelompok subak, pengelola wisata, dan pelaku UMKM di Kabupaten Buleleng.</p>
           </Reveal>
-          <Reveal className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-6">
-            {MITRA_LOGO.map((m) => (
-              <div key={m.abbr} className="grid aspect-[5/3] place-items-center rounded-xl border border-line bg-white p-3.5 text-center transition hover:-translate-y-0.5 hover:border-gold-500 hover:shadow-lift">
-                <div>
-                  <div className="font-head text-[1.02rem] font-extrabold tracking-tight text-maroon-800">{m.abbr}</div>
-                  <div className="mt-0.75 text-[.655rem] leading-tight text-ink-3">{m.nama}</div>
-                </div>
-              </div>
-            ))}
+          <Reveal>
+            <MitraCarousel items={MITRA_LOGO} />
           </Reveal>
 
           <Reveal className="mt-8 rounded-xl border-none p-6.5 text-white" style={{ backgroundImage: 'linear-gradient(135deg,#8E1B1B,#6B1414)' }}>
@@ -391,6 +396,23 @@ export default function Home() {
         </div>
       </section>
 
+      {detailBerita && (
+        <Modal title={detailBerita.judul} wide onClose={() => setDetailBerita(null)}>
+          <div className="mb-4 flex flex-wrap items-center gap-2.5">
+            <span className="rounded-full px-2.5 py-1 text-[.715rem] font-bold text-white" style={{ background: KAT_WARNA[detailBerita.kategori] || '#8E1B1B' }}>
+              {detailBerita.kategori}
+            </span>
+            <span className="text-[.78rem] text-ink-3">{tanggal(detailBerita.tanggal)} · {detailBerita.penulis}</span>
+          </div>
+          <SmartImage src={detailBerita.gambar} alt={detailBerita.judul} className="mb-5 aspect-video rounded-xl" />
+          {(detailBerita.isi || [detailBerita.ringkas]).map((p, i) => (
+            <p key={i} className="text-[.92rem] leading-relaxed text-ink-2">{p}</p>
+          ))}
+          <Link to="/berita" onClick={() => setDetailBerita(null)} className="mt-4 inline-flex items-center gap-1.5 text-[.85rem] font-semibold text-maroon-800 no-underline hover:underline">
+            Lihat semua berita <Icon name="arrow" size={14} />
+          </Link>
+        </Modal>
+      )}
     </>
   );
 }

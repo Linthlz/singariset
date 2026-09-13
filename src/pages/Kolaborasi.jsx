@@ -4,6 +4,7 @@ import Icon from '../components/Icon.jsx';
 import Reveal from '../components/Reveal.jsx';
 import Modal from '../components/Modal.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useSubmissions } from '../context/SubmissionsContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { INSTITUSI, SKEMA, BIDANG, KECAMATAN, MITRA_SASARAN } from '../data/singaData.js';
 import { skemaById, kecById, rupiah, hariMenuju, tanggal, wordCount } from '../lib/format.js';
@@ -43,31 +44,30 @@ function fmtSize(b) { return b >= 1048576 ? (b / 1048576).toFixed(1).replace('.'
 
 function validate(form, files) {
   const errs = {};
-  if (form.namaKetua.trim().length < 3) errs.namaKetua = 'Nama ketua peneliti wajib diisi.';
-  const d = form.nidn.replace(/\D/g, '');
-  if (d.length !== 10 && d.length !== 18) errs.nidn = 'NIDN harus 10 digit atau NIP harus 18 digit angka.';
+  if (!form.namaKetua.trim()) errs.namaKetua = 'Nama ketua peneliti wajib diisi.';
+  if (!form.nidn.trim()) errs.nidn = 'NIDN / NIP wajib diisi.';
   if (!form.institusi) errs.institusi = 'Pilih institusi asal pengusul.';
-  if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(form.email.trim())) errs.email = 'Masukkan alamat surel yang valid.';
-  if (form.telp.replace(/\D/g, '').length < 10) errs.telp = 'Nomor telepon aktif wajib diisi (minimal 10 digit).';
-  if (form.judul.trim().length < 15) errs.judul = 'Judul riset wajib diisi (minimal 15 karakter).';
+  if (!form.email.trim()) errs.email = 'Surel wajib diisi.';
+  if (!form.telp.trim()) errs.telp = 'Nomor telepon wajib diisi.';
+  if (!form.judul.trim()) errs.judul = 'Judul riset wajib diisi.';
   if (!form.skema) errs.skema = 'Pilih skema pendanaan yang dituju.';
   if (!form.bidang) errs.bidang = 'Pilih bidang prioritas riset.';
   if (!form.kecamatan) errs.kecamatan = 'Pilih kecamatan lokasi riset.';
   const dana = Number(form.dana.replace(/\D/g, ''));
   const plafon = PLAFON[form.skema];
-  if (!dana) errs.dana = 'Isi usulan dana sesuai plafon skema.';
+  if (!dana) errs.dana = 'Isi usulan dana.';
   else if (plafon && dana > plafon) errs.dana = `Usulan dana melampaui plafon skema (${rupiah(plafon)}).`;
   if (!form.sasaranRpjmd) errs.sasaranRpjmd = 'Pilih satu sasaran RPJMD yang paling relevan.';
-  if (wordCount(form.urgensi) < 100) errs.urgensi = 'Uraian urgensi minimal 100 kata.';
-  if (form.luaran.trim().split('\n').filter((l) => l.trim()).length < 2) errs.luaran = 'Cantumkan minimal dua luaran riset.';
-  if (!form.mitra.length) errs.mitra = 'Pilih minimal satu mitra sasaran riset.';
+  if (!form.urgensi.trim()) errs.urgensi = 'Uraian urgensi wajib diisi.';
+  if (!form.luaran.trim()) errs.luaran = 'Luaran riset wajib diisi.';
   if (!files.some((f) => !f.err)) errs.berkas = 'Unggah minimal satu berkas proposal berformat PDF.';
   if (!(form.paktaOrisinal && form.paktaIntegritas && form.paktaData)) errs.pakta = 'Ketiga pernyataan wajib disetujui sebelum pengajuan dikirim.';
   return errs;
 }
 
 export default function Kolaborasi() {
-  const { isAuth, hasRole } = useAuth();
+  const { user } = useAuth();
+  const { addSubmission } = useSubmissions();
   const toast = useToast();
   const [params] = useSearchParams();
   const [form, setForm] = useState(initialForm);
@@ -78,7 +78,6 @@ export default function Kolaborasi() {
   const [draftInfo, setDraftInfo] = useState('Draf tersimpan di peramban Anda sendiri dan tidak terkirim ke BRIDA sampai tombol kirim ditekan.');
   const [submitting, setSubmitting] = useState(false);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
-  const [gateModal, setGateModal] = useState(false);
   const [successModal, setSuccessModal] = useState(null);
   const fileInputRef = useRef(null);
   const firstErrorRef = useRef(null);
@@ -161,7 +160,6 @@ export default function Kolaborasi() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!isAuth || !hasRole('mitra', 'admin')) { setGateModal(true); return; }
 
     setAttemptedSubmit(true);
     const errs = validate(form, files);
@@ -177,10 +175,11 @@ export default function Kolaborasi() {
     setTimeout(() => {
       setSubmitting(false);
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* abaikan */ }
-      const noReg = `USL-${new Date().getFullYear()}-${Math.floor(Math.random() * 900) + 100}`;
-      setSuccessModal({ noReg, form, files: files.filter((f) => !f.err) });
+      const berkas = files.filter((f) => !f.err);
+      const item = addSubmission({ ...form, mitraEmail: user.email, files: berkas });
+      setSuccessModal({ noReg: item.id, form, files: berkas });
       setForm(initialForm); setFiles([]); setErrors({}); setTouched({}); setAttemptedSubmit(false);
-      toast('success', 'Pengajuan terkirim', `Nomor registrasi ${noReg} telah dicatat dalam antrean BRIDA.`);
+      toast('success', 'Pengajuan terkirim', `Nomor registrasi ${item.id} telah dicatat dalam antrean BRIDA.`);
     }, 900);
   }
 
@@ -229,7 +228,7 @@ export default function Kolaborasi() {
                 <Field label="Nama lengkap ketua peneliti" required error={err('namaKetua')}>
                   <input className="input-base" value={form.namaKetua} onChange={(e) => setField('namaKetua', e.target.value)} onBlur={() => blurField('namaKetua')} placeholder="Lengkap dengan gelar akademik" />
                 </Field>
-                <Field label="NIDN / NIP" required error={err('nidn')} hint="Format resmi: NIDN 10 digit atau NIP 18 digit, angka saja.">
+                <Field label="NIDN / NIP" required error={err('nidn')}>
                   <input className="input-base" value={form.nidn} onChange={(e) => setField('nidn', e.target.value)} onBlur={() => blurField('nidn')} inputMode="numeric" placeholder="10 digit NIDN atau 18 digit NIP" />
                 </Field>
                 <Field label="Institusi / afiliasi" required error={err('institusi')}>
@@ -307,14 +306,12 @@ export default function Kolaborasi() {
                 <textarea className="input-base min-h-[170px]" value={form.urgensi} onChange={(e) => setField('urgensi', e.target.value)} onBlur={() => blurField('urgensi')}
                   placeholder="Jelaskan persoalan lapangan yang hendak dipecahkan, siapa yang dirugikan bila dibiarkan, mengapa riset ini mendesak bagi Kabupaten Buleleng, dan bagaimana hasilnya akan dipakai oleh OPD atau komunitas sasaran." />
                 <div className="mt-1.5 flex justify-between">
-                  <span className="text-[.78rem] text-ink-3">Minimal 100 kata. Bagian ini menjadi bahan telaah substansi tim pakar.</span>
-                  <span className={`text-[.76rem] font-semibold tabular-nums ${urgWords >= 100 ? 'text-success' : urgWords > 0 ? 'text-warning' : 'text-ink-3'}`}>
-                    {urgWords} kata{urgWords < 100 ? `, kurang ${100 - urgWords}` : ', memenuhi syarat'}
-                  </span>
+                  <span className="text-[.78rem] text-ink-3">Bagian ini menjadi bahan telaah substansi tim pakar.</span>
+                  <span className="text-[.76rem] font-semibold tabular-nums text-ink-3">{urgWords} kata</span>
                 </div>
               </Field>
 
-              <Field label="Luaran yang dijanjikan" required error={err('luaran')} hint="Wajib mencakup minimal satu policy brief dan satu publikasi ilmiah.">
+              <Field label="Luaran yang dijanjikan" required error={err('luaran')}>
                 <textarea className="input-base min-h-[100px]" value={form.luaran} onChange={(e) => setField('luaran', e.target.value)} onBlur={() => blurField('luaran')}
                   placeholder={'Satu luaran per baris. Contoh:\nPolicy brief rekomendasi pola tanam adaptif\nArtikel jurnal terakreditasi SINTA 2'} />
               </Field>
@@ -482,35 +479,6 @@ export default function Kolaborasi() {
           </aside>
         </div>
       </section>
-
-      {gateModal && (
-        <Modal title="Masuk sebagai mitra diperlukan" onClose={() => setGateModal(false)} footer={
-          <>
-            <Link to="/register" onClick={() => setGateModal(false)}
-              className="rounded-lg border border-line-strong px-5 py-2.5 text-sm font-semibold text-maroon-800 no-underline hover:bg-maroon-50">
-              Daftar akun mitra
-            </Link>
-            <Link to="/login?next=/kolaborasi" onClick={() => setGateModal(false)}
-              className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white no-underline hover:bg-maroon-600">
-              Masuk ke akun
-            </Link>
-          </>
-        }>
-          <div className="flex items-start gap-3 rounded-xl border border-warning-bg bg-warning-bg px-4 py-3.5 text-[.855rem] text-[#78350F]">
-            <Icon name="lock" size={19} className="mt-0.5 flex-none text-warning" />
-            <p className="m-0">
-              <strong className="mr-1">Akses terbatas.</strong>
-              {isAuth
-                ? 'Pengiriman usulan riset hanya tersedia untuk akun Mitra / Instansi. Akun perangkat daerah memakai dashboard monitoring dan evaluasi.'
-                : 'Pengiriman usulan riset hanya tersedia bagi akun Mitra / Instansi yang telah terdaftar.'}
-            </p>
-          </div>
-          <p className="mt-4">
-            Isian yang sudah Anda ketik tetap tersimpan. Gunakan tombol <b>Simpan sebagai Draf</b> bila ingin
-            melanjutkan pengisian setelah masuk ke akun.
-          </p>
-        </Modal>
-      )}
 
       {successModal && (
         <Modal title="Pengajuan berhasil dikirim" wide onClose={() => setSuccessModal(null)} footer={

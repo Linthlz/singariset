@@ -4,15 +4,18 @@ import HBarChart from '../../components/charts/HBarChart.jsx';
 import Icon from '../../components/Icon.jsx';
 import Modal from '../../components/Modal.jsx';
 import { DEMO_ACCOUNTS, ROLES, getRegisteredUsers } from '../../context/AuthContext.jsx';
+import { useContent } from '../../context/ContentContext.jsx';
+import { STATUS_USULAN, useSubmissions } from '../../context/SubmissionsContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { RISET, BIDANG, BERITA, PENDANAAN, STATS, KECAMATAN } from '../../data/singaData.js';
-import { bidangById, rupiah, rupiahRingkas, tanggal, statusMeta, angka } from '../../lib/format.js';
+import { RISET, BIDANG, KECAMATAN, SKEMA, STATS } from '../../data/singaData.js';
+import { bidangById, kecById, rupiah, rupiahRingkas, skemaById, tanggal, statusMeta, angka } from '../../lib/format.js';
 
 const MENU = [
   { id: 'ringkasan', label: 'Ringkasan', ikon: 'chart' },
   { id: 'pengguna', label: 'Manajemen Pengguna', ikon: 'users' },
+  { id: 'usulan', label: 'Usulan Riset Mitra', ikon: 'handshake' },
   { id: 'riset', label: 'Katalog Riset', ikon: 'flask' },
-  { id: 'konten', label: 'Berita & Pendanaan', ikon: 'doc' },
+  { id: 'konten', label: 'Berita & Publikasi', ikon: 'doc' },
   { id: 'pengaturan', label: 'Pengaturan Situs', ikon: 'shield' }
 ];
 
@@ -294,33 +297,266 @@ function KatalogRiset() {
   );
 }
 
+/* ---------------- Usulan riset mitra ---------------- */
+function UsulanMitra() {
+  const { submissions, setStatus } = useSubmissions();
+  const toast = useToast();
+  const [filter, setFilter] = useState('');
+  const [detail, setDetail] = useState(null);
+  const [catatan, setCatatan] = useState('');
+
+  const hits = filter ? submissions.filter((s) => s.status === filter) : submissions;
+
+  function tindak(status) {
+    setStatus(detail.id, status, status === 'ditolak' ? catatan : '');
+    toast(status === 'berjalan' ? 'success' : 'danger',
+      status === 'berjalan' ? 'Usulan disetujui' : 'Usulan ditolak',
+      `Pengajuan ${detail.id} kini berstatus ${STATUS_USULAN[status].label}. (Prototipe, perubahan hanya di sesi ini.)`);
+    setDetail(null); setCatatan('');
+  }
+
+  return (
+    <Card
+      title="Usulan kolaborasi riset dari mitra"
+      desc="Verifikasi pengajuan, setujui menjadi riset berjalan, atau tolak dengan catatan perbaikan."
+      action={
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Saring status usulan">
+          {[['', 'Semua'], ...Object.values(STATUS_USULAN).map((s) => [s.id, s.label])].map(([id, label]) => (
+            <button key={id || 'semua'} type="button" onClick={() => setFilter(id)} aria-pressed={filter === id}
+              className={`rounded-full border px-3 py-1.5 text-[.78rem] font-semibold transition ${
+                filter === id ? 'border-maroon-800 bg-maroon-800 text-white' : 'border-line-strong bg-white text-ink-2 hover:border-maroon-600 hover:text-maroon-800'
+              }`}>{label}</button>
+          ))}
+        </div>
+      }
+    >
+      <div className="overflow-x-auto rounded-lg border border-line">
+        <table className="w-full min-w-[880px] border-collapse text-[.845rem]">
+          <caption className="sr-only">Daftar usulan kolaborasi riset mitra</caption>
+          <thead>
+            <tr className="border-b border-line bg-surface-1">
+              {['No. registrasi', 'Judul & pengusul', 'Skema', 'Diajukan', 'Status', 'Aksi'].map((h) => (
+                <th key={h} scope="col" className="whitespace-nowrap px-4 py-3 text-left text-[.72rem] font-bold uppercase tracking-wide text-ink-3">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {hits.map((s) => {
+              const st = STATUS_USULAN[s.status];
+              return (
+                <tr key={s.id} className="border-b border-line last:border-0 hover:bg-surface-1">
+                  <td className="px-4 py-3.5 font-semibold tabular-nums text-ink">{s.id}</td>
+                  <td className="px-4 py-3.5">
+                    <div className="max-w-[320px] font-semibold text-ink">{s.judul}</div>
+                    <div className="text-[.765rem] text-ink-3">{s.namaKetua} · {s.institusi}</div>
+                  </td>
+                  <td className="px-4 py-3.5 text-ink-2">{skemaById(s.skema).nama}</td>
+                  <td className="px-4 py-3.5 tabular-nums text-ink-2">{tanggal(s.createdAt.slice(0, 10), true)}</td>
+                  <td className="px-4 py-3.5">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[.71rem] font-bold ${st.badge}`}>
+                      <Icon name={st.ikon} size={12} /> {st.label}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <button type="button" onClick={() => { setDetail(s); setCatatan(s.catatan || ''); }}
+                      className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-maroon-800 hover:border-maroon-800 hover:bg-maroon-50">Kelola</button>
+                  </td>
+                </tr>
+              );
+            })}
+            {hits.length === 0 && (
+              <tr><td colSpan={6} className="px-4 py-10 text-center text-ink-3">Tidak ada usulan pada status ini.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-3 text-[.82rem] text-ink-3">Menampilkan {hits.length} dari {submissions.length} usulan.</p>
+
+      {detail && (
+        <Modal title={`Kelola usulan: ${detail.id}`} wide onClose={() => setDetail(null)} footer={
+          <>
+            {detail.status !== 'berjalan' && (
+              <button type="button" onClick={() => tindak('berjalan')}
+                className="rounded-lg bg-success px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90">Setujui &amp; jadikan berjalan</button>
+            )}
+            {detail.status !== 'ditolak' && (
+              <button type="button" onClick={() => tindak('ditolak')}
+                className="rounded-lg border border-danger px-5 py-2.5 text-sm font-semibold text-danger hover:bg-danger-bg">Tolak usulan</button>
+            )}
+          </>
+        }>
+          <dl className="mb-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.75 text-[.845rem]">
+            <dt className="font-semibold text-ink-3">Judul</dt><dd className="m-0 font-semibold">{detail.judul}</dd>
+            <dt className="font-semibold text-ink-3">Ketua peneliti</dt><dd className="m-0 font-semibold">{detail.namaKetua} · {detail.institusi}</dd>
+            <dt className="font-semibold text-ink-3">Kontak</dt><dd className="m-0 font-semibold">{detail.email} · {detail.telp}</dd>
+            <dt className="font-semibold text-ink-3">Skema</dt><dd className="m-0 font-semibold">{skemaById(detail.skema).nama}</dd>
+            <dt className="font-semibold text-ink-3">Bidang</dt><dd className="m-0 font-semibold">{bidangById(detail.bidang).nama}</dd>
+            <dt className="font-semibold text-ink-3">Lokasi</dt><dd className="m-0 font-semibold">{detail.kecamatan === 'lintas' ? 'Lintas kecamatan' : kecById(detail.kecamatan).nama}</dd>
+            <dt className="font-semibold text-ink-3">Usulan dana</dt><dd className="m-0 font-semibold">Rp {detail.dana}</dd>
+          </dl>
+          <h4 className="mb-1.5 text-[.9rem]">Urgensi</h4>
+          <p className="mb-4 whitespace-pre-line text-[.85rem] text-ink-2">{detail.urgensi}</p>
+          <h4 className="mb-1.5 text-[.9rem]">Luaran</h4>
+          <p className="mb-4 whitespace-pre-line text-[.85rem] text-ink-2">{detail.luaran}</p>
+          <label className="mb-1.5 block text-[.84rem] font-semibold text-ink">Catatan untuk mitra (terisi otomatis bila ditolak)</label>
+          <textarea className="input-base min-h-[80px]" value={catatan} onChange={(e) => setCatatan(e.target.value)}
+            placeholder="Contoh: dokumen RAB belum sesuai standar, lengkapi dan ajukan kembali." />
+        </Modal>
+      )}
+    </Card>
+  );
+}
+
 /* ---------------- Konten ---------------- */
+function FormModal({ title, fields, initial, onClose, onSubmit, submitLabel = 'Simpan' }) {
+  const [form, setForm] = useState(initial);
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  return (
+    <Modal title={title} wide onClose={onClose} footer={
+      <button type="button" onClick={() => onSubmit(form)} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon-600">{submitLabel}</button>
+    }>
+      <div className="grid gap-x-4.5 sm:grid-cols-2">
+        {fields.map((f) => (
+          <div key={f.key} className={`mb-4 ${f.full ? 'sm:col-span-2' : ''}`}>
+            <label className="mb-1.5 block text-[.84rem] font-semibold text-ink">{f.label}</label>
+            {f.type === 'select' ? (
+              <select className="input-base" value={form[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)}>
+                <option value="">Pilih {f.label.toLowerCase()}</option>
+                {f.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            ) : f.type === 'textarea' ? (
+              <textarea className="input-base min-h-[110px]" value={form[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} placeholder={f.placeholder} />
+            ) : (
+              <input className="input-base" type={f.type || 'text'} value={form[f.key] ?? ''} onChange={(e) => set(f.key, e.target.value)} placeholder={f.placeholder} />
+            )}
+          </div>
+        ))}
+      </div>
+    </Modal>
+  );
+}
+
+const BERITA_FIELDS = [
+  { key: 'kategori', label: 'Kategori', placeholder: 'Kebijakan, Pendanaan, Monev, …' },
+  { key: 'tanggal', label: 'Tanggal', type: 'date' },
+  { key: 'judul', label: 'Judul berita', full: true },
+  { key: 'penulis', label: 'Penulis' },
+  { key: 'gambar', label: 'Path gambar', placeholder: '/images/berita/berita-xx.jpg' },
+  { key: 'ringkas', label: 'Ringkasan', type: 'textarea', full: true },
+  { key: 'isiText', label: 'Isi lengkap (satu paragraf per baris)', type: 'textarea', full: true }
+];
+
+function dokFields() {
+  return [
+    { key: 'judul', label: 'Judul dokumentasi', full: true },
+    { key: 'bidang', label: 'Bidang', type: 'select', options: BIDANG.map((b) => ({ value: b.id, label: b.nama })) },
+    { key: 'kecamatan', label: 'Kecamatan', type: 'select', options: KECAMATAN.map((k) => ({ value: k.id, label: k.nama })) },
+    { key: 'tanggal', label: 'Tanggal', type: 'date' },
+    { key: 'risetId', label: 'Kode riset terkait (opsional)', placeholder: 'BRD-2025-001' },
+    { key: 'fotoSrc', label: 'Path foto utama', placeholder: '/images/dokumentasi/nama-foto.jpg' },
+    { key: 'fotoKet', label: 'Keterangan foto' },
+    { key: 'narasi', label: 'Narasi pelaksanaan', type: 'textarea', full: true }
+  ];
+}
+
+function pendanaanFields() {
+  return [
+    { key: 'nama', label: 'Nama skema', full: true },
+    { key: 'penyelenggara', label: 'Penyelenggara' },
+    { key: 'skema', label: 'Kode skema', type: 'select', options: SKEMA.map((s) => ({ value: s.id, label: s.nama })) },
+    { key: 'plafon', label: 'Plafon (Rp)', type: 'number' },
+    { key: 'kuota', label: 'Kuota', type: 'number' },
+    { key: 'deadline', label: 'Tenggat', type: 'date' },
+    { key: 'status', label: 'Status', type: 'select', options: [{ value: 'open', label: 'Dibuka' }, { value: 'closing', label: 'Segera tutup' }, { value: 'soon', label: 'Akan dibuka' }] },
+    { key: 'ket', label: 'Keterangan', type: 'textarea', full: true }
+  ];
+}
+
 function Konten() {
   const toast = useToast();
-  const belum = () => toast('info', 'Mode prototipe', 'Editor konten akan terhubung ke sistem manajemen konten BRIDA pada implementasi berikutnya.');
+  const {
+    berita, addBerita, updateBerita, deleteBerita,
+    dokumentasi, addDokumentasi, updateDokumentasi, deleteDokumentasi,
+    pendanaan, addPendanaan, updatePendanaan, deletePendanaan
+  } = useContent();
+  const [modal, setModal] = useState(null); // { jenis: 'berita'|'dok'|'pendanaan', data?: ... }
+
+  function simpanBerita(form) {
+    const payload = { ...form, isi: (form.isiText || '').split('\n').map((s) => s.trim()).filter(Boolean) };
+    delete payload.isiText;
+    if (modal.data) { updateBerita(modal.data.id, payload); toast('success', 'Berita diperbarui', `"${payload.judul}" telah disunting.`); }
+    else { addBerita(payload); toast('success', 'Berita ditambahkan', `"${payload.judul}" tayang di halaman Berita & Diseminasi.`); }
+    setModal(null);
+  }
+
+  function simpanDok(form) {
+    const fotoBaru = { src: form.fotoSrc, ket: form.fotoKet };
+    const payload = {
+      judul: form.judul, bidang: form.bidang, kecamatan: form.kecamatan, tanggal: form.tanggal, risetId: form.risetId, narasi: form.narasi,
+      foto: modal.data ? [fotoBaru, ...modal.data.foto.slice(1)] : [fotoBaru],
+      video: modal.data?.video ?? null, galeriVideo: modal.data?.galeriVideo ?? null
+    };
+    if (modal.data) { updateDokumentasi(modal.data.id, payload); toast('success', 'Dokumentasi diperbarui', `"${payload.judul}" telah disunting.`); }
+    else { addDokumentasi(payload); toast('success', 'Dokumentasi ditambahkan', `"${payload.judul}" tayang di halaman Publikasi & Dokumentasi.`); }
+    setModal(null);
+  }
+
+  function simpanPendanaan(form) {
+    const payload = {
+      ...form, plafon: Number(form.plafon) || 0, kuota: Number(form.kuota) || 0,
+      situs: modal.data?.situs || 'https://bulelengkab.go.id', situsNama: modal.data?.situsNama || 'BRIDA Kabupaten Buleleng',
+      bidangTarget: modal.data?.bidangTarget || [], syarat: modal.data?.syarat || []
+    };
+    if (modal.data) { updatePendanaan(modal.data.id, payload); toast('success', 'Skema pendanaan diperbarui', `"${payload.nama}" telah disunting.`); }
+    else { addPendanaan(payload); toast('success', 'Skema pendanaan ditambahkan', `"${payload.nama}" tayang pada peluang pendanaan.`); }
+    setModal(null);
+  }
 
   return (
     <div className="flex flex-col gap-5">
-      <Card title="Berita & diseminasi" desc="Kelola kabar yang tampil pada beranda portal."
-        action={<button type="button" onClick={belum} className="flex items-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600"><Icon name="plus" size={15} /> Tulis berita</button>}>
+      <Card title="Berita & diseminasi" desc="Kelola kabar yang tampil pada beranda dan halaman Berita."
+        action={<button type="button" onClick={() => setModal({ jenis: 'berita' })} className="flex items-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600"><Icon name="plus" size={15} /> Tulis berita</button>}>
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
-          {BERITA.map((n) => (
+          {berita.map((n) => (
             <li key={n.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-line p-3.5">
               <span className="rounded-full bg-surface-2 px-2.5 py-1 text-[.71rem] font-bold text-ink-2">{n.kategori}</span>
               <span className="min-w-[240px] flex-1">
                 <span className="block text-[.87rem] font-semibold text-ink">{n.judul}</span>
                 <span className="block text-[.76rem] text-ink-3">{tanggal(n.tanggal)} · {n.penulis}</span>
               </span>
-              <button type="button" onClick={belum} className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-ink-2 hover:border-maroon-600 hover:text-maroon-800">Sunting</button>
+              <button type="button" onClick={() => setModal({ jenis: 'berita', data: n })} className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-ink-2 hover:border-maroon-600 hover:text-maroon-800">Sunting</button>
+              <button type="button" onClick={() => { deleteBerita(n.id); toast('info', 'Berita dihapus', `"${n.judul}" telah dihapus dari portal.`); }}
+                className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-danger hover:border-danger hover:bg-danger-bg">Hapus</button>
             </li>
           ))}
+          {berita.length === 0 && <li className="py-6 text-center text-ink-3">Belum ada berita.</li>}
+        </ul>
+      </Card>
+
+      <Card title="Publikasi & dokumentasi" desc="Kelola arsip visual pelaksanaan riset pada halaman Publikasi & Dokumentasi."
+        action={<button type="button" onClick={() => setModal({ jenis: 'dok' })} className="flex items-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600"><Icon name="plus" size={15} /> Tambah dokumentasi</button>}>
+        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+          {dokumentasi.map((d) => (
+            <li key={d.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-line p-3.5">
+              <span className="rounded-full bg-surface-2 px-2.5 py-1 text-[.71rem] font-bold text-ink-2">{bidangById(d.bidang).nama.split(' ')[0]}</span>
+              <span className="min-w-[240px] flex-1">
+                <span className="block text-[.87rem] font-semibold text-ink">{d.judul}</span>
+                <span className="block text-[.76rem] text-ink-3">{tanggal(d.tanggal)} · Kec. {kecById(d.kecamatan).nama} · {d.foto.length} foto</span>
+              </span>
+              <button type="button" onClick={() => setModal({ jenis: 'dok', data: d })} className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-ink-2 hover:border-maroon-600 hover:text-maroon-800">Sunting</button>
+              <button type="button" onClick={() => { deleteDokumentasi(d.id); toast('info', 'Dokumentasi dihapus', `"${d.judul}" telah dihapus dari portal.`); }}
+                className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-danger hover:border-danger hover:bg-danger-bg">Hapus</button>
+            </li>
+          ))}
+          {dokumentasi.length === 0 && <li className="py-6 text-center text-ink-3">Belum ada dokumentasi.</li>}
         </ul>
       </Card>
 
       <Card title="Skema pendanaan" desc="Atur kuota, plafon, dan tenggat setiap skema hibah."
-        action={<button type="button" onClick={belum} className="flex items-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600"><Icon name="plus" size={15} /> Tambah skema</button>}>
+        action={<button type="button" onClick={() => setModal({ jenis: 'pendanaan' })} className="flex items-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600"><Icon name="plus" size={15} /> Tambah skema</button>}>
         <div className="overflow-x-auto rounded-lg border border-line">
-          <table className="w-full min-w-[720px] border-collapse text-[.845rem]">
+          <table className="w-full min-w-[760px] border-collapse text-[.845rem]">
             <caption className="sr-only">Daftar skema pendanaan</caption>
             <thead>
               <tr className="border-b border-line bg-surface-1">
@@ -330,7 +566,7 @@ function Konten() {
               </tr>
             </thead>
             <tbody>
-              {PENDANAAN.map((f) => (
+              {pendanaan.map((f) => (
                 <tr key={f.id} className="border-b border-line last:border-0 hover:bg-surface-1">
                   <td className="px-4 py-3.5">
                     <div className="font-semibold text-ink">{f.nama}</div>
@@ -346,15 +582,51 @@ function Konten() {
                       {f.status === 'open' ? 'Dibuka' : f.status === 'closing' ? 'Segera tutup' : 'Akan dibuka'}
                     </span>
                   </td>
-                  <td className="px-4 py-3.5">
-                    <button type="button" onClick={belum} className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-ink-2 hover:border-maroon-600 hover:text-maroon-800">Sunting</button>
+                  <td className="px-4 py-3.5 flex flex-wrap gap-2">
+                    <button type="button" onClick={() => setModal({ jenis: 'pendanaan', data: f })} className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-ink-2 hover:border-maroon-600 hover:text-maroon-800">Sunting</button>
+                    <button type="button" onClick={() => { deletePendanaan(f.id); toast('info', 'Skema dihapus', `"${f.nama}" telah dihapus.`); }}
+                      className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-danger hover:border-danger hover:bg-danger-bg">Hapus</button>
                   </td>
                 </tr>
               ))}
+              {pendanaan.length === 0 && (
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-ink-3">Belum ada skema pendanaan.</td></tr>
+              )}
             </tbody>
           </table>
         </div>
       </Card>
+
+      {modal?.jenis === 'berita' && (
+        <FormModal
+          title={modal.data ? 'Sunting berita' : 'Tulis berita baru'}
+          fields={BERITA_FIELDS}
+          initial={modal.data ? { ...modal.data, isiText: (modal.data.isi || []).join('\n') } : { kategori: '', tanggal: '', judul: '', penulis: '', gambar: '', ringkas: '', isiText: '' }}
+          onClose={() => setModal(null)}
+          onSubmit={simpanBerita}
+          submitLabel={modal.data ? 'Simpan perubahan' : 'Terbitkan berita'}
+        />
+      )}
+      {modal?.jenis === 'dok' && (
+        <FormModal
+          title={modal.data ? 'Sunting dokumentasi' : 'Tambah dokumentasi baru'}
+          fields={dokFields()}
+          initial={modal.data ? { ...modal.data, fotoSrc: modal.data.foto[0]?.src || '', fotoKet: modal.data.foto[0]?.ket || '' } : { judul: '', bidang: '', kecamatan: '', tanggal: '', risetId: '', fotoSrc: '', fotoKet: '', narasi: '' }}
+          onClose={() => setModal(null)}
+          onSubmit={simpanDok}
+          submitLabel={modal.data ? 'Simpan perubahan' : 'Tambahkan dokumentasi'}
+        />
+      )}
+      {modal?.jenis === 'pendanaan' && (
+        <FormModal
+          title={modal.data ? 'Sunting skema pendanaan' : 'Tambah skema pendanaan'}
+          fields={pendanaanFields()}
+          initial={modal.data || { nama: '', penyelenggara: '', skema: '', plafon: '', kuota: '', deadline: '', status: 'open', ket: '' }}
+          onClose={() => setModal(null)}
+          onSubmit={simpanPendanaan}
+          submitLabel={modal.data ? 'Simpan perubahan' : 'Tambahkan skema'}
+        />
+      )}
     </div>
   );
 }
@@ -430,21 +702,29 @@ function Pengaturan() {
 const JUDUL = {
   ringkasan: ['Ringkasan portal', 'Pantauan menyeluruh ekosistem riset dan aktivitas portal'],
   pengguna: ['Manajemen pengguna', 'Verifikasi dan kelola akun mitra serta perangkat daerah'],
+  usulan: ['Usulan riset mitra', 'Verifikasi, setujui, atau tolak pengajuan kolaborasi riset dari mitra'],
   riset: ['Katalog riset', 'Seluruh judul riset dalam basis data BRIDA'],
-  konten: ['Berita & pendanaan', 'Kelola konten yang tampil di portal publik'],
+  konten: ['Berita & publikasi', 'Kelola konten yang tampil di portal publik'],
   pengaturan: ['Pengaturan situs', 'Identitas, kontak, dan kendali portal']
 };
 
 export default function AdminDashboard() {
   const [active, setActive] = useState('ringkasan');
   const [judul, sub] = JUDUL[active];
+  const { submissions } = useSubmissions();
+  const pendingUsulan = submissions.filter((s) => s.status === 'diajukan').length;
 
-  const menu = MENU.map((m) => (m.id === 'pengguna' ? { ...m, badge: 2 } : m));
+  const menu = MENU.map((m) => {
+    if (m.id === 'pengguna') return { ...m, badge: 2 };
+    if (m.id === 'usulan' && pendingUsulan > 0) return { ...m, badge: pendingUsulan };
+    return m;
+  });
 
   return (
     <DashboardLayout menu={menu} active={active} onSelect={setActive} title={judul} subtitle={sub}>
       {active === 'ringkasan' && <Ringkasan />}
       {active === 'pengguna' && <Pengguna />}
+      {active === 'usulan' && <UsulanMitra />}
       {active === 'riset' && <KatalogRiset />}
       {active === 'konten' && <Konten />}
       {active === 'pengaturan' && <Pengaturan />}

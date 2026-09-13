@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import PageHero from '../components/PageHero.jsx';
 import Reveal from '../components/Reveal.jsx';
 import RisetCard from '../components/RisetCard.jsx';
+import KecamatanMap from '../components/KecamatanMap.jsx';
 import Icon from '../components/Icon.jsx';
 import { RISET, BIDANG, KECAMATAN, SKEMA } from '../data/singaData.js';
 
@@ -69,6 +70,22 @@ export default function Riset() {
           <span key="2" className="rounded-full bg-gold-500 px-3 py-1.5 text-[.8rem] font-semibold text-[#4A2D00]">9 kecamatan Buleleng</span>
         ]}
       />
+
+      {/* Peta sebaran riset — section tersendiri, lebih besar */}
+      <section className="bg-surface-1 py-14 sm:py-18">
+        <div className="mx-auto max-w-[1240px] px-5">
+          <Reveal className="mb-6 text-center">
+            <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peta Sebaran Riset</span>
+            <h2 className="mx-auto max-w-[46ch] text-[clamp(1.45rem,2.7vw,2.05rem)]">Sebaran riset di 9 kecamatan Kabupaten Buleleng</h2>
+            <p className="mx-auto mb-0 max-w-[62ch] text-[1.02rem] text-ink-2">Klik salah satu wilayah pada peta untuk membuka detail fokus riset, sebaran per bidang prioritas, dan judul riset yang sedang berjalan di kecamatan tersebut.</p>
+          </Reveal>
+        </div>
+        <div className="mx-auto max-w-[2280px] px-5">
+          <Reveal>
+            <KecamatanMap />
+          </Reveal>
+        </div>
+      </section>
 
       <section className="py-9">
         <div className="mx-auto max-w-[1240px] px-5">

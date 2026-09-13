@@ -778,17 +778,20 @@ export const DOKUMENTASI = [
   }
 ];
 
+/* Logo mitra — taruh berkas logo (PNG/SVG transparan disarankan) di
+   public/images/mitra/ dengan nama berkas sesuai id di bawah. Selama
+   berkas belum ada, kotak logo akan tampil kosong dengan latar polos. */
 export const MITRA_LOGO = [
-  { abbr: 'UNDIKSHA', nama: 'Universitas Pendidikan Ganesha' },
-  { abbr: 'UNUD', nama: 'Universitas Udayana' },
-  { abbr: 'PNB', nama: 'Politeknik Negeri Bali' },
-  { abbr: 'STIKOM', nama: 'ITB STIKOM Bali' },
-  { abbr: 'UNIPAS', nama: 'Universitas Panji Sakti' },
-  { abbr: 'BRIN', nama: 'Badan Riset & Inovasi Nasional' },
-  { abbr: 'PEMKAB', nama: 'Pemerintah Kabupaten Buleleng' },
-  { abbr: 'BAPPEDA', nama: 'Bappeda Litbang Buleleng' },
-  { abbr: 'DISTAN', nama: 'Dinas Pertanian Buleleng' },
-  { abbr: 'DISPAR', nama: 'Dinas Pariwisata Buleleng' },
-  { abbr: 'DKP', nama: 'Dinas Kelautan & Perikanan' },
-  { abbr: 'DEKRANASDA', nama: 'Dekranasda Kabupaten Buleleng' }
+  { id: 'undiksha', logo: '/images/mitra/undiksha.png' },
+  { id: 'unud', logo: '/images/mitra/unud.png' },
+  { id: 'pnb', logo: '/images/mitra/pnb.png' },
+  { id: 'stikom', logo: '/images/mitra/stikom.png' },
+  { id: 'unipas', logo: '/images/mitra/unipas.png' },
+  { id: 'brin', logo: '/images/mitra/brin.png' },
+  { id: 'pemkab', logo: '/images/mitra/pemkab.png' },
+  { id: 'bappeda', logo: '/images/mitra/bappeda.png' },
+  { id: 'distan', logo: '/images/mitra/distan.png' },
+  { id: 'dispar', logo: '/images/mitra/dispar.png' },
+  { id: 'dkp', logo: '/images/mitra/dkp.png' },
+  { id: 'dekranasda', logo: '/images/mitra/dekranasda.png' }
 ];

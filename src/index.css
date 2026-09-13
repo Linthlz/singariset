@@ -40,8 +40,8 @@
 }
 
 @layer base {
-  html { scroll-behavior: smooth; scroll-padding-top: 96px; }
-  body { @apply bg-white text-ink font-sans text-[15px] leading-[1.62] antialiased; }
+  html { scroll-behavior: smooth; scroll-padding-top: 96px; font-size: 106.5%; }
+  body { @apply bg-white text-ink font-sans text-[16px] leading-[1.62] antialiased; }
   h1, h2, h3, h4 { font-family: var(--font-head); @apply text-ink tracking-tight font-extrabold; }
   ::selection { background: var(--color-gold-100); color: var(--color-maroon-900); }
 }
@@ -91,6 +91,12 @@
   to   { transform: scaleX(1); }
 }
 .route-bar { transform-origin: left; animation: routeBar 1.1s cubic-bezier(.16,1,.3,1) forwards; }
+
+/* Wilayah peta kecamatan muncul bertahap dengan sedikit dorongan ke atas */
+@keyframes petaIn {
+  from { opacity: 0; transform: translateY(12px) scale(.94); }
+  to   { opacity: 1; transform: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

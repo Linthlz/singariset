@@ -4,7 +4,8 @@ import Reveal from '../components/Reveal.jsx';
 import Icon from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
 import SmartImage from '../components/SmartImage.jsx';
-import { BERITA, SOSMED_RESMI } from '../data/singaData.js';
+import { SOSMED_RESMI } from '../data/singaData.js';
+import { useContent } from '../context/ContentContext.jsx';
 import { tanggal } from '../lib/format.js';
 
 const KAT_WARNA = {
@@ -44,11 +45,12 @@ function TautanSosmed({ ukuran = 'kecil' }) {
 }
 
 export default function Berita() {
+  const { berita: BERITA } = useContent();
   const [kategori, setKategori] = useState('');
   const [q, setQ] = useState('');
   const [detail, setDetail] = useState(null);
 
-  const kategoriList = useMemo(() => ['', ...new Set(BERITA.map((b) => b.kategori))], []);
+  const kategoriList = useMemo(() => ['', ...new Set(BERITA.map((b) => b.kategori))], [BERITA]);
 
   const hits = BERITA.filter((n) => {
     if (kategori && n.kategori !== kategori) return false;

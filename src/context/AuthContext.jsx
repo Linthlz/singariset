@@ -11,7 +11,7 @@ export const ROLES = {
   mitra: {
     id: 'mitra', nama: 'Mitra / Instansi', init: 'MI',
     ket: 'Perguruan tinggi, komunitas, subak, pokdarwis, dan UMKM pengusul riset.',
-    beranda: '/kolaborasi'
+    beranda: '/dashboard/mitra'
   },
   opd: {
     id: 'opd', nama: 'OPD Perangkat Daerah', init: 'OP',

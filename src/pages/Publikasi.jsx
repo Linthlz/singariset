@@ -5,7 +5,8 @@ import Reveal from '../components/Reveal.jsx';
 import Icon from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
 import SmartImage from '../components/SmartImage.jsx';
-import { DOKUMENTASI, BIDANG, RISET } from '../data/singaData.js';
+import { BIDANG, RISET } from '../data/singaData.js';
+import { useContent } from '../context/ContentContext.jsx';
 import { bidangById, kecById, tanggal } from '../lib/format.js';
 
 /** Ubah tautan YouTube apa pun menjadi URL sematan. */
@@ -16,6 +17,7 @@ function embedYoutube(url) {
 }
 
 export default function Publikasi() {
+  const { dokumentasi: DOKUMENTASI } = useContent();
   const [bidang, setBidang] = useState('');
   const [q, setQ] = useState('');
   const [detail, setDetail] = useState(null);
@@ -28,7 +30,7 @@ export default function Publikasi() {
         if (q && !`${d.judul} ${d.narasi}`.toLowerCase().includes(q.toLowerCase())) return false;
         return true;
       }),
-    [bidang, q]
+    [DOKUMENTASI, bidang, q]
   );
 
   const totalFoto = DOKUMENTASI.reduce((s, d) => s + d.foto.length, 0);
