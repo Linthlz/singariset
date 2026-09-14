@@ -609,33 +609,40 @@ export const BERKAS = {
   ]
 };
 
+/* Kolom `gambar` menunjuk foto kegiatan BRIDA di public/images/roadmap/.
+   Bila berkas belum ada, latar bermotif otomatis tampil sebagai pengganti. */
 export const ROADMAP = [
   {
     tahun: '2025', tema: 'Fondasi & Tata Kelola', status: 'current',
+    gambar: '/images/roadmap/2025.jpg',
     target: 'Penetapan prioritas riset daerah, integrasi data, dan konsolidasi kelembagaan riset.',
     butir: ['Penetapan 5 bidang prioritas riset daerah', 'Digitalisasi seluruh siklus monev riset', 'Klirens etik riset daerah beroperasi penuh', 'Baseline data riset 9 kecamatan'],
     indikator: '34 riset dimonitor · 12 policy brief'
   },
   {
     tahun: '2026', tema: 'Penguatan Kapasitas', status: 'next',
+    gambar: '/images/roadmap/2026.jpg',
     target: 'Peningkatan mutu metodologi dan perluasan jejaring peneliti daerah.',
     butir: ['Sertifikasi 60 peneliti daerah', 'Laboratorium bersama lintas perguruan tinggi', 'Integrasi jurnal daerah terakreditasi SINTA', 'Skema riset multi-tahun perdana'],
     indikator: '45 riset aktif · 20 publikasi terakreditasi'
   },
   {
     tahun: '2027', tema: 'Hilirisasi Terapan', status: 'future',
+    gambar: '/images/roadmap/2027.jpg',
     target: 'Percepatan alih teknologi ke UMKM, subak, dan kelompok masyarakat.',
     butir: ['15 purwarupa naik ke TKT 7', 'Inkubator inovasi daerah beroperasi', 'Skema dana padanan industri lokal', '5 pengajuan paten/indikasi geografis'],
     indikator: '10 produk hilirisasi · 5 HKI baru'
   },
   {
     tahun: '2028', tema: 'Integrasi Kebijakan', status: 'future',
+    gambar: '/images/roadmap/2028.jpg',
     target: 'Setiap dokumen perencanaan daerah bersandar pada bukti ilmiah terverifikasi.',
     butir: ['Policy brief wajib pada setiap Renja OPD', 'Sistem rekomendasi kebijakan berbasis data', 'Evaluasi dampak riset terhadap IPM & PDRB', 'Replikasi inovasi antar-kecamatan'],
     indikator: '80% riset teradopsi kebijakan'
   },
   {
     tahun: '2029', tema: 'Smart Island Buleleng', status: 'future',
+    gambar: '/images/roadmap/2029.jpg',
     target: 'Ekosistem riset mandiri yang menopang pembangunan berkelanjutan Bali Utara.',
     butir: ['Pusat unggulan riset Bali Utara', 'Kemandirian pendanaan riset 40% non-APBD', 'Platform data riset terbuka terintegrasi nasional', 'Jejaring riset internasional Bali Utara'],
     indikator: 'Indeks Daya Saing Daerah naik 2 tingkat'

@@ -1,27 +1,56 @@
 import { forwardRef, useEffect, useRef, useState } from 'react';
 
-const Reveal = forwardRef(function Reveal({ children, className = '', as: Tag = 'div', delay = 0, ...rest }, forwardedRef) {
+/* Lama animasi .reveal di index.css (0,85 detik) + sedikit jeda aman. */
+const LAMA_REVEAL = 1050;
+
+/**
+ * Menampilkan elemen dengan perlahan saat tergulir masuk layar: memudar naik
+ * sambil blur-nya menghilang, mirip transisi pada situs Apple.
+ *
+ * Setelah animasi selesai, seluruh kelas animasi dilepas agar transisi bawaan
+ * elemen (misalnya efek angkat saat kursor di atas kartu) kembali normal dan
+ * tidak ikut melambat.
+ */
+const Reveal = forwardRef(function Reveal({ children, className = '', as: Tag = 'div', delay = 0, style, ...rest }, forwardedRef) {
   const localRef = useRef(null);
-  const [visible, setVisible] = useState(false);
+  const [fase, setFase] = useState('awal'); // awal → masuk → selesai
 
   useEffect(() => {
     const node = localRef.current;
     if (!node) return;
-    if (!('IntersectionObserver' in window)) { setVisible(true); return; }
+
+    let selesai;
+    let sudah = false;
+    function tampilkan() {
+      if (sudah) return;
+      sudah = true;
+      setFase('masuk');
+      selesai = setTimeout(() => setFase('selesai'), LAMA_REVEAL + delay);
+    }
+
+    if (!('IntersectionObserver' in window)) { tampilkan(); return; }
+
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
-          if (e.isIntersecting) { setVisible(true); io.unobserve(e.target); }
+          if (e.isIntersecting) { tampilkan(); io.unobserve(e.target); }
         });
       },
-      { threshold: 0, rootMargin: '200px 0px -10px' }
+      // Dipicu tepat saat elemen mulai masuk layar agar gerak lambatnya terlihat.
+      { threshold: 0, rootMargin: '0px 0px -12% 0px' }
     );
     io.observe(node);
-    // Fail-safe: a large/fast scroll jump can skip the intersection callback
-    // entirely for a short element. Never let real content stay invisible.
-    const safety = setTimeout(() => setVisible(true), 900);
-    return () => { io.disconnect(); clearTimeout(safety); };
-  }, []);
+
+    // Fail-safe khusus elemen yang SUDAH berada di layar saat halaman dimuat,
+    // seandainya callback observer tidak sempat berjalan. Elemen di bawah layar
+    // sengaja dibiarkan menunggu gulir agar animasinya benar-benar terlihat.
+    const pengaman = setTimeout(() => {
+      const r = node.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) { io.disconnect(); tampilkan(); }
+    }, 1200);
+
+    return () => { io.disconnect(); clearTimeout(pengaman); clearTimeout(selesai); };
+  }, [delay]);
 
   function setRefs(node) {
     localRef.current = node;
@@ -29,11 +58,13 @@ const Reveal = forwardRef(function Reveal({ children, className = '', as: Tag = 
     else if (forwardedRef) forwardedRef.current = node;
   }
 
+  const kelasFase = fase === 'awal' ? 'reveal' : fase === 'masuk' ? 'reveal reveal-in' : '';
+
   return (
     <Tag
       ref={setRefs}
-      className={`transition-all duration-500 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'} ${className}`}
-      style={{ transitionDelay: delay ? `${delay}ms` : undefined }}
+      className={`${kelasFase} ${className}`.trim()}
+      style={fase === 'selesai' || !delay ? style : { ...style, transitionDelay: `${delay}ms` }}
       {...rest}
     >
       {children}

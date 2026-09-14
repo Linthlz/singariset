@@ -132,23 +132,27 @@ export default function Riset() {
           </Reveal>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {shown.length ? shown.map((r) => <RisetCard key={r.id} r={r} />) : (
-              <div className="col-span-full py-14 text-center text-ink-3">
+            {shown.length ? shown.map((r, i) => (
+              <Reveal key={r.id} delay={(i % 3) * 90} className="h-full">
+                <RisetCard r={r} />
+              </Reveal>
+            )) : (
+              <Reveal className="col-span-full py-14 text-center text-ink-3">
                 <Icon name="search" size={46} className="mx-auto mb-3.5 opacity-40" />
                 <h3 className="text-[1.02rem] text-ink-2">Tidak ada riset yang cocok</h3>
                 <p>Longgarkan filter atau gunakan kata kunci lain.</p>
-              </div>
+              </Reveal>
             )}
           </div>
 
           {totalPages > 1 && (
-            <div className="mt-8 flex items-center justify-center gap-2">
+            <Reveal className="mt-8 flex items-center justify-center gap-2">
               <button type="button" disabled={page === 1} onClick={() => setPage((p) => p - 1)} className="rounded-lg border border-line-strong px-3.5 py-2 text-sm font-semibold disabled:opacity-40 hover:border-maroon-600">←</button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                 <button key={p} type="button" onClick={() => setPage(p)} className={`h-9 w-9 rounded-lg text-sm font-semibold ${p === page ? 'bg-maroon-800 text-white' : 'border border-line-strong text-ink-2 hover:border-maroon-600'}`}>{p}</button>
               ))}
               <button type="button" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)} className="rounded-lg border border-line-strong px-3.5 py-2 text-sm font-semibold disabled:opacity-40 hover:border-maroon-600">→</button>
-            </div>
+            </Reveal>
           )}
         </div>
       </section>

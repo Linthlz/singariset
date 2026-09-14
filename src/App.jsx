@@ -21,8 +21,8 @@ export default function App() {
   return (
     <Routes>
       {/* Halaman autentikasi — tanpa header/footer portal */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+      <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
 
       {/* Dashboard — shell tersendiri, dibatasi peran */}
       <Route

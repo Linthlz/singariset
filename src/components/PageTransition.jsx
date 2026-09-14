@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-/* Lama animasi CSS .page-enter dan .route-bar di index.css (1,1 detik).
+/* Lama animasi CSS .page-enter dan .route-bar di index.css (0,9 detik).
    Nilai ini disamakan agar bilah kemajuan hilang tepat saat isi halaman
    selesai memudar masuk, bukan lebih cepat maupun lebih lambat. */
-const LAMA_TRANSISI = 1100;
+const LAMA_TRANSISI = 900;
 
 /**
  * Transisi antar halaman: isi halaman memudar-naik secara perlahan saat

@@ -61,3 +61,50 @@ Rasio bebas (ditampilkan sebagai galeri), minimal lebar **1000 px**.
 
 Untuk **video**, tidak perlu unggah berkas — cukup isi kolom `video` pada
 `DOKUMENTASI` dengan tautan YouTube, lalu video tampil sebagai pemutar sematan.
+
+---
+
+## 5. Foto profil empat pilar (kartu yang bisa dibalik)
+
+Folder: `public/images/profil/`
+
+| Berkas yang dicari | Dipakai untuk |
+|---|---|
+| `kolaborasi.jpg` | Kartu pilar Kolaborasi |
+| `inovasi.jpg` | Kartu pilar Inovasi |
+| `data.jpg` | Kartu pilar Data |
+| `dampak.jpg` | Kartu pilar Dampak |
+
+- Rasio **potret** (3:4), minimal **800 × 1000 px** — kartu berbentuk tinggi.
+- Bagian bawah foto tertutup gradasi gelap untuk judul, jadi hindari objek
+  penting di area tersebut.
+- Saat kursor di atas kartu (atau kartu diklik di layar sentuh), kartu berbalik
+  dan menampilkan narasi pilar tersebut.
+
+---
+
+## 6. Foto kegiatan peta jalan riset
+
+Folder: `public/images/roadmap/`
+
+| Berkas yang dicari | Dipakai untuk |
+|---|---|
+| `2025.jpg` … `2029.jpg` | Kartu tahapan peta jalan per tahun |
+
+- Rasio **potret** (3:4), minimal **800 × 1000 px**.
+- Judul tahun dan tema ditaruh di bagian atas foto, narasi program di bagian
+  bawah — keduanya di atas gradasi gelap.
+- Narasi dan indikator tiap tahun diatur pada `ROADMAP` di
+  `src/data/singaData.js`.
+
+---
+
+## 7. Logo mitra (baris berjalan otomatis)
+
+Folder: `public/images/mitra/`
+
+Nama berkas mengikuti kolom `logo` pada `MITRA_LOGO` di
+`src/data/singaData.js`, contoh: `undiksha.png`, `unud.png`, `brin.png`.
+
+- Format **PNG/SVG berlatar transparan**, tinggi minimal **200 px**.
+- Hanya logo, tanpa teks tambahan — nama lembaga tidak ditampilkan.

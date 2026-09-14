@@ -31,8 +31,8 @@
   --color-info: #1d4ed8;
   --color-info-bg: #dbeafe;
 
-  --font-sans: "Inter", "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-head: "Plus Jakarta Sans", "Source Serif 4", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-head: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --shadow-card: 0 1px 2px rgba(17,24,39,.06), 0 1px 3px rgba(17,24,39,.04);
   --shadow-lift: 0 4px 12px rgba(17,24,39,.07), 0 1px 3px rgba(17,24,39,.05);
@@ -79,18 +79,36 @@
 
 /* Transisi antar halaman — slow motion, terasa elegan bukan terburu-buru */
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(20px) scale(.985); filter: blur(4px); }
-  55%  { filter: blur(0); }
-  to   { opacity: 1; transform: none; filter: blur(0); }
+  from { opacity: 0; transform: translateY(26px) scale(.985); filter: blur(12px); }
+  to   { opacity: 1; transform: none; filter: none; }
 }
-.page-enter { animation: pageIn 1.1s cubic-bezier(.16,1,.3,1); }
+.page-enter { animation: pageIn .9s cubic-bezier(.28,.11,.32,1); }
+
+/* Kemunculan elemen saat digulir — memudar naik sambil blur menghilang,
+   lambat dan sinematik. Kelas ini dilepas oleh komponen Reveal setelah
+   animasi selesai supaya transisi hover elemen kembali normal. */
+.reveal {
+  opacity: 0;
+  filter: blur(12px);
+  transform: translateY(38px) scale(.985);
+  transition:
+    opacity .85s cubic-bezier(.28,.11,.32,1),
+    filter .85s cubic-bezier(.28,.11,.32,1),
+    transform .85s cubic-bezier(.28,.11,.32,1);
+  will-change: opacity, filter, transform;
+}
+.reveal-in {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
 
 /* Bilah kemajuan tipis saat berpindah halaman */
 @keyframes routeBar {
   from { transform: scaleX(0); }
   to   { transform: scaleX(1); }
 }
-.route-bar { transform-origin: left; animation: routeBar 1.1s cubic-bezier(.16,1,.3,1) forwards; }
+.route-bar { transform-origin: left; animation: routeBar .9s cubic-bezier(.16,1,.3,1) forwards; }
 
 /* Wilayah peta kecamatan muncul bertahap dengan sedikit dorongan ke atas */
 @keyframes petaIn {
@@ -116,6 +134,28 @@
   34% { box-shadow: 0 0 0 0 rgba(249,199,79,0); }
 }
 .timeline-marker { animation: timelineMarker 6.8s ease-in-out infinite; }
+
+/* Kartu balik (flip) — dipakai pada profil empat pilar.
+   Membalik saat kursor di atas kartu atau saat kartu diklik/di-fokus. */
+.flip-card { perspective: 1400px; }
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .85s cubic-bezier(.16,1,.3,1);
+}
+.flip-card:hover .flip-inner,
+.flip-card:focus-within .flip-inner,
+.flip-card.is-flipped .flip-inner { transform: rotateY(180deg); }
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+.flip-face-back { transform: rotateY(180deg); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

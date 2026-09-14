@@ -31,14 +31,20 @@ const EKO = [
   { ico: 'network', v: STATS.institusi, l: 'Institusi mitra', s: 'Perguruan tinggi, litbang, OPD, komunitas' }
 ];
 
+/* Gambar kegiatan BRIDA untuk sisi depan kartu — taruh berkas di
+   public/images/profil/. Bila belum ada, latar bermotif otomatis tampil. */
 const PILAR = [
-  { ico: 'handshake', t: 'Kolaborasi', p: 'Menjodohkan kebutuhan nyata OPD dan komunitas dengan kapasitas peneliti perguruan tinggi.',
+  { ico: 'handshake', t: 'Kolaborasi', img: '/images/profil/1.jpg',
+    p: 'Menjodohkan kebutuhan nyata OPD dan komunitas dengan kapasitas peneliti perguruan tinggi.',
     li: ['Formulir usulan satu pintu', 'Pemilihan mitra sasaran terstruktur', 'Verifikasi 4 tahap yang transparan'] },
-  { ico: 'lightbulb', t: 'Inovasi', p: 'Mendorong riset naik dari laporan menjadi purwarupa dan produk yang dipakai masyarakat.',
+  { ico: 'lightbulb', t: 'Inovasi', img: '/images/profil/2.jpg',
+    p: 'Mendorong riset naik dari laporan menjadi purwarupa dan produk yang dipakai masyarakat.',
     li: ['Pendampingan hilirisasi UMKM', 'Fasilitasi HKI dan paten', 'Uji lapangan bersama mitra'] },
-  { ico: 'layers', t: 'Data', p: 'Menyatukan seluruh jejak riset daerah dalam basis data tunggal yang dapat diaudit.',
+  { ico: 'layers', t: 'Data', img: '/images/profil/3.jpg',
+    p: 'Menyatukan seluruh jejak riset daerah dalam basis data tunggal yang dapat diaudit.',
     li: ['Integrasi Satu Data Buleleng', 'Repositori publikasi terbuka', 'Dashboard anggaran real-time'] },
-  { ico: 'award', t: 'Dampak', p: 'Mengukur apakah riset benar-benar mengubah kebijakan dan kondisi lapangan.',
+  { ico: 'award', t: 'Dampak', img: '/images/profil/4.jpeg',
+    p: 'Mengukur apakah riset benar-benar mengubah kebijakan dan kondisi lapangan.',
     li: ['Policy brief wajib per riset', 'Pelacakan adopsi kebijakan', 'Evaluasi manfaat bagi sasaran'] }
 ];
 
@@ -52,6 +58,54 @@ const FUND_STATUS = {
   closing: { l: 'Segera Tutup', c: 'bg-danger-bg text-danger', border: 'before:bg-danger' },
   soon: { l: 'Akan Dibuka', c: 'bg-info-bg text-info', border: 'before:bg-gold-500' }
 };
+
+/* Kartu pilar dengan foto kegiatan BRIDA di depan; membalik saat disentuh
+   atau diklik untuk menampilkan narasinya. */
+function PilarCard({ p, i }) {
+  const [flip, setFlip] = useState(false);
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={flip}
+      aria-label={`${p.t} — tampilkan penjelasan`}
+      onClick={() => setFlip((f) => !f)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFlip((f) => !f); } }}
+      className={`flip-card h-[400px] cursor-pointer rounded-2xl outline-none focus-visible:ring-3 focus-visible:ring-maroon-600/30 sm:h-[430px] lg:h-[390px] ${flip ? 'is-flipped' : ''}`}
+    >
+      <div className="flip-inner">
+        {/* Sisi depan — foto kegiatan */}
+        <div className="flip-face rounded-2xl border border-line bg-white shadow-card">
+          <SmartImage src={p.img} alt={`Kegiatan BRIDA — ${p.t}`} seed={i} className="h-full w-full" />
+          <span className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(180deg, rgba(26,4,4,.12) 35%, rgba(26,4,4,.88) 100%)' }} />
+          <span className="absolute left-5 top-5 grid h-11 w-11 place-items-center rounded-xl text-gold-500" style={{ backgroundImage: 'linear-gradient(140deg,#8E1B1B,#C62828)' }}>
+            <Icon name={p.ico} size={22} />
+          </span>
+          <div className="absolute inset-x-0 bottom-0 p-5">
+            <h3 className="text-[1.3rem] leading-tight text-white">{p.t}</h3>
+            <span className="mt-1.5 inline-flex items-center gap-1.5 text-[.78rem] font-semibold text-gold-500">
+              Lihat penjelasan <Icon name="refresh" size={13} />
+            </span>
+          </div>
+        </div>
+
+        {/* Sisi belakang — narasi */}
+        <div className="flip-face flip-face-back flex flex-col rounded-2xl border border-maroon-900 p-5" style={{ backgroundImage: 'linear-gradient(150deg,#8E1B1B,#4A0D0D)' }}>
+          <h3 className="mb-2.5 text-[1.15rem] text-white">{p.t}</h3>
+          <p className="mb-3 text-[.86rem] leading-relaxed text-white/85">{p.p}</p>
+          <ul className="m-0 list-none space-y-1.5 p-0 text-[.82rem]">
+            {p.li.map((l) => (
+              <li key={l} className="flex items-start gap-2 text-white/78">
+                <span className="mt-0.5 flex-none font-extrabold text-gold-500">✓</span>{l}
+              </li>
+            ))}
+          </ul>
+          <span className="mt-auto pt-3 text-[.74rem] font-semibold text-white/55">Klik lagi untuk kembali</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* Kartu berita bergaya foto penuh — seluruh kartu bisa diklik untuk membuka detail. */
 function NewsCard({ n, i, big, onOpen }) {
@@ -167,8 +221,8 @@ export default function Home() {
       <section className="relative z-20 -mt-8">
         <div className="mx-auto max-w-[1240px] px-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {QUICK.map((q) => (
-              <Link key={q.t} to={q.h} className="group flex items-start gap-3.5 rounded-xl border border-line bg-white p-4.5 no-underline shadow-lift transition hover:-translate-y-1 hover:border-gold-500 hover:shadow-pop">
+            {QUICK.map((q, i) => (
+              <Reveal key={q.t} as={Link} delay={i * 90} to={q.h} className="group flex items-start gap-3.5 rounded-xl border border-line bg-white p-4.5 no-underline shadow-lift transition hover:-translate-y-1 hover:border-gold-500 hover:shadow-pop">
                 <span className="grid h-10.5 w-10.5 flex-none place-items-center rounded-[10px] bg-maroon-50 text-maroon-800 transition group-hover:bg-maroon-800 group-hover:text-gold-500">
                   <Icon name={q.ico} size={21} />
                 </span>
@@ -176,7 +230,7 @@ export default function Home() {
                   <strong className="mb-0.5 block text-[.93rem] font-bold text-ink">{q.t}</strong>
                   <span className="block text-[.785rem] leading-snug text-ink-3">{q.s}</span>
                 </span>
-              </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -213,16 +267,8 @@ export default function Home() {
           </Reveal>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {PILAR.map((p, i) => (
-              <Reveal key={p.t} delay={i * 60} className="relative overflow-hidden rounded-xl border border-line bg-white p-5.5 pt-6.5 shadow-card transition hover:-translate-y-1 hover:shadow-pop">
-                <span className="pointer-events-none absolute right-4.5 top-[-6px] font-head text-[3.1rem] font-extrabold leading-none text-surface-2">0{i + 1}</span>
-                <span className="relative z-10 mb-3.5 grid h-11.5 w-11.5 place-items-center rounded-xl text-gold-500" style={{ backgroundImage: 'linear-gradient(140deg,#8E1B1B,#C62828)' }}><Icon name={p.ico} size={23} /></span>
-                <h3 className="relative z-10 text-[1.05rem]">{p.t}</h3>
-                <p className="relative z-10 mb-3 text-[.875rem]">{p.p}</p>
-                <ul className="relative z-10 m-0 list-none space-y-1.5 p-0 text-[.81rem]">
-                  {p.li.map((l) => (
-                    <li key={l} className="flex items-start gap-2 text-ink-2"><span className="mt-0.5 flex-none font-extrabold text-success">✓</span>{l}</li>
-                  ))}
-                </ul>
+              <Reveal key={p.t} delay={i * 110}>
+                <PilarCard p={p} i={i} />
               </Reveal>
             ))}
           </div>
@@ -245,48 +291,56 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== 1.7 PETA JALAN RISET — panel merah ===== */}
-      <section className="py-14 text-white sm:py-18" style={{ backgroundImage: 'linear-gradient(160deg,#5C1010 0%,#6B1414 45%,#3E0B0B 100%)' }} id="petajalan">
+      {/* ===== 1.7 PETA JALAN RISET — kartu foto kegiatan ===== */}
+      <section className="py-14 sm:py-18" id="petajalan">
         <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-7 flex flex-wrap items-end justify-between gap-4">
-            <div className="max-w-[640px]">
-              <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-gold-500 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peta Jalan Riset 2025–2029</span>
-              <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)] text-white">Lima tahap menuju ekosistem riset mandiri Bali Utara</h2>
-              <p className="mb-0 text-[1.02rem] text-white/78">Peta jalan ini menjadi rujukan penilaian kesesuaian setiap usulan riset, indikator pertama dalam matriks evaluasi tim pakar BRIDA.</p>
+          <Reveal className="mb-8 grid gap-6 lg:grid-cols-[1fr_1fr_auto] lg:items-start">
+            <div>
+              <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peta Jalan Riset 2025–2029</span>
+              <h2 className="max-w-[18ch] text-[clamp(1.45rem,2.7vw,2.05rem)]">Lima tahap menuju ekosistem riset mandiri Bali Utara</h2>
             </div>
-            <Link to="/roadmap" className="rounded-lg bg-gold-500 px-5 py-2.5 text-sm font-semibold text-[#4A2D00] no-underline transition hover:bg-gold-600">
-              Detail peta jalan per sektor →
+            <p className="mb-0 self-center text-[1.02rem] text-ink-2">
+              Setiap tahun punya fokus program tersendiri, mulai dari penataan tata kelola sampai kemandirian pendanaan riset. Peta jalan ini juga menjadi indikator pertama dalam penilaian usulan riset oleh tim pakar BRIDA.
+            </p>
+            <Link
+              to="/roadmap"
+              className="inline-flex items-center gap-2 self-center justify-self-start rounded-full border border-line-strong bg-white px-5 py-3 text-sm font-semibold text-ink no-underline transition hover:border-maroon-800 hover:text-maroon-800 lg:justify-self-end"
+            >
+              Detail peta jalan <Icon name="arrow" size={15} />
             </Link>
           </Reveal>
 
-          <Reveal className="grid gap-3.5 lg:grid-cols-5">
-            {ROADMAP.map((r) => (
-              <div
-                key={r.tahun}
-                className={`flex flex-col overflow-hidden rounded-xl border bg-white/7 backdrop-blur-sm transition hover:bg-white/10 ${
-                  r.status === 'current' ? 'border-gold-500 shadow-[0_0_0_3px_rgba(249,199,79,.22)]' : 'border-white/15'
-                }`}
-              >
-                <div className={`px-4 py-3.5 ${r.status === 'current' ? 'bg-gold-500 text-[#4A2D00]' : 'bg-white/10 text-white'}`}>
-                  <div className={`text-[.7rem] font-bold uppercase tracking-widest ${r.status === 'current' ? 'text-[#4A2D00]/75' : 'text-white/70'}`}>
-                    {r.tahun}{r.status === 'current' ? ' · berjalan' : ''}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {ROADMAP.map((r, i) => (
+              <Reveal key={r.tahun} delay={i * 100}>
+                <article className="group relative h-[380px] overflow-hidden rounded-2xl border border-line shadow-card transition duration-500 hover:-translate-y-1.5 hover:shadow-pop">
+                  <div className="absolute inset-0">
+                    <SmartImage
+                      src={r.gambar} alt={`Kegiatan BRIDA — ${r.tema}`} seed={i}
+                      className="h-full w-full" imgClassName="transition duration-700 group-hover:scale-105"
+                    />
                   </div>
-                  <div className="mt-0.5 font-head text-[1.02rem] font-extrabold">{r.tema}</div>
-                </div>
-                <div className="flex-1 p-4">
-                  <p className="mb-2.5 text-[.82rem] text-white/80">{r.target}</p>
-                  <ul className="m-0 list-none space-y-1.75 p-0 text-[.81rem]">
-                    {r.butir.map((b) => (
-                      <li key={b} className="flex items-start gap-2 text-white/75">
-                        <span className="mt-1.5 h-1 w-1 flex-none rounded-full bg-gold-500" />{b}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="border-t border-white/12 px-4 py-2.75 text-[.76rem] text-white/60">{r.indikator}</div>
-              </div>
+                  <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(180deg, rgba(26,4,4,.72) 0%, rgba(26,4,4,.28) 42%, rgba(26,4,4,.92) 100%)' }} />
+
+                  <div className="absolute inset-x-0 top-0 p-4.5">
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[.7rem] font-bold uppercase tracking-widest ${
+                      r.status === 'current' ? 'bg-gold-500 text-[#4A2D00]' : 'bg-white/18 text-white backdrop-blur'
+                    }`}>
+                      {r.tahun}{r.status === 'current' ? ' · berjalan' : ''}
+                    </span>
+                    <h3 className="mt-2.5 text-[1.12rem] leading-snug text-white">{r.tema}</h3>
+                  </div>
+
+                  <div className="absolute inset-x-0 bottom-0 p-4.5">
+                    <p className="mb-2.5 text-[.84rem] leading-relaxed text-white/85">{r.target}</p>
+                    <div className="flex items-start gap-2 border-t border-white/20 pt-2.5 text-[.76rem] font-semibold text-gold-500">
+                      <Icon name="target" size={14} className="mt-0.5 flex-none" />{r.indikator}
+                    </div>
+                  </div>
+                </article>
+              </Reveal>
             ))}
-          </Reveal>
+          </div>
         </div>
       </section>
 
