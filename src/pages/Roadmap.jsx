@@ -24,13 +24,19 @@ export default function Roadmap() {
             <p className="mb-0 text-ink-2">Setiap usulan riset dinilai kesesuaiannya terhadap tahap berjalan pada garis waktu ini, indikator pertama dalam matriks evaluasi tim pakar BRIDA.</p>
           </Reveal>
 
-          <div className="relative pl-7.5 before:absolute before:bottom-2 before:left-2.25 before:top-2 before:w-0.5 before:rounded-full" style={{ }}>
-            <div className="absolute bottom-2 left-2.25 top-2 w-0.5 rounded-full" style={{ backgroundImage: 'linear-gradient(180deg,#8E1B1B,#F9C74F)' }} />
+          <div className="relative pl-7.5 before:absolute before:bottom-2 before:left-2.25 before:top-2 before:w-0.5 before:rounded-full">
+            <div className="timeline-track absolute bottom-2 left-2.25 top-2 w-0.5 overflow-hidden rounded-full" aria-hidden="true">
+              <div className="absolute inset-0 rounded-full" style={{ backgroundImage: 'linear-gradient(180deg,#8E1B1B,#F9C74F)' }} />
+              <span className="timeline-glow absolute left-0 top-0 h-1/3 w-full rounded-full" />
+            </div>
             {ROADMAP.map((r, i) => (
               <Reveal key={r.tahun} delay={i * 70} className="relative mb-7 last:mb-0">
-                <span className={`absolute -left-7.5 top-1.5 grid h-5 w-5 place-items-center rounded-full border-3 bg-white ${
+                <span
+                  className={`timeline-marker absolute -left-7.5 top-1.5 z-10 grid h-5 w-5 place-items-center rounded-full border-3 bg-white ${
                   r.status === 'current' ? 'border-maroon-800' : r.status === 'next' ? 'border-line-strong' : 'border-line-strong'
-                }`}>
+                  }`}
+                  style={{ animationDelay: `${i * 170}ms` }}
+                >
                   <span className={`h-1.5 w-1.5 rounded-full ${r.status === 'current' ? 'bg-maroon-800' : 'bg-line-strong'}`} />
                 </span>
                 <div className="rounded-xl border border-line bg-white p-5.5 shadow-card">

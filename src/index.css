@@ -98,6 +98,25 @@
   to   { opacity: 1; transform: none; }
 }
 
+@keyframes timelineGlow {
+  0% { transform: translateY(-140%); opacity: 0; }
+  12% { opacity: .95; }
+  55% { opacity: .9; }
+  100% { transform: translateY(430%); opacity: 0; }
+}
+.timeline-glow {
+  background: linear-gradient(180deg, transparent, #fff7d6 45%, #f9c74f 72%, transparent);
+  box-shadow: 0 0 10px rgba(249,199,79,.95);
+  animation: timelineGlow 6.8s cubic-bezier(.45,0,.2,1) infinite;
+}
+
+@keyframes timelineMarker {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249,199,79,0); }
+  18% { box-shadow: 0 0 0 5px rgba(249,199,79,.22), 0 0 14px rgba(249,199,79,.55); }
+  34% { box-shadow: 0 0 0 0 rgba(249,199,79,0); }
+}
+.timeline-marker { animation: timelineMarker 6.8s ease-in-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: .01ms !important;

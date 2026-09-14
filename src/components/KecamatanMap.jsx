@@ -125,9 +125,10 @@ export default function KecamatanMap() {
 
           {kHover && !kAktif && (
             <div
-              className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[130%] whitespace-nowrap text-[.85rem] font-bold text-[#4A0D0D]"
-              style={{ left: tip.x, top: tip.y, textShadow: '0 1px 0 rgba(255,255,255,.9), 0 2px 10px rgba(255,255,255,.85)' }}
+              className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[calc(100%+14px)] whitespace-nowrap rounded-xl border border-[#E8C9A2] bg-[#FFFDF8] px-3 py-2 text-[.8rem] font-bold text-[#4A0D0D] shadow-[0_10px_24px_rgba(74,13,13,0.18)]"
+              style={{ left: tip.x, top: tip.y }}
             >
+              <span className="absolute left-1/2 top-full h-3 w-3 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b border-r border-[#E8C9A2] bg-[#FFFDF8]" aria-hidden="true" />
               {kHover.nama} — {kHover.riset} riset · {kHover.fokus}
             </div>
           )}
