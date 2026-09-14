@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
-import Modal from './Modal.jsx';
+import Icon from './Icon.jsx';
 import { KECAMATAN, RISET, BIDANG } from '../data/singaData.js';
 import { bidangById } from '../lib/format.js';
 
@@ -18,21 +19,36 @@ const KEC_PATHS = {
   Tejakula: 'M890.2 102.8L885.5 108.4L889.6 112.2L889.7 115.5L882.1 124.9L873.5 129.0L873.5 133.3L866.5 131.0L864.1 127.5L860.0 131.2L855.8 131.0L852.0 127.5L851.2 121.4L837.7 125.6L835.1 105.1L828.4 98.0L831.0 91.1L839.6 82.1L822.4 77.1L824.8 69.3L822.4 67.2L823.2 61.3L826.9 55.0L824.8 47.8L835.7 49.6L847.0 57.9L864.6 66.2L878.0 67.5L892.6 74.1L908.7 73.2L926.8 89.6L959.5 97.6L972.2 103.8L983.1 112.8L1003.6 116.4L1020.5 123.2L1024.0 127.2L1010.1 133.2L1008.9 137.8L1004.4 141.4L985.3 146.1L982.5 143.9L986.2 136.2L979.7 132.4L971.2 131.4L965.7 137.3L952.8 131.5L945.0 124.2L940.6 129.2L932.1 120.2L927.7 125.2L924.5 119.5L926.2 114.8L924.2 112.1L923.1 115.1L917.6 118.4L913.5 109.9L907.7 109.0L902.2 121.0L898.7 122.2L897.9 111.6L890.2 102.8Z'
 };
 
-/* Titik label kira-kira di tengah tiap bentuk, untuk nama singkat + jumlah riset. */
+/* Titik label kira-kira di tengah tiap bentuk, untuk nama singkat + keterangan. */
 const LABELS = {
   Gerokgak: [186, 132], Seririt: [500, 195], Busungbiu: [560, 275], Banjar: [615, 195],
   Buleleng: [672, 90], Sukasada: [695, 165], Sawan: [755, 115], Kubutambahan: [808, 130], Tejakula: [935, 100]
 };
 
 const MAROON = [142, 27, 27]; // #8E1B1B
+const GOLD_INTENSE = [180, 83, 9]; // #B45309 — dipakai untuk mode Isu Strategis
+const NEUTRAL = [140, 140, 140];
 
-function mixMaroon(ratio) {
+function hexToRgb(hex) {
+  const m = hex.replace('#', '');
+  return [parseInt(m.slice(0, 2), 16), parseInt(m.slice(2, 4), 16), parseInt(m.slice(4, 6), 16)];
+}
+
+function mixColor(rgb, ratio) {
   const base = 250;
-  const r = Math.round(base + (MAROON[0] - base) * ratio);
-  const g = Math.round(base + (MAROON[1] - base) * ratio);
-  const b = Math.round(base + (MAROON[2] - base) * ratio);
+  const r = Math.round(base + (rgb[0] - base) * ratio);
+  const g = Math.round(base + (rgb[1] - base) * ratio);
+  const b = Math.round(base + (rgb[2] - base) * ratio);
   return `rgb(${r},${g},${b})`;
 }
+
+/* Tiga cara memandang wilayah — peta tidak melulu tentang jumlah riset.
+   Bentuk peta tetap sama, hanya pewarnaan & keterangan yang menyesuaikan. */
+const MODES = [
+  { id: 'potensi', l: 'Potensi Wilayah', ikon: 'layers' },
+  { id: 'isu', l: 'Isu Strategis', ikon: 'alert' },
+  { id: 'riset', l: 'Riset Terkait', ikon: 'target' }
+];
 
 function BarRow({ label, value, max, warna }) {
   const [w, setW] = useState(0);
@@ -51,16 +67,187 @@ function BarRow({ label, value, max, warna }) {
   );
 }
 
+/* Panel detail wilayah — side panel dari kanan di layar besar, bottom sheet
+   di layar kecil. Isi mengikuti alur: potensi → sektor → isu → riset terkait
+   → peluang riset, agar peta berfungsi sebagai navigator eksplorasi wilayah. */
+function KecamatanPanel({ k, terkait, onClose }) {
+  const hostRef = useRef(null);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  const maxBidang = Math.max(1, ...BIDANG.map((b) => terkait.filter((r) => r.bidang === b.id).length));
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[150] bg-ink/55 backdrop-blur-sm [animation:overlayIn_.22s_ease-out]"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Detail Kecamatan ${k.nama}`}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      ref={hostRef}
+    >
+      <div className="flex h-[85vh] w-full flex-col rounded-t-2xl bg-white shadow-pop [animation:sheetIn_.32s_cubic-bezier(.2,.9,.3,1)] lg:absolute lg:inset-y-0 lg:right-0 lg:h-full lg:w-full lg:max-w-[440px] lg:rounded-t-none lg:rounded-l-2xl lg:[animation:drawerIn_.32s_cubic-bezier(.2,.9,.3,1)]">
+        <div className="flex items-start gap-4 border-b border-line px-5.5 py-5">
+          <div className="flex-1">
+            <span className="text-[.72rem] font-bold uppercase tracking-widest text-maroon-600">Kabupaten Buleleng</span>
+            <h3 className="m-0 text-lg font-extrabold heading-serif text-ink">Kecamatan {k.nama}</h3>
+            <p className="mb-0 mt-1 text-[.83rem] text-ink-2">{k.deskripsi}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Tutup detail wilayah"
+            className="grid h-8 w-8 flex-none place-items-center rounded-lg bg-surface-1 text-ink-2 hover:bg-danger-bg hover:text-danger"
+          >
+            <Icon name="x" size={17} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5.5 py-5.5">
+          {/* 1. Potensi wilayah */}
+          <div className="mb-5">
+            <div className="mb-2.5 text-[.76rem] font-bold uppercase tracking-wide text-ink-3">Potensi Wilayah</div>
+            <div className="flex flex-wrap gap-2">
+              {k.potensi.map((p) => (
+                <span key={p} className="rounded-full border border-line-strong bg-surface-1 px-3 py-1.5 text-[.8rem] font-semibold text-ink-2">{p}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* 2. Sektor unggulan (data kuantitatif nyata: sebaran riset per bidang) */}
+          <div className="mb-5">
+            <div className="mb-2.5 text-[.76rem] font-bold uppercase tracking-wide text-ink-3">Sektor Riset per Bidang Prioritas</div>
+            {BIDANG.map((b) => (
+              <BarRow
+                key={b.id}
+                label={b.nama.split(' ')[0]}
+                value={terkait.filter((r) => r.bidang === b.id).length}
+                max={maxBidang}
+                warna={bidangById(b.id).warna}
+              />
+            ))}
+          </div>
+
+          {/* 3. Isu & kebutuhan wilayah */}
+          <div className="mb-5">
+            <div className="mb-2.5 text-[.76rem] font-bold uppercase tracking-wide text-ink-3">Isu &amp; Kebutuhan Wilayah</div>
+            <ul className="m-0 list-none space-y-1.5 p-0">
+              {k.isu.map((s) => (
+                <li key={s} className="flex items-start gap-2 text-[.83rem] text-ink-2">
+                  <Icon name="alert" size={14} className="mt-0.5 flex-none text-warning" />{s}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* 4. Riset terkait */}
+          <div className="mb-5">
+            <div className="mb-2.5 flex items-center justify-between">
+              <span className="text-[.76rem] font-bold uppercase tracking-wide text-ink-3">Riset Terkait</span>
+              <span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">{terkait.length} riset</span>
+            </div>
+            {terkait.length ? (
+              <>
+                {terkait.slice(0, 4).map((r) => (
+                  <Link key={r.id} to={`/riset/${r.id}`} onClick={onClose} className="mb-1.5 block text-[.82rem] font-semibold text-ink no-underline hover:text-maroon-800">• {r.judul}</Link>
+                ))}
+                <p className="m-0 mt-2 text-[.74rem] italic text-ink-3">Riset terkait tidak selalu dilaksanakan tepat di lokasi ini, melainkan relevan dengan potensi dan isu kecamatan.</p>
+              </>
+            ) : (
+              <p className="m-0 text-[.82rem] text-ink-2">Belum ada riset spesifik tercatat di kecamatan ini. Sektor prioritas kabupaten pada bidang <b>{k.fokus}</b> tetap relevan untuk diusulkan sebagai topik riset di wilayah ini.</p>
+            )}
+          </div>
+
+          {/* 5. Peluang riset & inovasi */}
+          <div>
+            <div className="mb-2.5 text-[.76rem] font-bold uppercase tracking-wide text-ink-3">Peluang Riset &amp; Inovasi</div>
+            <div className="flex flex-col gap-2.5">
+              {k.peluang.map((p) => (
+                <div key={p.judul} className="rounded-xl border border-line bg-surface-1 p-3.5">
+                  <div className="mb-1 flex items-center gap-2 text-[.86rem] font-bold text-ink">
+                    <Icon name="lightbulb" size={15} className="flex-none text-gold-500" />{p.judul}
+                  </div>
+                  <p className="m-0 text-[.79rem] text-ink-2">{p.deskripsi}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-line px-5.5 py-4">
+          <Link
+            to={`/riset?kecamatan=${k.id}`}
+            onClick={onClose}
+            className="flex items-center justify-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2.5 text-center text-[.85rem] font-semibold text-white no-underline hover:bg-maroon-600"
+          >
+            Eksplorasi Riset {k.nama} <Icon name="arrow" size={15} />
+          </Link>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 export default function KecamatanMap() {
   const [active, setActive] = useState(null);
   const [hover, setHover] = useState(null);
+  const [mode, setMode] = useState('potensi');
   const [tip, setTip] = useState({ x: 0, y: 0 });
   const wrapRef = useRef(null);
 
   const maxRiset = useMemo(() => Math.max(1, ...KECAMATAN.map((k) => k.riset)), []);
+  const maxIsu = useMemo(() => Math.max(1, ...KECAMATAN.map((k) => k.isu.length)), []);
+
+  const dominantBidang = useMemo(() => {
+    const map = {};
+    KECAMATAN.forEach((k) => {
+      const counts = BIDANG.map((b) => ({ id: b.id, n: RISET.filter((r) => r.kecamatan === k.id && r.bidang === b.id).length }));
+      const top = counts.reduce((a, b) => (b.n > a.n ? b : a), { id: null, n: 0 });
+      map[k.id] = top.n > 0 ? top.id : null;
+    });
+    return map;
+  }, []);
+
   const kAktif = KECAMATAN.find((k) => k.id === active);
   const terkait = kAktif ? RISET.filter((r) => r.kecamatan === kAktif.id) : [];
   const kHover = KECAMATAN.find((k) => k.id === hover);
+
+  function fillFor(k) {
+    if (mode === 'isu') {
+      const ratio = 0.16 + (k.isu.length / maxIsu) * 0.84;
+      return mixColor(GOLD_INTENSE, ratio);
+    }
+    if (mode === 'potensi') {
+      const dom = dominantBidang[k.id];
+      return dom ? mixColor(hexToRgb(bidangById(dom).warna), 0.5) : mixColor(NEUTRAL, 0.32);
+    }
+    const ratio = 0.16 + (k.riset / maxRiset) * 0.84;
+    return mixColor(MAROON, ratio);
+  }
+
+  function subLabel(k) {
+    if (mode === 'isu') return `${k.isu.length} isu strategis`;
+    if (mode === 'potensi') {
+      const dom = dominantBidang[k.id];
+      return dom ? bidangById(dom).nama.split(' ')[0] : 'Beragam sektor';
+    }
+    return `${k.riset} riset terkait`;
+  }
+
+  function tipText(k) {
+    if (mode === 'isu') return `${k.nama} — ${k.isu.length} isu strategis teridentifikasi`;
+    if (mode === 'potensi') return `${k.nama} — ${k.potensi[0]}`;
+    return `${k.nama} — ${k.riset} riset terkait · ${k.fokus}`;
+  }
 
   function moveTip(e) {
     const rect = wrapRef.current?.getBoundingClientRect();
@@ -73,34 +260,47 @@ export default function KecamatanMap() {
       <div
         ref={wrapRef}
         onMouseMove={moveTip}
-        className="relative overflow-visible rounded-3xl border border-line bg-gradient-to-br from-white to-maroon-50 p-6 shadow-[0_45px_80px_-35px_rgba(142,27,27,0.35)] sm:p-9"
+        className="relative overflow-visible rounded-3xl border border-line bg-gradient-to-br from-white to-maroon-50 p-6 sm:p-9"
       >
+        {/* Filter/legend cara memandang wilayah — bentuk peta tetap sama */}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Cara memandang wilayah pada peta">
+            {MODES.map((m) => (
+              <button
+                key={m.id} type="button" aria-pressed={mode === m.id} onClick={() => setMode(m.id)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.75 text-[.8rem] font-semibold transition ${mode === m.id ? 'border-maroon-800 bg-maroon-800 text-white' : 'border-line-strong bg-white text-ink-2 hover:border-maroon-600 hover:text-maroon-800'}`}
+              >
+                <Icon name={m.ikon} size={14} />{m.l}
+              </button>
+            ))}
+          </div>
+          <span className="text-[.78rem] font-medium text-ink-3">Klik salah satu wilayah untuk membuka detailnya.</span>
+        </div>
+
         <svg viewBox="0 0 1048 364.4" role="img" aria-label="Peta sebaran riset di 9 kecamatan Kabupaten Buleleng" className="w-full">
             <text x="524" y="18" textAnchor="middle" style={{ font: '600 11px var(--font-sans)', fill: '#B0473F', letterSpacing: '.16em' }}>
               LAUT BALI · PESISIR UTARA BULELENG
             </text>
             {KECAMATAN.map((k, i) => {
-              const ratio = 0.16 + (k.riset / maxRiset) * 0.84;
               const isActive = active === k.id;
               const isHover = hover === k.id;
               return (
                 <path
                   key={k.id}
                   d={KEC_PATHS[k.nama]}
-                  fill={mixMaroon(ratio)}
+                  fill={fillFor(k)}
                   stroke={isActive ? '#C98A2D' : isHover ? '#F9C74F' : '#FFFDF8'}
                   strokeWidth={isActive ? 3.2 : isHover ? 2.6 : 1.4}
                   strokeLinejoin="round"
                   tabIndex={0}
                   role="button"
-                  aria-label={`Kecamatan ${k.nama}, ${k.riset} riset`}
-                  className="animate-[petaIn_.6s_cubic-bezier(.16,1,.3,1)_backwards] cursor-pointer outline-none transition-[filter,transform] duration-200 ease-out"
+                  aria-label={`Kecamatan ${k.nama}, ${subLabel(k)}`}
+                  className="animate-[petaIn_.6s_cubic-bezier(.16,1,.3,1)_backwards] cursor-pointer outline-none transition-transform duration-200 ease-out"
                   style={{
                     animationDelay: `${i * 65}ms`,
                     transformBox: 'fill-box',
                     transformOrigin: 'center',
                     transform: isHover ? 'scale(1.035)' : 'none',
-                    filter: isHover || isActive ? 'drop-shadow(0 10px 16px rgba(142,27,27,.55))' : 'drop-shadow(0 2px 4px rgba(142,27,27,.12))',
                     outline: 'none'
                   }}
                   onMouseEnter={() => setHover(k.id)}
@@ -112,12 +312,11 @@ export default function KecamatanMap() {
             })}
             {KECAMATAN.map((k) => {
               const p = LABELS[k.nama];
-              const ratio = 0.16 + (k.riset / maxRiset) * 0.84;
-              const dark = ratio > 0.55;
+              const dark = mode === 'riset' ? (0.16 + (k.riset / maxRiset) * 0.84) > 0.55 : mode === 'isu' ? (0.16 + (k.isu.length / maxIsu) * 0.84) > 0.55 : true;
               return (
                 <g key={k.id} style={{ pointerEvents: 'none' }}>
                   <text x={p[0]} y={p[1]} textAnchor="middle" style={{ font: '700 10px var(--font-sans)', fill: dark ? '#FFF6EA' : '#5C1010' }}>{k.nama}</text>
-                  <text x={p[0]} y={p[1] + 12} textAnchor="middle" style={{ font: '9px var(--font-sans)', fill: dark ? '#FCE7E7' : '#8E1B1B', opacity: 0.9 }}>{k.riset} riset</text>
+                  <text x={p[0]} y={p[1] + 12} textAnchor="middle" style={{ font: '9px var(--font-sans)', fill: dark ? '#FCE7E7' : '#8E1B1B', opacity: 0.9 }}>{subLabel(k)}</text>
                 </g>
               );
             })}
@@ -129,59 +328,34 @@ export default function KecamatanMap() {
               style={{ left: tip.x, top: tip.y }}
             >
               <span className="absolute left-1/2 top-full h-3 w-3 -translate-x-1/2 -translate-y-1/2 rotate-45 border-b border-r border-[#E8C9A2] bg-[#FFFDF8]" aria-hidden="true" />
-              {kHover.nama} — {kHover.riset} riset · {kHover.fokus}
+              {tipText(kHover)}
             </div>
           )}
-        </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-3.5 text-[.76rem] text-ink-3">
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixMaroon(0.18) }} />Riset sedikit</span>
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixMaroon(0.45) }} />Sedang</span>
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixMaroon(0.72) }} />Tinggi</span>
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixMaroon(1) }} />Terpadat</span>
-          </div>
-          <span className="text-[.78rem] font-medium text-ink-3">Klik salah satu wilayah pada peta untuk melihat detailnya.</span>
-        </div>
-      {kAktif && (
-        <Modal title={`Kecamatan ${kAktif.nama}`} onClose={() => setActive(null)}>
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-[.85rem] text-ink-2">Sebaran riset &amp; potensi wilayah</span>
-            <span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">{kAktif.riset} riset</span>
-          </div>
-          <dl className="mb-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[.845rem]">
-            <dt className="font-semibold text-ink-3">Desa/kelurahan</dt><dd className="m-0 font-semibold text-ink">{kAktif.desa}</dd>
-            <dt className="font-semibold text-ink-3">Fokus riset</dt><dd className="m-0 font-semibold text-ink">{kAktif.fokus}</dd>
-          </dl>
-
-          <div className="mb-3">
-            <div className="mb-1.5 text-[.76rem] font-bold uppercase tracking-wide text-ink-3">Sebaran per bidang prioritas</div>
-            {BIDANG.map((b) => (
-              <BarRow
-                key={b.id}
-                label={b.nama.split(' ')[0]}
-                value={terkait.filter((r) => r.bidang === b.id).length}
-                max={Math.max(1, ...BIDANG.map((bb) => terkait.filter((r) => r.bidang === bb.id).length))}
-                warna={bidangById(b.id).warna}
-              />
-            ))}
-          </div>
-
-          {terkait.length ? (
+        <div className="mt-4 flex flex-wrap items-center gap-3.5 text-[.76rem] text-ink-3">
+          {mode === 'potensi' && BIDANG.map((b) => (
+            <span key={b.id} className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixColor(hexToRgb(b.warna), 0.5) }} />{b.nama.split(' ')[0]}</span>
+          ))}
+          {mode === 'isu' && (
             <>
-              <div className="mb-1.5 text-[.79rem] text-ink-3">Riset dalam katalog:</div>
-              {terkait.slice(0, 3).map((r) => (
-                <Link key={r.id} to={`/riset/${r.id}`} onClick={() => setActive(null)} className="mb-1.5 block text-[.82rem] font-semibold text-ink no-underline hover:text-maroon-800">• {r.judul}</Link>
-              ))}
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixColor(GOLD_INTENSE, 0.18) }} />Isu sedikit</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixColor(GOLD_INTENSE, 0.45) }} />Sedang</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixColor(GOLD_INTENSE, 0.72) }} />Banyak</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixColor(GOLD_INTENSE, 1) }} />Terbanyak</span>
             </>
-          ) : (
-            <p className="m-0 text-[.82rem] text-ink-2">Belum ada riset katalog aktif. Kecamatan ini menjadi prioritas penjaringan usulan batch berikutnya.</p>
           )}
-          <Link to={`/riset?kecamatan=${kAktif.id}`} onClick={() => setActive(null)} className="mt-2.5 block rounded-lg border border-line-strong px-3 py-2 text-center text-[.83rem] font-semibold text-maroon-800 no-underline hover:border-maroon-800 hover:bg-maroon-50">
-            Lihat semua riset {kAktif.nama}
-          </Link>
-        </Modal>
-      )}
+          {mode === 'riset' && (
+            <>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixColor(MAROON, 0.18) }} />Riset sedikit</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixColor(MAROON, 0.45) }} />Sedang</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixColor(MAROON, 0.72) }} />Tinggi</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: mixColor(MAROON, 1) }} />Terpadat</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      {kAktif && <KecamatanPanel k={kAktif} terkait={terkait} onClose={() => setActive(null)} />}
     </>
   );
 }

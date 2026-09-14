@@ -16,7 +16,7 @@ import { tanggal, hariMenuju } from '../lib/format.js';
 const QUICK = [
   { ico: 'flask', t: 'Riset Daerah', s: '169 riset terkatalog dari 9 kecamatan Buleleng', h: '/riset' },
   { ico: 'target', t: 'Peta Jalan Riset', s: 'Prioritas riset daerah 2025–2029 per sektor', h: '/roadmap' },
-  { ico: 'money', t: 'Peluang Pendanaan', s: '6 skema hibah & insentif sedang dibuka', h: '/#pendanaan' },
+  { ico: 'money', t: 'Peluang Pendanaan', s: '6 skema hibah & insentif sedang dibuka', h: '/pendanaan' },
   { ico: 'handshake', t: 'Pengajuan Kolaborasi', s: 'Formulir usulan riset & mitra sasaran', h: '/kolaborasi' }
 ];
 
@@ -347,13 +347,18 @@ export default function Home() {
       {/* ===== 1.8 PELUANG PENDANAAN ===== */}
       <section className="py-14 sm:py-18" id="pendanaan">
         <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-8.5 max-w-[760px]">
-            <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peluang Pendanaan Riset</span>
-            <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Skema hibah dan insentif yang sedang dibuka</h2>
-            <p className="text-[1.02rem] text-ink-2">Pantau tenggat dan persyaratan tiap skema. Rincian pagu serta tata cara pengajuan mengikuti pengumuman resmi di situs penyelenggara masing-masing.</p>
+          <Reveal className="mb-8.5 flex flex-wrap items-end justify-between gap-4">
+            <div className="max-w-[640px]">
+              <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peluang Pendanaan Riset</span>
+              <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Skema hibah dan insentif yang sedang dibuka</h2>
+              <p className="mb-0 text-[1.02rem] text-ink-2">Pantau tenggat dan persyaratan tiap skema. Rincian pagu serta tata cara pengajuan mengikuti pengumuman resmi di situs penyelenggara masing-masing.</p>
+            </div>
+            <Link to="/pendanaan" className="rounded-lg border border-line-strong bg-white px-5 py-2.5 text-sm font-semibold text-maroon-800 no-underline transition hover:border-maroon-800 hover:bg-maroon-50">
+              Lihat semua skema →
+            </Link>
           </Reveal>
           <Reveal className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {PENDANAAN.map((f) => {
+            {PENDANAAN.slice(0, 3).map((f) => {
               const sisa = hariMenuju(f.deadline);
               const fs = FUND_STATUS[f.status] || FUND_STATUS.open;
               const dlCls = sisa < 0 ? 'bg-surface-1 text-ink-2' : sisa <= 30 ? 'bg-danger-bg text-danger font-semibold' : sisa <= 75 ? 'bg-warning-bg text-warning font-semibold' : 'bg-surface-1 text-ink-2';

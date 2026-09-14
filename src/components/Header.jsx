@@ -14,14 +14,14 @@ const NAV_ITEMS = [
     anak: [
       { label: 'Direktori Riset Daerah', href: '/riset', ikon: 'flask', ket: 'Katalog riset yang didanai BRIDA' },
       { label: 'Peta Jalan Riset', href: '/roadmap', ikon: 'target', ket: 'Prioritas riset daerah 2025–2029' },
-      { label: 'Publikasi & Dokumentasi', href: '/publikasi', ikon: 'camera', ket: 'Foto, video, dan narasi hasil riset' }
+      { label: 'Galeri Kegiatan BRIDA', href: '/publikasi', ikon: 'camera', ket: 'Dokumentasi internal pelaksanaan riset' }
     ]
   },
   {
     label: 'Informasi',
     anak: [
-      { label: 'Berita & Diseminasi', href: '/berita', ikon: 'doc', ket: 'Kabar terkini ekosistem riset' },
-      { label: 'Peluang Pendanaan', href: '/#pendanaan', ikon: 'money', ket: 'Skema hibah dan insentif' },
+      { label: 'Berita & Diseminasi', href: '/berita', ikon: 'doc', ket: 'Kabar ekosistem riset dari semua sektor' },
+      { label: 'Peluang Pendanaan', href: '/pendanaan', ikon: 'money', ket: 'Skema hibah dan insentif' },
       { label: 'Etika & Regulasi', href: '/etika-regulasi', ikon: 'shield', ket: 'Klirens etik, SOP, pengaduan' }
     ]
   },

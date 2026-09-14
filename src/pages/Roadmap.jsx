@@ -1,6 +1,7 @@
 import PageHero from '../components/PageHero.jsx';
 import Reveal from '../components/Reveal.jsx';
 import Icon from '../components/Icon.jsx';
+import SmartImage from '../components/SmartImage.jsx';
 import { ROADMAP, SEKTOR_ROADMAP } from '../data/singaData.js';
 
 export default function Roadmap() {
@@ -15,6 +16,25 @@ export default function Roadmap() {
           <span key="2" className="rounded-full bg-gold-500 px-3 py-1.5 text-[.8rem] font-semibold text-[#4A2D00]">5 sektor prioritas</span>
         ]}
       />
+
+      {/* Dokumen resmi peta jalan BRIDA — taruh berkas di public/images/peta-jalan/dokumen.jpg */}
+      <section className="py-14 sm:py-18">
+        <div className="mx-auto max-w-[1240px] px-5">
+          <Reveal className="mb-7 max-w-[720px]">
+            <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Dokumen Resmi</span>
+            <h2 className="text-[1.6rem]">Peta jalan riset dari BRIDA Kabupaten Buleleng</h2>
+            <p className="mb-0 text-ink-2">Bagan resmi peta jalan riset daerah sebagaimana diterbitkan BRIDA, memuat tahapan, sasaran, dan sektor prioritas 2025–2029 secara utuh dalam satu dokumen.</p>
+          </Reveal>
+          <Reveal>
+            <SmartImage
+              src="/images/peta-jalan/dokumen.jpg"
+              alt="Dokumen peta jalan riset daerah BRIDA Kabupaten Buleleng 2025–2029"
+              className="aspect-16/10 w-full rounded-2xl border border-line shadow-card sm:aspect-16/8"
+              imgClassName="object-contain bg-white"
+            />
+          </Reveal>
+        </div>
+      </section>
 
       <section className="py-14">
         <div className="mx-auto max-w-[1240px] px-5">

@@ -6,6 +6,7 @@ import Home from './pages/Home.jsx';
 import Riset from './pages/Riset.jsx';
 import RisetDetail from './pages/RisetDetail.jsx';
 import Roadmap from './pages/Roadmap.jsx';
+import Pendanaan from './pages/Pendanaan.jsx';
 import Berita from './pages/Berita.jsx';
 import Publikasi from './pages/Publikasi.jsx';
 import Kolaborasi from './pages/Kolaborasi.jsx';
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="/riset" element={<PageTransition><Riset /></PageTransition>} />
         <Route path="/riset/:id" element={<PageTransition><RisetDetail /></PageTransition>} />
         <Route path="/roadmap" element={<PageTransition><Roadmap /></PageTransition>} />
+        <Route path="/pendanaan" element={<PageTransition><Pendanaan /></PageTransition>} />
         <Route path="/berita" element={<PageTransition><Berita /></PageTransition>} />
         <Route path="/publikasi" element={<PageTransition><Publikasi /></PageTransition>} />
         <Route

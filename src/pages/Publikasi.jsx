@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import PageHero from '../components/PageHero.jsx';
 import Reveal from '../components/Reveal.jsx';
 import Icon from '../components/Icon.jsx';
@@ -18,10 +18,18 @@ function embedYoutube(url) {
 
 export default function Publikasi() {
   const { dokumentasi: DOKUMENTASI } = useContent();
+  const [params] = useSearchParams();
   const [bidang, setBidang] = useState('');
   const [q, setQ] = useState('');
   const [detail, setDetail] = useState(null);
   const [lightbox, setLightbox] = useState(null);
+
+  useEffect(() => {
+    const dokId = params.get('dok');
+    if (!dokId) return;
+    const found = DOKUMENTASI.find((d) => d.id === dokId);
+    if (found) setDetail(found);
+  }, [params, DOKUMENTASI]);
 
   const hits = useMemo(
     () =>
@@ -38,9 +46,9 @@ export default function Publikasi() {
   return (
     <>
       <PageHero
-        crumb="Publikasi & Dokumentasi"
-        title="Publikasi & Dokumentasi Riset"
-        lead="Arsip visual pelaksanaan riset daerah, berupa foto lapangan, rekaman video, dan narasi proses dari hulu sampai hasilnya dipakai masyarakat Buleleng."
+        crumb="Galeri Kegiatan BRIDA"
+        title="Galeri Kegiatan BRIDA"
+        lead="Dokumentasi internal BRIDA Kabupaten Buleleng atas pelaksanaan riset di lapangan — foto kegiatan, rekaman video, dan narasi proses dari hulu sampai hasilnya dipakai masyarakat Buleleng."
         badges={[
           <span key="1" className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">{DOKUMENTASI.length} riset terdokumentasi</span>,
           <span key="2" className="rounded-full bg-gold-500 px-3 py-1.5 text-[.8rem] font-semibold text-[#4A2D00]">{totalFoto} foto lapangan</span>

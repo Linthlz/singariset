@@ -19,7 +19,7 @@ export function buildSearchIndex() {
   PENDANAAN.forEach((f) => {
     out.push({
       tipe: 'Pendanaan', ikon: 'money', judul: f.nama, sub: `${f.penyelenggara} · Tutup ${tanggal(f.deadline, true)}`,
-      href: '/#pendanaan',
+      href: '/pendanaan',
       key: `${f.nama} ${f.penyelenggara} ${f.ket}`.toLowerCase()
     });
   });

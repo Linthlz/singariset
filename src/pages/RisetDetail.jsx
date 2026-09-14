@@ -2,17 +2,21 @@ import { Link, useParams } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
 import Reveal from '../components/Reveal.jsx';
 import RisetCard from '../components/RisetCard.jsx';
+import SmartImage from '../components/SmartImage.jsx';
 import NotFound from './NotFound.jsx';
 import { RISET } from '../data/singaData.js';
-import { bidangById, kecById, skemaById, statusMeta, rupiah, tanggal } from '../lib/format.js';
+import { useContent } from '../context/ContentContext.jsx';
+import { bidangById, kecById, statusMeta } from '../lib/format.js';
 
 export default function RisetDetail() {
   const { id } = useParams();
+  const { dokumentasi: DOKUMENTASI } = useContent();
   const r = RISET.find((x) => x.id === id);
   if (!r) return <NotFound message={`Riset dengan kode "${id}" tidak ditemukan dalam katalog.`} />;
 
   const b = bidangById(r.bidang);
   const sm = statusMeta(r.status);
+  const dok = DOKUMENTASI.find((d) => d.risetId === r.id);
   const related = RISET.filter((x) => x.id !== r.id && (x.bidang === r.bidang || x.kecamatan === r.kecamatan)).slice(0, 3);
 
   return (
@@ -41,7 +45,7 @@ export default function RisetDetail() {
             <Reveal className="rounded-xl border border-line bg-white p-6 shadow-card">
               <h2 className="text-[1.15rem]">Abstrak</h2>
               <p className="text-[.92rem] leading-relaxed">{r.abstrak}</p>
-              <h2 className="mt-5 text-[1.15rem]">Metodologi</h2>
+              <h2 className="mt-5 text-[1.15rem]">Rekomendasi</h2>
               <p className="text-[.92rem] leading-relaxed">{r.metodologi}</p>
               {r.catatanKendala && (
                 <div className="mt-4 flex items-start gap-3 rounded-xl border border-warning-bg bg-warning-bg px-4 py-3.5 text-[.855rem] text-[#78350F]">
@@ -84,23 +88,30 @@ export default function RisetDetail() {
 
           <aside className="flex flex-col gap-5">
             <Reveal className="rounded-xl border border-line bg-white p-5.5 shadow-card">
-              <h3 className="mb-3.5 text-[1rem]">Ringkasan Kontrak</h3>
-              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[.84rem]">
-                <dt className="font-semibold text-ink-3">Nomor kontrak</dt><dd className="m-0 font-semibold">{r.kontrak}</dd>
-                <dt className="font-semibold text-ink-3">Skema</dt><dd className="m-0 font-semibold">{skemaById(r.skema).nama}</dd>
-                <dt className="font-semibold text-ink-3">Nilai kontrak</dt><dd className="m-0 font-semibold text-maroon-800">{rupiah(r.anggaran)}</dd>
-                <dt className="font-semibold text-ink-3">Terserap</dt><dd className="m-0 font-semibold">{rupiah(r.terserap)}</dd>
-                <dt className="font-semibold text-ink-3">Sumber dana</dt><dd className="m-0 font-semibold">{r.sumber}</dd>
-                <dt className="font-semibold text-ink-3">Mulai</dt><dd className="m-0 font-semibold">{tanggal(r.mulai)}</dd>
-                <dt className="font-semibold text-ink-3">Berakhir</dt><dd className="m-0 font-semibold">{tanggal(r.selesai)}</dd>
-              </dl>
-              <div className="mt-4 border-t border-line pt-4">
-                <div className="mb-1 flex justify-between text-[.76rem] font-semibold text-ink-3"><span>Capaian tahap {r.tahap}/7</span><b className="text-ink">{r.progress}%</b></div>
-                <div className="h-2 overflow-hidden rounded-full bg-line"><div className={`h-full rounded-full bg-gradient-to-r ${sm.bar}`} style={{ width: `${r.progress}%` }} /></div>
+              <h3 className="mb-3.5 text-[1rem]">Hasil Riset</h3>
+              <div className="mb-4 flex justify-between text-[.76rem] font-semibold text-ink-3">
+                <span>Capaian tahap {r.tahap}/7</span><b className="text-ink">{r.progress}%</b>
               </div>
-              <Link to="/dashboard/opd" className="mt-4 block rounded-lg border border-line-strong px-4 py-2.5 text-center text-[.85rem] font-semibold text-maroon-800 no-underline hover:border-maroon-800 hover:bg-maroon-50">
-                Lihat detail monev riset ini
-              </Link>
+              <div className="-mt-2.5 mb-4 h-2 overflow-hidden rounded-full bg-line"><div className={`h-full rounded-full bg-gradient-to-r ${sm.bar}`} style={{ width: `${r.progress}%` }} /></div>
+
+              {dok ? (
+                <>
+                  <div className="mb-3 grid grid-cols-3 gap-1.5">
+                    {dok.foto.slice(0, 3).map((f, i) => (
+                      <SmartImage key={f.src} src={f.src} alt={f.ket} seed={i} className="aspect-square rounded-lg" />
+                    ))}
+                  </div>
+                  <p className="mb-3 text-[.84rem] leading-relaxed text-ink-2 line-clamp-3">{dok.narasi}</p>
+                  <Link
+                    to={`/publikasi?dok=${dok.id}`}
+                    className="flex items-center justify-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2.5 text-center text-[.85rem] font-semibold text-white no-underline hover:bg-maroon-600"
+                  >
+                    Lihat dokumentasi lengkap <Icon name="arrow" size={15} />
+                  </Link>
+                </>
+              ) : (
+                <p className="m-0 text-[.84rem] text-ink-2">Dokumentasi hasil riset ini sedang disiapkan dan akan tayang di Galeri Kegiatan BRIDA.</p>
+              )}
             </Reveal>
 
             <Reveal className="rounded-xl border border-line bg-white p-5.5 shadow-card">

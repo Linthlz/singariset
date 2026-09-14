@@ -3,16 +3,100 @@
    Semua angka bersifat contoh untuk keperluan prototipe portal BRIDA Buleleng.
    ========================================================================== */
 
+/* Kolom `potensi`, `isu`, dan `peluang` adalah materi navigasi wilayah pada
+   peta sebaran (lihat KecamatanMap.jsx) — disusun dari karakteristik umum
+   tiap kecamatan sebagai konteks awal eksplorasi, bukan klaim hasil riset. */
 export const KECAMATAN = [
-  { id: 'gerokgak',  nama: 'Gerokgak',   desa: 14, riset: 18, fokus: 'Kelautan & Garam' },
-  { id: 'seririt',   nama: 'Seririt',    desa: 21, riset: 15, fokus: 'Pertanian & Hortikultura' },
-  { id: 'busungbiu', nama: 'Busungbiu',  desa: 15, riset: 9,  fokus: 'Kopi & Agroforestri' },
-  { id: 'banjar',    nama: 'Banjar',     desa: 17, riset: 22, fokus: 'Pariwisata & Heritage' },
-  { id: 'sukasada',  nama: 'Sukasada',   desa: 15, riset: 24, fokus: 'Air, Konservasi & Pendidikan' },
-  { id: 'buleleng',  nama: 'Buleleng',   desa: 29, riset: 41, fokus: 'Smart City & Layanan Publik' },
-  { id: 'sawan',     nama: 'Sawan',      desa: 14, riset: 13, fokus: 'Padi & Kerajinan' },
-  { id: 'kubutambahan', nama: 'Kubutambahan', desa: 13, riset: 11, fokus: 'EBT & Infrastruktur' },
-  { id: 'tejakula',  nama: 'Tejakula',   desa: 10, riset: 16, fokus: 'Perikanan & Desa Adat' }
+  {
+    id: 'gerokgak', nama: 'Gerokgak', desa: 14, riset: 18, fokus: 'Kelautan & Garam',
+    deskripsi: 'Kecamatan pesisir barat dengan garis pantai terpanjang, kawasan konservasi laut, dan lahan kering di sisi selatan.',
+    potensi: ['🌊 Kelautan & Konservasi Karang', '🧂 Garam Tradisional', '🐐 Peternakan Lahan Kering', '🏭 Industri & Pelabuhan'],
+    isu: ['Kekeringan dan minimnya irigasi di lahan pertanian kering', 'Abrasi pantai dan tekanan terhadap terumbu karang', 'Akses jalan desa pesisir yang masih terbatas', 'Pengelolaan dampak lingkungan kawasan industri & pelabuhan'],
+    peluang: [
+      { judul: 'Smart Irrigation Lahan Kering', deskripsi: 'Irigasi tetes hemat air berbasis sensor kelembapan untuk lahan pertanian kering Gerokgak.' },
+      { judul: 'Konservasi Karang Berbasis Masyarakat', deskripsi: 'Pemantauan terumbu karang Pemuteran melibatkan kelompok nelayan dan pokdarwis setempat.' }
+    ]
+  },
+  {
+    id: 'seririt', nama: 'Seririt', desa: 21, riset: 15, fokus: 'Pertanian & Hortikultura',
+    deskripsi: 'Pusat perdagangan Buleleng Barat dengan lahan hortikultura luas dan pasar tradisional yang menjadi simpul distribusi hasil bumi.',
+    potensi: ['🥭 Hortikultura (Mangga & Anggur)', '🌽 Pertanian Lahan Kering', '🏪 Pasar & Perdagangan', '💧 Sumber Daya Air'],
+    isu: ['Keterbatasan pengairan pada musim kemarau panjang', 'Fluktuasi harga hasil panen di tingkat petani', 'Distribusi pascapanen ke pasar yang belum efisien'],
+    peluang: [
+      { judul: 'Digitalisasi Rantai Pasok Hortikultura', deskripsi: 'Platform penghubung petani-pasar untuk memangkas rantai distribusi mangga dan anggur.' },
+      { judul: 'Sistem Prediksi Cuaca & Musim Tanam', deskripsi: 'Rekomendasi waktu tanam berbasis data cuaca lokal untuk petani lahan kering.' }
+    ]
+  },
+  {
+    id: 'busungbiu', nama: 'Busungbiu', desa: 15, riset: 9, fokus: 'Kopi & Agroforestri',
+    deskripsi: 'Dataran tinggi penghasil kopi robusta dan buah musiman dengan pola tani agroforestri di lereng perbukitan.',
+    potensi: ['☕ Kopi Robusta', '🌳 Agroforestri', '🍈 Durian & Buah Musiman', '👩‍🌾 Kelompok Tani'],
+    isu: ['Mutu pascapanen kopi yang belum merata antar kelompok tani', 'Akses jalan menuju kebun di kawasan perbukitan', 'Regenerasi petani muda yang melambat'],
+    peluang: [
+      { judul: 'Digitalisasi Mutu & Sertifikasi Kopi', deskripsi: 'Standardisasi pascapanen dan penelusuran asal kopi robusta Busungbiu untuk akses pasar lebih luas.' },
+      { judul: 'Ekowisata Kebun Kopi Berbasis Komunitas', deskripsi: 'Paket wisata edukasi kebun kopi yang dikelola langsung oleh kelompok tani setempat.' }
+    ]
+  },
+  {
+    id: 'banjar', nama: 'Banjar', desa: 17, riset: 22, fokus: 'Pariwisata & Heritage',
+    deskripsi: 'Kawasan wisata bahari Lovina, pemandian air panas, dan situs budaya-religi yang menjadi tujuan kunjungan utama Bali Utara.',
+    potensi: ['🏝 Pariwisata Bahari Lovina', '♨️ Wisata Air Panas', '🛕 Situs Budaya & Religi', '🐬 Konservasi Lumba-lumba'],
+    isu: ['Tekanan lingkungan akibat volume kunjungan wisata', 'Standar mutu dan keselamatan operator wisata bahari', 'Pemerataan manfaat ekonomi pariwisata ke masyarakat lokal'],
+    peluang: [
+      { judul: 'Sistem Kuota & Zonasi Wisata Bahari Digital', deskripsi: 'Pengaturan kuota perahu dan zonasi kawasan dolphin watching berbasis aplikasi.' },
+      { judul: 'Paket Wisata Terintegrasi Desa Adat', deskripsi: 'Menghubungkan wisata bahari dengan desa adat sekitar agar manfaat ekonomi lebih merata.' }
+    ]
+  },
+  {
+    id: 'sukasada', nama: 'Sukasada', desa: 15, riset: 24, fokus: 'Air, Konservasi & Pendidikan',
+    deskripsi: 'Kawasan hulu berbukit dengan banyak air terjun dan hutan lindung, sekaligus pusat pendidikan tinggi Buleleng.',
+    potensi: ['💧 Air Terjun & Ekowisata', '🎓 Pusat Pendidikan Tinggi', '🌲 Konservasi Hutan', '🚴 Wisata Petualangan'],
+    isu: ['Menjaga daya dukung lingkungan kawasan wisata alam', 'Sinergi riset kampus dengan kebutuhan nyata desa', 'Mitigasi risiko longsor di kawasan berbukit'],
+    peluang: [
+      { judul: 'Early Warning System Longsor Berbasis Komunitas', deskripsi: 'Sistem peringatan dini kolaborasi kampus dan desa untuk kawasan rawan longsor.' },
+      { judul: 'Platform Riset Kolaboratif Kampus-Desa', deskripsi: 'Menjodohkan topik tugas akhir/riset kampus dengan kebutuhan nyata desa binaan.' }
+    ]
+  },
+  {
+    id: 'buleleng', nama: 'Buleleng', desa: 29, riset: 41, fokus: 'Smart City & Layanan Publik',
+    deskripsi: 'Ibu kota kabupaten dan pusat pemerintahan, pendidikan, serta layanan publik dengan kepadatan aktivitas tertinggi.',
+    potensi: ['🏙 Pusat Pemerintahan & Layanan', '🎓 Pendidikan & UMKM Kota', '🚦 Infrastruktur Perkotaan', '📶 Digitalisasi Layanan'],
+    isu: ['Kemacetan dan tata ruang kawasan perkotaan', 'Layanan publik digital yang belum merata di semua kelurahan', 'Pengelolaan sampah dan kebersihan perkotaan'],
+    peluang: [
+      { judul: 'Satu Data & Layanan Publik Terpadu', deskripsi: 'Integrasi layanan OPD dalam satu portal agar warga tidak berpindah-pindah kanal.' },
+      { judul: 'Smart Waste Management Kota Singaraja', deskripsi: 'Optimalisasi rute dan jadwal angkut sampah berbasis data volume per kelurahan.' }
+    ]
+  },
+  {
+    id: 'sawan', nama: 'Sawan', desa: 14, riset: 13, fokus: 'Padi & Kerajinan',
+    deskripsi: 'Sentra sawah subak dan kerajinan gamelan turun-temurun yang menjadi identitas budaya kecamatan.',
+    potensi: ['🌾 Padi & Subak', '🔔 Kerajinan Gamelan', '🧵 Industri Kreatif Rumahan', '🐄 Peternakan Rakyat'],
+    isu: ['Regenerasi perajin gamelan yang melambat', 'Efisiensi irigasi pada sistem subak', 'Akses pasar yang terbatas bagi produk kerajinan'],
+    peluang: [
+      { judul: 'Digitalisasi Pemasaran Kerajinan Gamelan', deskripsi: 'Katalog dan pemasaran daring produk perajin gamelan Sawan ke pasar nasional.' },
+      { judul: 'Optimalisasi Irigasi Subak Berbasis Sensor', deskripsi: 'Pemantauan debit air subak untuk pembagian irigasi yang lebih adil dan efisien.' }
+    ]
+  },
+  {
+    id: 'kubutambahan', nama: 'Kubutambahan', desa: 13, riset: 11, fokus: 'EBT & Infrastruktur',
+    deskripsi: 'Kawasan pesisir timur dengan rencana pengembangan infrastruktur strategis dan cagar budaya Pura Beji.',
+    potensi: ['⚡ Energi Baru Terbarukan', '🛣 Infrastruktur Strategis', '🛕 Cagar Budaya Pura Beji', '🌾 Pertanian Pesisir'],
+    isu: ['Kesiapan tata ruang menghadapi rencana infrastruktur besar', 'Pelestarian cagar budaya di tengah tekanan pembangunan', 'Akses energi listrik di desa-desa terpencil'],
+    peluang: [
+      { judul: 'Kajian Dampak Sosial-Lingkungan Infrastruktur', deskripsi: 'Riset dampak proyek infrastruktur strategis terhadap tata ruang dan sosial masyarakat.' },
+      { judul: 'Pilot Energi Surya Komunal Desa Pesisir', deskripsi: 'Uji coba panel surya komunal untuk desa pesisir dengan akses listrik terbatas.' }
+    ]
+  },
+  {
+    id: 'tejakula', nama: 'Tejakula', desa: 10, riset: 16, fokus: 'Perikanan & Desa Adat',
+    deskripsi: 'Kecamatan ujung timur dengan tradisi desa adat Bali Aga tertua dan aktivitas perikanan tangkap serta budi daya rumput laut.',
+    potensi: ['🐟 Perikanan Tangkap', '🌿 Budi Daya Rumput Laut', '🏘 Desa Adat Bali Aga', '🧂 Garam Pesisir'],
+    isu: ['Fluktuasi hasil tangkap akibat cuaca ekstrem', 'Pelestarian tradisi desa adat kuno di tengah modernisasi', 'Akses cold storage dan pengolahan pascapanen perikanan'],
+    peluang: [
+      { judul: 'Cold Storage Komunal Nelayan', deskripsi: 'Fasilitas penyimpanan dingin bersama untuk menjaga mutu dan nilai jual hasil tangkap.' },
+      { judul: 'Dokumentasi Digital Warisan Desa Bali Aga', deskripsi: 'Pengarsipan digital tradisi dan tata desa adat Sembiran-Julah sebagai riset sosial-budaya.' }
+    ]
+  }
 ];
 
 export const BIDANG = [

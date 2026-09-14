@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import Icon from './Icon.jsx';
-import { bidangById, kecById, statusMeta, rupiahRingkas } from '../lib/format.js';
+import { bidangById, kecById, statusMeta } from '../lib/format.js';
 
 export default function RisetCard({ r }) {
   const b = bidangById(r.bidang);
@@ -35,8 +35,7 @@ export default function RisetCard({ r }) {
         <div className={`h-full rounded-full bg-gradient-to-r ${sm.bar}`} style={{ width: `${r.progress}%` }} />
       </div>
 
-      <div className="mt-3.5 flex items-center justify-between gap-2.5 border-t border-line pt-3.5">
-        <span className="text-[.82rem] font-bold tabular-nums text-maroon-800">{rupiahRingkas(r.anggaran)}</span>
+      <div className="mt-3.5 flex items-center justify-end gap-2.5 border-t border-line pt-3.5">
         <Link to={`/riset/${r.id}`} className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[.8rem] font-semibold text-ink-2 no-underline hover:bg-surface-1 hover:text-ink">
           Detail <Icon name="arrow" size={14} />
         </Link>

@@ -5,13 +5,16 @@ import Reveal from '../components/Reveal.jsx';
 import RisetCard from '../components/RisetCard.jsx';
 import KecamatanMap from '../components/KecamatanMap.jsx';
 import Icon from '../components/Icon.jsx';
-import { RISET, BIDANG, KECAMATAN, SKEMA } from '../data/singaData.js';
+import { RISET, BIDANG } from '../data/singaData.js';
+
+/* Katalog publik hanya menampilkan riset yang berjalan baik atau sudah
+   tuntas — status Warning/Koreksi dan Delayed adalah urusan monev internal
+   OPD, bukan konsumsi publik. */
+const STATUS_PUBLIK = ['ontrack', 'selesai'];
 
 const STATUSES = [
   { id: '', l: 'Semua status' },
   { id: 'ontrack', l: 'On Track' },
-  { id: 'warning', l: 'Warning / Koreksi' },
-  { id: 'delayed', l: 'Delayed' },
   { id: 'selesai', l: 'Selesai & Adopsi' }
 ];
 
@@ -22,7 +25,6 @@ export default function Riset() {
   const [q, setQ] = useState(params.get('q') || '');
   const [bidang, setBidang] = useState(params.get('bidang') || '');
   const [kec, setKec] = useState(params.get('kecamatan') || '');
-  const [skema, setSkema] = useState(params.get('skema') || '');
   const [status, setStatus] = useState(params.get('status') || '');
   const [tahun, setTahun] = useState(params.get('tahun') || '');
   const [page, setPage] = useState(1);
@@ -32,14 +34,14 @@ export default function Riset() {
     setKec(params.get('kecamatan') || '');
   }, [params]);
 
-  useEffect(() => { setPage(1); }, [q, bidang, kec, skema, status, tahun]);
+  useEffect(() => { setPage(1); }, [q, bidang, kec, status, tahun]);
 
   const hits = useMemo(() => {
     const qq = q.toLowerCase();
     return RISET.filter((r) => {
+      if (!STATUS_PUBLIK.includes(r.status)) return false;
       if (bidang && r.bidang !== bidang) return false;
       if (kec && r.kecamatan !== kec) return false;
-      if (skema && r.skema !== skema) return false;
       if (status && r.status !== status) return false;
       if (tahun && String(r.tahun) !== tahun) return false;
       if (qq) {
@@ -48,14 +50,14 @@ export default function Riset() {
       }
       return true;
     });
-  }, [q, bidang, kec, skema, status, tahun]);
+  }, [q, bidang, kec, status, tahun]);
 
   const totalPages = Math.max(1, Math.ceil(hits.length / PAGE_SIZE));
   const shown = hits.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const tahunOpts = [...new Set(RISET.map((r) => r.tahun))].sort((a, b) => b - a);
 
   function reset() {
-    setQ(''); setBidang(''); setKec(''); setSkema(''); setStatus(''); setTahun('');
+    setQ(''); setBidang(''); setKec(''); setStatus(''); setTahun('');
     setParams({});
   }
 
@@ -64,7 +66,7 @@ export default function Riset() {
       <PageHero
         crumb="Riset Daerah"
         title="Direktori Riset Daerah"
-        lead="Katalog lengkap riset yang dibiayai dan difasilitasi BRIDA Kabupaten Buleleng. Saring berdasarkan bidang prioritas, kecamatan, skema pendanaan, dan status monitoring."
+        lead="Katalog lengkap riset yang dibiayai dan difasilitasi BRIDA Kabupaten Buleleng. Saring berdasarkan bidang prioritas, tahun anggaran, dan status monitoring."
         badges={[
           <span key="1" className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">{RISET.length} riset terkatalog</span>,
           <span key="2" className="rounded-full bg-gold-500 px-3 py-1.5 text-[.8rem] font-semibold text-[#4A2D00]">9 kecamatan Buleleng</span>
@@ -100,14 +102,6 @@ export default function Riset() {
                 <option value="">Semua bidang</option>
                 {BIDANG.map((b) => <option key={b.id} value={b.id}>{b.nama}</option>)}
               </select>
-              <select value={kec} onChange={(e) => setKec(e.target.value)} className="min-w-[160px] rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-sm outline-none focus:border-maroon-600">
-                <option value="">Semua kecamatan</option>
-                {KECAMATAN.map((k) => <option key={k.id} value={k.id}>{k.nama}</option>)}
-              </select>
-              <select value={skema} onChange={(e) => setSkema(e.target.value)} className="min-w-[170px] rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-sm outline-none focus:border-maroon-600">
-                <option value="">Semua skema</option>
-                {SKEMA.map((s) => <option key={s.id} value={s.id}>{s.nama}</option>)}
-              </select>
               <select value={tahun} onChange={(e) => setTahun(e.target.value)} className="min-w-[130px] rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-sm outline-none focus:border-maroon-600">
                 <option value="">Semua TA</option>
                 {tahunOpts.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -115,7 +109,7 @@ export default function Riset() {
             </div>
             <div className="flex flex-wrap gap-2" role="group" aria-label="Saring status riset">
               {STATUSES.map((s) => {
-                const n = s.id ? RISET.filter((r) => r.status === s.id).length : RISET.length;
+                const n = s.id ? RISET.filter((r) => r.status === s.id).length : RISET.filter((r) => STATUS_PUBLIK.includes(r.status)).length;
                 const active = status === s.id;
                 return (
                   <button key={s.id || 'all'} type="button" aria-pressed={active} onClick={() => setStatus(s.id)}

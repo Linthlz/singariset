@@ -42,7 +42,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className="relative overflow-hidden bg-maroon-950 text-white"
+      className="relative h-180 max-h-[86vh] min-h-140 overflow-hidden bg-maroon-950 text-white sm:h-170"
       aria-roledescription="carousel"
       aria-label="Sorotan utama portal"
     >
@@ -81,8 +81,8 @@ export default function HeroSlider() {
       />
 
       {/* Isi */}
-      <div className="relative z-10 mx-auto max-w-[1240px] px-5 py-14 sm:py-20">
-        <div className="grid items-center gap-9 lg:grid-cols-[1.08fr_.92fr]">
+      <div className="relative z-10 mx-auto flex h-full max-w-[1240px] items-center px-5 py-10">
+        <div className="grid w-full items-center gap-9">
           <div>
             <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 py-1.5 pl-1.5 pr-3.5 text-[.77rem] font-semibold text-white/94 backdrop-blur">
               <b className="rounded-full bg-gold-500 px-2.5 py-1 text-[.68rem] font-extrabold tracking-wide text-[#4A2D00]">BRIDA</b>
@@ -90,14 +90,14 @@ export default function HeroSlider() {
             </span>
 
             <div key={aktif} className="animate-[heroIn_1.3s_cubic-bezier(.16,1,.3,1)]">
-              <h1 className="mb-4 text-[clamp(1.9rem,4.4vw,3.05rem)] font-extrabold leading-[1.1] text-white">
+              <h1 className="mb-4 line-clamp-3 min-h-[3.4em] text-[clamp(1.9rem,4.4vw,3.05rem)] font-extrabold leading-[1.1] text-white">
                 {slide.judul}{' '}
                 <span style={{ backgroundImage: 'linear-gradient(180deg,#FFDE8A,#F9C74F)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   {slide.sorot}
                 </span>
                 {slide.ekor ? ` ${slide.ekor}` : ''}
               </h1>
-              <p className="mb-6.5 max-w-[590px] text-[1.045rem] text-white/85">{slide.teks}</p>
+              <p className="mb-6.5 line-clamp-3 min-h-[4.5em] max-w-[590px] text-[1.045rem] text-white/85">{slide.teks}</p>
             </div>
 
             <div className="mb-5 max-w-[590px]">
@@ -153,27 +153,6 @@ export default function HeroSlider() {
               </div>
             )}
           </div>
-
-          <aside className="rounded-2xl border border-white/16 bg-black/25 p-5.5 backdrop-blur-md" aria-label="Ringkasan ekosistem riset">
-            <div className="mb-3.5 text-[.72rem] font-bold uppercase tracking-widest text-gold-500">Ekosistem Riset Hari Ini</div>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                ['169', 'Riset daerah terdaftar'],
-                ['34', 'Riset aktif dimonitor'],
-                ['412', 'Peneliti terdaftar'],
-                ['27', 'Policy brief tersedia']
-              ].map(([v, l]) => (
-                <div key={l} className="rounded-lg border border-white/10 bg-black/30 px-3.5 py-3">
-                  <div className="font-head text-[1.62rem] font-extrabold leading-tight text-white">{v}</div>
-                  <div className="mt-0.5 text-[.72rem] leading-tight text-white/68">{l}</div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-3.5 flex items-start gap-2.5 border-t border-white/14 pt-3.5 text-[.78rem] text-white/72">
-              <span className="mt-1.5 h-2 w-2 flex-none animate-pulse-dot rounded-full bg-emerald-400" />
-              <span><b className="text-white">Batch I Hibah Riset Prioritas 2026</b> dibuka, pengajuan ditutup 28 November 2025.</span>
-            </div>
-          </aside>
         </div>
       </div>
     </section>

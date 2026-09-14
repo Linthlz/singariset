@@ -99,6 +99,19 @@ Folder: `public/images/roadmap/`
 
 ---
 
+## 6a. Dokumen resmi peta jalan (halaman Peta Jalan Riset)
+
+Folder: `public/images/peta-jalan/`
+Berkas: `dokumen.jpg`
+
+- Foto atau hasil pindai (scan) bagan resmi peta jalan riset terbitan BRIDA.
+- Rasio bebas (lebar/panorama lebih disarankan), usahakan resolusi tinggi
+  agar teks pada bagan tetap terbaca saat diperbesar.
+- Gambar ditampilkan utuh tanpa dipotong (`object-contain`) di bagian atas
+  halaman `/roadmap`, sebelum garis waktu tahunan.
+
+---
+
 ## 7. Logo mitra (baris berjalan otomatis)
 
 Folder: `public/images/mitra/`

@@ -83,8 +83,8 @@ export default function Footer() {
               <h4 className="mb-3.5 text-[.85rem] font-bold uppercase tracking-widest text-white">Layanan Riset</h4>
               <ul className="m-0 list-none space-y-2.5 p-0">
                 <li><Link to="/kolaborasi" className="text-white/72 hover:text-gold-500">Pengajuan Kolaborasi</Link></li>
-                <li><Link to="/#pendanaan" className="text-white/72 hover:text-gold-500">Peluang Pendanaan</Link></li>
-                <li><Link to="/publikasi" className="text-white/72 hover:text-gold-500">Publikasi &amp; Dokumentasi</Link></li>
+                <li><Link to="/pendanaan" className="text-white/72 hover:text-gold-500">Peluang Pendanaan</Link></li>
+                <li><Link to="/publikasi" className="text-white/72 hover:text-gold-500">Galeri Kegiatan BRIDA</Link></li>
                 <li><Link to="/register" className="text-white/72 hover:text-gold-500">Daftar Akun Mitra</Link></li>
                 <li><Link to="/riset" className="text-white/72 hover:text-gold-500">Direktori Riset Daerah</Link></li>
               </ul>
