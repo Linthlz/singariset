@@ -4,6 +4,8 @@ import Icon from '../components/Icon.jsx';
 import SmartImage from '../components/SmartImage.jsx';
 import { ROADMAP, SEKTOR_ROADMAP } from '../data/singaData.js';
 
+const ROADMAP_DOCUMENT = '/images/peta-jalan/dokumen.jpg';
+
 export default function Roadmap() {
   return (
     <>
@@ -23,11 +25,19 @@ export default function Roadmap() {
           <Reveal className="mb-7 max-w-[720px]">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Dokumen Resmi</span>
             <h2 className="text-[1.6rem]">Peta jalan riset dari BRIDA Kabupaten Buleleng</h2>
-            <p className="mb-0 text-ink-2">Bagan resmi peta jalan riset daerah sebagaimana diterbitkan BRIDA, memuat tahapan, sasaran, dan sektor prioritas 2025–2029 secara utuh dalam satu dokumen.</p>
+            <p className="mb-4 text-ink-2">Bagan resmi peta jalan riset daerah sebagaimana diterbitkan BRIDA, memuat tahapan, sasaran, dan sektor prioritas 2025–2029 secara utuh dalam satu dokumen.</p>
+            <a
+              href={ROADMAP_DOCUMENT}
+              download="peta-jalan-riset-buleleng-2025-2029.jpg"
+              className="inline-flex items-center gap-2 rounded-lg bg-maroon-800 px-4 py-2.5 text-[.82rem] font-bold text-white transition hover:bg-maroon-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:ring-offset-2"
+            >
+              <Icon name="download" size={16} />
+              Unduh dokumen peta jalan
+            </a>
           </Reveal>
           <Reveal>
             <SmartImage
-              src="/images/peta-jalan/dokumen.jpg"
+              src={ROADMAP_DOCUMENT}
               alt="Dokumen peta jalan riset daerah BRIDA Kabupaten Buleleng 2025–2029"
               className="aspect-16/10 w-full rounded-2xl border border-line shadow-card sm:aspect-16/8"
               imgClassName="object-contain bg-white"

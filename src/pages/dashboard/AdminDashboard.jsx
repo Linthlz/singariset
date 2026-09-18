@@ -653,7 +653,7 @@ function Pengaturan() {
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   return (
-    <form onSubmit={simpan} className="flex max-w-[720px] flex-col gap-5">
+    <form onSubmit={simpan} className="flex w-full flex-col gap-5">
       <Card title="Identitas situs" desc="Nama dan kontak yang tampil pada header serta footer portal.">
         <div className="grid gap-x-5 sm:grid-cols-2">
           {[
