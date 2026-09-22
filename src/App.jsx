@@ -13,6 +13,7 @@ import Kolaborasi from './pages/Kolaborasi.jsx';
 import EtikaRegulasi from './pages/EtikaRegulasi.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import MonevFormPage from './pages/MonevFormPage.jsx';
 import OpdDashboard from './pages/dashboard/OpdDashboard.jsx';
 import AdminDashboard from './pages/dashboard/AdminDashboard.jsx';
 import MitraDashboard from './pages/dashboard/MitraDashboard.jsx';
@@ -38,8 +39,12 @@ export default function App() {
         path="/dashboard/mitra"
         element={<ProtectedRoute allow={['mitra']}><MitraDashboard /></ProtectedRoute>}
       />
-      {/* Tautan lama modul monev kini mengarah ke dashboard OPD */}
+      {/* Monitoring dikelola admin; OPD mengisi form setelah login. */}
       <Route path="/monev" element={<Navigate to="/dashboard/opd" replace />} />
+      <Route
+        path="/monev-form"
+        element={<ProtectedRoute allow={['opd', 'admin']}><PageTransition><MonevFormPage /></PageTransition></ProtectedRoute>}
+      />
 
       {/* Portal publik */}
       <Route element={<Layout />}>

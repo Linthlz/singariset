@@ -3,6 +3,7 @@ import DashboardLayout from '../../components/DashboardLayout.jsx';
 import HBarChart from '../../components/charts/HBarChart.jsx';
 import Icon from '../../components/Icon.jsx';
 import Modal from '../../components/Modal.jsx';
+import MonevModule from './MonevModule.jsx';
 import { DEMO_ACCOUNTS, ROLES, getRegisteredUsers } from '../../context/AuthContext.jsx';
 import { useContent } from '../../context/ContentContext.jsx';
 import { STATUS_USULAN, useSubmissions } from '../../context/SubmissionsContext.jsx';
@@ -12,6 +13,7 @@ import { bidangById, kecById, rupiah, rupiahRingkas, skemaById, tanggal, statusM
 
 const MENU = [
   { id: 'ringkasan', label: 'Ringkasan', ikon: 'chart' },
+  { id: 'monev', label: 'Monitoring & Evaluasi', ikon: 'chart' },
   { id: 'pengguna', label: 'Manajemen Pengguna', ikon: 'users' },
   { id: 'usulan', label: 'Usulan Riset Mitra', ikon: 'handshake' },
   { id: 'riset', label: 'Katalog Riset', ikon: 'flask' },
@@ -701,6 +703,7 @@ function Pengaturan() {
 /* ---------------- Shell ---------------- */
 const JUDUL = {
   ringkasan: ['Ringkasan portal', 'Pantauan menyeluruh ekosistem riset dan aktivitas portal'],
+  monev: ['Monitoring & Evaluasi', 'Review tindak lanjut kajian dan pemantauan kinerja seluruh OPD'],
   pengguna: ['Manajemen pengguna', 'Verifikasi dan kelola akun mitra serta perangkat daerah'],
   usulan: ['Usulan riset mitra', 'Verifikasi, setujui, atau tolak pengajuan kolaborasi riset dari mitra'],
   riset: ['Katalog riset', 'Seluruh judul riset dalam basis data BRIDA'],
@@ -723,6 +726,7 @@ export default function AdminDashboard() {
   return (
     <DashboardLayout menu={menu} active={active} onSelect={setActive} title={judul} subtitle={sub}>
       {active === 'ringkasan' && <Ringkasan />}
+      {active === 'monev' && <MonevModule />}
       {active === 'pengguna' && <Pengguna />}
       {active === 'usulan' && <UsulanMitra />}
       {active === 'riset' && <KatalogRiset />}

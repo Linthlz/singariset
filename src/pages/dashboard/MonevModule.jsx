@@ -4,49 +4,24 @@ import Icon from '../../components/Icon.jsx';
 import ScoreRing from '../../components/charts/ScoreRing.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { RISET, BIDANG, MILESTONES, INDIKATOR, SKOR, BERKAS } from '../../data/singaData.js';
+import { RISET, BIDANG, INDIKATOR, SKOR, BERKAS } from '../../data/singaData.js';
 import { kecById, skemaById, statusMeta, rupiah, rupiahRingkas, tanggal } from '../../lib/format.js';
 
-const SUMBER_DANA = [...new Set(RISET.map((r) => r.sumber))];
 const TAHUN_OPTS = [...new Set(RISET.map((r) => r.tahun))].sort((a, b) => b - a);
 
 const STATUSES = [
   { id: '', l: 'Semua status' },
   { id: 'ontrack', l: 'On Track' },
-  { id: 'warning', l: 'Warning / Koreksi' },
-  { id: 'delayed', l: 'Delayed' },
-  { id: 'selesai', l: 'Selesai & Adopsi' }
+  { id: 'selesai', l: 'Selesai' }
 ];
+
+function displayStatus(status) {
+  return status === 'selesai' ? 'selesai' : 'ontrack';
+}
 
 function scoreTotal(skor) {
   if (!skor) return null;
   return INDIKATOR.reduce((sum, ind) => sum + (skor[ind.id] || 0) * (ind.bobot / 100), 0);
-}
-
-function MilestoneTracker({ r }) {
-  return (
-    <div className="flex items-start gap-0 overflow-x-auto pb-1.5">
-      {MILESTONES.map((m, i) => {
-        const done = m.n < r.tahap || r.status === 'selesai';
-        const current = m.n === r.tahap && r.status !== 'selesai';
-        const warn = current && (r.status === 'warning' || r.status === 'delayed');
-        return (
-          <div key={m.n} className="relative min-w-[112px] flex-1 px-1 text-center">
-            {i > 0 && <div className={`absolute left-[-50%] top-[15px] h-0.75 w-full ${done || current ? 'bg-success' : 'bg-line'}`} />}
-            <div className={`relative z-10 mx-auto mb-2 grid h-8 w-8 place-items-center rounded-full border-3 text-[.78rem] font-extrabold ${
-              warn ? 'border-warning bg-warning-bg text-warning'
-              : done ? 'border-success bg-success text-white'
-              : current ? 'border-maroon-800 bg-white text-maroon-800 shadow-[0_0_0_4px_#FDF2F2]'
-              : 'border-line bg-white text-ink-3'
-            }`}>
-              {done ? <Icon name="check" size={14} /> : m.n}
-            </div>
-            <div className="text-[.765rem] font-semibold leading-tight text-ink">{m.short}</div>
-          </div>
-        );
-      })}
-    </div>
-  );
 }
 
 function ScoreMatrix({ r }) {
@@ -61,7 +36,7 @@ function ScoreMatrix({ r }) {
   });
 
   const total = scoreTotal(editing ? draft : saved);
-  const canEdit = hasRole('opd', 'admin');
+  const canEdit = hasRole('admin');
 
   function submitScore() {
     toast('success', 'Penilaian tersimpan', `Skor akhir ${scoreTotal(draft).toFixed(1).replace('.', ',')} untuk ${r.id} dicatat pada sistem monev (prototipe, belum dikirim ke server).`);
@@ -144,33 +119,36 @@ function ScoreMatrix({ r }) {
 }
 
 const FILE_ICON = { pdf: 'doc', img: 'image', video: 'video' };
-const FILE_STATUS = {
-  verified: { l: 'Terverifikasi', c: 'bg-success-bg text-success', ikon: 'checkCircle' },
-  review: { l: 'Menunggu Tinjauan', c: 'bg-info-bg text-info', ikon: 'clock' },
-  revisi: { l: 'Perlu Revisi', c: 'bg-danger-bg text-danger', ikon: 'alert' }
+
+const MONEV_INPUTS = {
+  'BRD-2025-001': {
+    opd: 'Dinas Pertanian Kabupaten Buleleng',
+    monitoring: 'Sudah',
+    uraian: 'Rekomendasi mulai ditindaklanjuti melalui pemasangan 12 node sensor pada tiga tempek Subak Padanggalak. Data debit harian sudah digunakan sebagai bahan rapat penyesuaian pola tanam MT-1 2025.',
+    kendala: 'Integrasi data dengan sistem pelaporan rutin masih membutuhkan penyesuaian format. Beberapa sensor juga perlu kalibrasi ulang setelah hujan dengan intensitas tinggi.',
+    manfaat: 'OPD memperoleh data lapangan yang lebih cepat untuk menyusun jadwal pengairan. Subak melaporkan penghematan penggunaan air dan koordinasi antar tempek menjadi lebih terukur.'
+  },
+  'BRD-2025-002': {
+    opd: 'Dinas Kebudayaan dan Pariwisata Kabupaten Buleleng',
+    monitoring: 'Sudah',
+    uraian: 'Draf standar operasional wisata bahari telah dibahas bersama operator perahu dan Pokdarwis Kalibukbuk. Materi awal sertifikasi operator sedang diuji pada dua kelompok pengelola.',
+    kendala: 'Penyesuaian jadwal pertemuan dengan pelaku wisata terkendala musim ramai kunjungan dan perbedaan waktu operasional antar kelompok.',
+    manfaat: 'Kajian menjadi dasar penyusunan layanan wisata yang lebih tertib, aman, dan menjaga keberlanjutan kawasan Lovina.'
+  }
 };
 
 function EvidenceRepo({ r }) {
-  const toast = useToast();
   const files = BERKAS[r.id] || [];
 
   return (
     <div>
-      <div
-        role="button" tabIndex={0}
-        onClick={() => toast('info', 'Mode prototipe', 'Unggahan berkas disimulasikan. Pada sistem produksi, berkas dikirim ke penyimpanan resmi BRIDA.')}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toast('info', 'Mode prototipe', 'Unggahan berkas disimulasikan pada versi ini.'); } }}
-        className="cursor-pointer rounded-xl border-2 border-dashed border-line-strong bg-surface-1 p-6.5 text-center transition hover:border-maroon-600 hover:bg-maroon-50"
-      >
-        <Icon name="upload" size={38} className="mx-auto mb-2.5 text-maroon-600" />
-        <div className="mb-0.5 font-bold text-ink">Seret berkas ke sini atau klik untuk memilih</div>
-        <div className="text-[.8rem] text-ink-3">Laporan (PDF), foto lapangan bergeotag (JPG/PNG), tautan video demo, maksimal 10 MB per berkas</div>
+      <div className="rounded-xl border border-info-bg bg-info-bg/40 p-4 text-[.82rem] text-info">
+        Bukti dukung diunggah oleh OPD melalui Form Monev. Panel admin hanya menampilkan berkas untuk diperiksa.
       </div>
 
       {files.length > 0 ? (
         <ul className="m-0 mt-4 flex list-none flex-col gap-2 p-0">
           {files.map((f) => {
-            const fs = FILE_STATUS[f.status];
             return (
               <li key={f.nama} className="flex items-center gap-3 rounded-lg border border-line bg-white p-3">
                 <span className="flex-none text-maroon-800"><Icon name={FILE_ICON[f.tipe] || 'doc'} size={19} /></span>
@@ -178,9 +156,6 @@ function EvidenceRepo({ r }) {
                   <div className="truncate text-[.84rem] font-semibold text-ink">{f.nama}</div>
                   <div className="text-[.74rem] text-ink-3">{f.ukuran} · {tanggal(f.tgl, true)}{f.geo ? ` · ${f.geo}` : ''}</div>
                 </div>
-                <span className={`flex flex-none items-center gap-1.5 rounded-full px-2.5 py-1 text-[.71rem] font-bold ${fs.c}`}>
-                  <Icon name={fs.ikon} size={12} /> {fs.l}
-                </span>
               </li>
             );
           })}
@@ -192,8 +167,54 @@ function EvidenceRepo({ r }) {
   );
 }
 
+function MonevInputPreview({ r }) {
+  const input = MONEV_INPUTS[r.id] || {
+    opd: 'OPD pengampu kajian',
+    monitoring: 'Sudah',
+    uraian: 'OPD telah mengisi uraian perkembangan tindak lanjut rekomendasi kajian. Data lengkap dan bukti pelaksanaan menunggu pemeriksaan admin BRIDA.',
+    kendala: 'Koordinasi lintas pihak dan penyesuaian jadwal pelaksanaan masih dipantau.',
+    manfaat: 'Hasil kajian menjadi bahan pertimbangan dalam penyusunan program dan peningkatan layanan OPD.'
+  };
+
+  return (
+    <section className="mt-5 rounded-xl border border-line bg-surface-1 p-4.5">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="m-0 text-[.98rem]">Hasil input Monev dari OPD</h3>
+          <p className="m-0 mt-1 text-[.78rem] text-ink-3">Preview data yang diisi OPD. Admin memeriksa isi ini sebelum memberikan penilaian.</p>
+        </div>
+        <span className="rounded-full bg-info-bg px-2.5 py-1 text-[.7rem] font-bold text-info">Input OPD</span>
+      </div>
+
+      <dl className="mb-4 grid gap-3 border-b border-line pb-4 sm:grid-cols-2">
+        <div>
+          <dt className="text-[.74rem] font-semibold text-ink-3">OPD pengampu</dt>
+          <dd className="m-0 mt-0.5 text-[.84rem] font-semibold text-ink">{input.opd}</dd>
+        </div>
+        <div>
+          <dt className="text-[.74rem] font-semibold text-ink-3">Hasil monitoring</dt>
+          <dd className="m-0 mt-0.5"><span className="inline-flex rounded-full bg-success-bg px-2.5 py-1 text-[.72rem] font-bold text-success">{input.monitoring}</span></dd>
+        </div>
+      </dl>
+
+      <div className="grid gap-4">
+        {[
+          ['Uraian hasil monitoring', input.uraian],
+          ['Kendala pelaksanaan rekomendasi', input.kendala],
+          ['Manfaat kajian', input.manfaat]
+        ].map(([label, value]) => (
+          <div key={label}>
+            <div className="mb-1 text-[.76rem] font-bold text-ink-3">{label}</div>
+            <p className="m-0 text-[.84rem] leading-6 text-ink-2">{value}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Sorotan({ r }) {
-  const sm = statusMeta(r.status);
+  const sm = statusMeta(displayStatus(r.status));
   const b = BIDANG.find((x) => x.id === r.bidang);
   // minmax(0,…) wajib: tanpa itu lebar min-content milestone tracker
   // menggencet kolom matriks skor sampai tak terbaca.
@@ -208,21 +229,19 @@ function Sorotan({ r }) {
           <h3 className="m-0 text-[1.05rem] leading-snug"><Link to={`/riset/${r.id}`} className="text-ink hover:text-maroon-800">{r.judul}</Link></h3>
           <p className="m-0 mt-1 text-[.82rem] text-ink-3">{r.peneliti} · {r.institusi} · Kec. {kecById(r.kecamatan).nama}</p>
 
-          <dl className="mb-5 mt-4 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line pt-4 text-[.83rem] sm:grid-cols-4">
-            <div><dt className="font-semibold text-ink-3">Kontrak</dt><dd className="m-0 font-semibold">{r.kontrak}</dd></div>
+          <dl className="mb-5 mt-4 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line pt-4 text-[.83rem] sm:grid-cols-3">
             <div><dt className="font-semibold text-ink-3">Skema</dt><dd className="m-0 font-semibold">{skemaById(r.skema).nama}</dd></div>
             <div><dt className="font-semibold text-ink-3">Nilai kontrak</dt><dd className="m-0 font-semibold text-maroon-800">{rupiahRingkas(r.anggaran)}</dd></div>
             <div><dt className="font-semibold text-ink-3">Sisa dana</dt><dd className="m-0 font-semibold">{rupiahRingkas(r.anggaran - r.terserap)}</dd></div>
           </dl>
 
-          <h4 className="mb-3 text-[.92rem]">Milestone Tracker 7 Tahap</h4>
-          <MilestoneTracker r={r} />
         </section>
 
         <section className="rounded-xl border border-line bg-white p-5.5">
           <h3 className="mb-1 text-[1rem]">Dokumentasi &amp; berkas bukti luaran</h3>
           <p className="mb-4 text-[.82rem] text-ink-3">Laporan kemajuan, foto lapangan bergeotag, dan tautan video demo purwarupa.</p>
           <EvidenceRepo r={r} />
+          <MonevInputPreview r={r} />
         </section>
       </div>
 
@@ -234,7 +253,7 @@ function Sorotan({ r }) {
 }
 
 export default function MonevModule() {
-  const [filt, setFilt] = useState({ q: '', tahun: '', bidang: '', sumber: '', status: '' });
+  const [filt, setFilt] = useState({ q: '', tahun: '', bidang: '', status: '' });
   const [selectedId, setSelectedId] = useState('BRD-2025-001');
   const [sort, setSort] = useState({ key: 'id', dir: 'asc' });
 
@@ -243,9 +262,8 @@ export default function MonevModule() {
     return RISET.filter((r) => {
       if (filt.tahun && String(r.tahun) !== filt.tahun) return false;
       if (filt.bidang && r.bidang !== filt.bidang) return false;
-      if (filt.sumber && r.sumber !== filt.sumber) return false;
-      if (filt.status && r.status !== filt.status) return false;
-      if (q && !(`${r.judul} ${r.peneliti} ${r.kontrak}`.toLowerCase().includes(q))) return false;
+      if (filt.status && displayStatus(r.status) !== filt.status) return false;
+      if (q && !(`${r.judul} ${r.peneliti}`.toLowerCase().includes(q))) return false;
       return true;
     });
   }, [filt]);
@@ -274,7 +292,7 @@ export default function MonevModule() {
 
   function exportCsv() {
     const header = ['Kode', 'Judul', 'Peneliti', 'Bidang', 'Tahun', 'Nilai Kontrak', 'Serapan', 'Capaian (%)', 'Status'];
-    const rows = sorted.map((r) => [r.id, r.judul, r.peneliti, r.bidang, r.tahun, r.anggaran, r.terserap, r.progress, r.status]);
+    const rows = sorted.map((r) => [r.id, r.judul, r.peneliti, r.bidang, r.tahun, r.anggaran, r.terserap, r.progress, displayStatus(r.status)]);
     const csv = [header, ...rows].map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -286,9 +304,8 @@ export default function MonevModule() {
 
   const selected = RISET.find((r) => r.id === selectedId) || sorted[0] || RISET[0];
   const total = RISET.length;
-  const onTrack = RISET.filter((r) => r.status === 'ontrack').length;
+  const onTrack = RISET.filter((r) => displayStatus(r.status) === 'ontrack').length;
   const selesai = RISET.filter((r) => r.status === 'selesai').length;
-  const warn = RISET.filter((r) => r.status === 'warning' || r.status === 'delayed').length;
   const avgProgress = Math.round(RISET.reduce((s, r) => s + r.progress, 0) / RISET.length);
 
   const SortHead = ({ label, k, align = 'left' }) => (
@@ -303,11 +320,10 @@ export default function MonevModule() {
   return (
     <div className="flex flex-col gap-6">
       {/* KPI row */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
           { l: 'Total dimonitor', v: total, sub: 'Riset TA 2025', c: '' },
           { l: 'On track', v: onTrack, sub: 'Sesuai timeline', c: 'border-l-4 border-l-success' },
-          { l: 'Warning / SP', v: warn, sub: 'Perlu tindak lanjut', c: 'border-l-4 border-l-warning' },
           { l: 'Selesai & adopsi', v: selesai, sub: 'Rekomendasi teradopsi', c: 'border-l-4 border-l-info' },
           { l: 'Rerata capaian', v: `${avgProgress}%`, sub: 'Seluruh riset dimonitor', c: 'border-l-4 border-l-gold-500' }
         ].map((m) => (
@@ -323,11 +339,11 @@ export default function MonevModule() {
       <section className="rounded-xl border border-line bg-white p-5">
         <div className="mb-3.5 flex items-center justify-between">
           <h2 className="m-0 text-[1rem]">Pencarian lanjutan riset aktif</h2>
-          <button type="button" onClick={() => setFilt({ q: '', tahun: '', bidang: '', sumber: '', status: '' })}
+          <button type="button" onClick={() => setFilt({ q: '', tahun: '', bidang: '', status: '' })}
             className="rounded-lg px-3 py-1.5 text-[.8rem] font-semibold text-ink-2 hover:bg-surface-1">Atur ulang</button>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <input type="search" placeholder="Judul riset, peneliti, atau nomor kontrak…" value={filt.q}
+          <input type="search" placeholder="Judul riset atau peneliti…" value={filt.q}
             onChange={(e) => setFilt((f) => ({ ...f, q: e.target.value }))} className="input-base" aria-label="Cari riset" />
           <select value={filt.tahun} onChange={(e) => setFilt((f) => ({ ...f, tahun: e.target.value }))} className="input-base" aria-label="Tahun anggaran">
             <option value="">Semua tahun anggaran</option>
@@ -336,10 +352,6 @@ export default function MonevModule() {
           <select value={filt.bidang} onChange={(e) => setFilt((f) => ({ ...f, bidang: e.target.value }))} className="input-base" aria-label="Bidang riset">
             <option value="">Semua bidang riset</option>
             {BIDANG.map((b) => <option key={b.id} value={b.id}>{b.nama}</option>)}
-          </select>
-          <select value={filt.sumber} onChange={(e) => setFilt((f) => ({ ...f, sumber: e.target.value }))} className="input-base" aria-label="Sumber dana">
-            <option value="">Semua sumber dana</option>
-            {SUMBER_DANA.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         <div className="mt-3.5 flex flex-wrap gap-2" role="group" aria-label="Saring status monev">
@@ -400,11 +412,12 @@ export default function MonevModule() {
             </thead>
             <tbody>
               {sorted.map((r) => {
-                const sm = statusMeta(r.status);
+                const visibleStatus = displayStatus(r.status);
+                const sm = statusMeta(visibleStatus);
                 const serapPct = Math.round((r.terserap / r.anggaran) * 100);
                 return (
                   <tr key={r.id} onClick={() => setSelectedId(r.id)}
-                    className={`cursor-pointer border-b border-line transition last:border-0 hover:bg-surface-1 ${r.status === 'warning' || r.status === 'delayed' ? 'bg-[#FFFCF5]' : ''} ${selected.id === r.id ? 'bg-maroon-50' : ''}`}>
+                    className={`cursor-pointer border-b border-line transition last:border-0 hover:bg-surface-1 ${selected.id === r.id ? 'bg-maroon-50' : ''}`}>
                     <td className="whitespace-nowrap px-4 py-3.5 font-semibold tabular-nums text-ink">{r.id}</td>
                     <td className="px-4 py-3.5">
                       <div className="font-semibold text-ink">{r.judul.length > 56 ? r.judul.slice(0, 56) + '…' : r.judul}</div>
