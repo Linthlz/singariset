@@ -18,7 +18,6 @@ export default function ScoreRing({ value, size = 128 }) {
           <b className="block font-head text-[2rem] font-extrabold leading-none tabular-nums" style={{ color }}>
             {value.toFixed(1).replace('.', ',')}
           </b>
-          <span className="text-[.68rem] font-bold uppercase tracking-widest text-ink-3">Nilai Akhir</span>
         </div>
       </div>
     </div>

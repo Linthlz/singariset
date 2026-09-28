@@ -66,7 +66,7 @@ function ScoreMatrix({ r }) {
         <ScoreRing value={total || 0} />
         <div className="flex-1">
           <div className="mb-2.5 flex flex-wrap items-center gap-2">
-            <h3 className="m-0 text-[1rem]">Matriks Evaluasi Kinerja</h3>
+            <h3 className="m-0 text-[1rem]">Matriks Evaluasi</h3>
             {canEdit && !editing && (
               <button type="button" onClick={() => setEditing(true)} className="ml-auto rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-maroon-800 hover:border-maroon-800 hover:bg-maroon-50">
                 Perbarui skor
@@ -228,12 +228,6 @@ function Sorotan({ r }) {
           </div>
           <h3 className="m-0 text-[1.05rem] leading-snug"><Link to={`/riset/${r.id}`} className="text-ink hover:text-maroon-800">{r.judul}</Link></h3>
           <p className="m-0 mt-1 text-[.82rem] text-ink-3">{r.peneliti} · {r.institusi} · Kec. {kecById(r.kecamatan).nama}</p>
-
-          <dl className="mb-5 mt-4 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-line pt-4 text-[.83rem] sm:grid-cols-3">
-            <div><dt className="font-semibold text-ink-3">Skema</dt><dd className="m-0 font-semibold">{skemaById(r.skema).nama}</dd></div>
-            <div><dt className="font-semibold text-ink-3">Nilai kontrak</dt><dd className="m-0 font-semibold text-maroon-800">{rupiahRingkas(r.anggaran)}</dd></div>
-            <div><dt className="font-semibold text-ink-3">Sisa dana</dt><dd className="m-0 font-semibold">{rupiahRingkas(r.anggaran - r.terserap)}</dd></div>
-          </dl>
 
         </section>
 

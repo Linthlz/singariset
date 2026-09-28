@@ -275,22 +275,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== 1.5a PETA SEBARAN RISET — section tersendiri ===== */}
-      <section className="py-14 sm:py-18" id="peta-sebaran">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-6 text-center">
-            <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peta Sebaran Riset</span>
-            <h2 className="mx-auto max-w-[46ch] text-[clamp(1.45rem,2.7vw,2.05rem)]">Sebaran riset di 9 kecamatan Kabupaten Buleleng</h2>
-            <p className="mx-auto mb-0 max-w-[62ch] text-[1.02rem] text-ink-2">Klik salah satu wilayah pada peta untuk membuka detail fokus riset, sebaran per bidang prioritas, dan judul riset yang sedang berjalan di kecamatan tersebut.</p>
-          </Reveal>
-        </div>
-        <div className="mx-auto max-w-[2280px] px-5">
-          <Reveal>
-            <KecamatanMap />
-          </Reveal>
-        </div>
-      </section>
-
       {/* ===== 1.7 PETA JALAN RISET — kartu foto kegiatan ===== */}
       <section className="py-14 sm:py-18" id="petajalan">
         <div className="mx-auto max-w-[1240px] px-5">
