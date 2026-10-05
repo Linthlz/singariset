@@ -8,9 +8,11 @@ import KecamatanMap from '../components/KecamatanMap.jsx';
 import SmartImage from '../components/SmartImage.jsx';
 import Modal from '../components/Modal.jsx';
 import {
-  ROADMAP, STATS, MITRA_LOGO
+  ROADMAP, MITRA_LOGO
 } from '../data/singaData.js';
-import { useContent } from '../context/ContentContext.jsx';
+import AsyncState, { EmptyState, ErrorState, SkeletonGrid } from '../components/AsyncState.jsx';
+import { useFunding, useStats } from '../hooks/useContent.js';
+import { usePublishedNews } from '../hooks/useNews.js';
 import { tanggal, hariMenuju } from '../lib/format.js';
 
 const QUICK = [
@@ -20,16 +22,19 @@ const QUICK = [
   { ico: 'handshake', t: 'Pengajuan Kolaborasi', s: 'Formulir usulan riset & mitra sasaran', h: '/kolaborasi' }
 ];
 
-const EKO = [
-  { ico: 'flask', v: STATS.totalRiset, l: 'Riset daerah terdaftar', s: 'Sejak 2021, lintas skema pendanaan' },
-  { ico: 'users', v: STATS.peneliti, l: 'Peneliti terdaftar', s: `Ber-NIDN/NIP dari ${STATS.institusi} institusi mitra` },
-  { ico: 'book', v: STATS.publikasi, l: 'Publikasi & luaran ilmiah', s: `${STATS.hki} HKI dan paten terdaftar` },
-  { ico: 'pin', v: STATS.desaTerdampak, l: 'Desa/kelurahan terdampak', s: 'Dari total 148 desa & kelurahan' },
-  { ico: 'award', v: STATS.adopsiKebijakan, l: 'Rekomendasi diadopsi', s: 'Menjadi Perbup, Renja, atau SOP OPD' },
-  { ico: 'doc', v: STATS.policyBrief, l: 'Policy brief tersedia', s: 'Ringkasan kebijakan siap pakai OPD' },
-  { ico: 'chart', v: STATS.risetAktif, l: 'Riset aktif dimonitor', s: 'Tahun anggaran berjalan 2025' },
-  { ico: 'network', v: STATS.institusi, l: 'Institusi mitra', s: 'Perguruan tinggi, litbang, OPD, komunitas' }
-];
+function buildEko(st) {
+  const m = st.manual || {};
+  return [
+    { ico: 'flask', v: st.total_research, l: 'Riset daerah terdaftar', s: 'Seluruh usulan & riset yang tercatat' },
+    { ico: 'users', v: st.researchers, l: 'Peneliti terdaftar', s: `Dari ${st.institutions} institusi mitra` },
+    { ico: 'book', v: m.stat_publikasi || 0, l: 'Publikasi & luaran ilmiah', s: `${m.stat_hki || 0} HKI dan paten terdaftar` },
+    { ico: 'pin', v: m.stat_desa_terdampak || 0, l: 'Desa/kelurahan terdampak', s: 'Dari total 148 desa & kelurahan' },
+    { ico: 'award', v: m.stat_adopsi_kebijakan || 0, l: 'Rekomendasi diadopsi', s: 'Menjadi Perbup, Renja, atau SOP OPD' },
+    { ico: 'doc', v: m.stat_policy_brief || 0, l: 'Policy brief tersedia', s: 'Ringkasan kebijakan siap pakai OPD' },
+    { ico: 'chart', v: st.active_research, l: 'Riset aktif dimonitor', s: 'Disetujui dan sedang berjalan' },
+    { ico: 'network', v: st.institutions, l: 'Institusi mitra', s: 'Perguruan tinggi, litbang, OPD, komunitas' }
+  ];
+}
 
 /* Gambar kegiatan BRIDA untuk sisi depan kartu — taruh berkas di
    public/images/profil/. Bila belum ada, latar bermotif otomatis tampil. */
@@ -204,11 +209,15 @@ function MitraCarousel({ items }) {
 }
 
 export default function Home() {
-  const { berita: BERITA, pendanaan: PENDANAAN } = useContent();
+  const pendanaan = useFunding();
+  const PENDANAAN = (pendanaan.data || []).filter((f) => f.status !== 'soon');
+  const stats = useStats();
+  const EKO = stats.data ? buildEko(stats.data) : null;
   const [detailBerita, setDetailBerita] = useState(null);
   const mitraTrackRef = useRef(null);
 
-  const beritaSorot = BERITA.slice(0, 5);
+  const berita = usePublishedNews({ limit: 5 });
+  const beritaSorot = berita.data || [];
   const beritaBesar = beritaSorot[0];
   const beritaKecil = beritaSorot.slice(1, 5);
 
@@ -244,6 +253,11 @@ export default function Home() {
             <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Riset daerah yang terhitung, terpantau, dan tercatat dampaknya</h2>
             <p className="text-[1.02rem] text-ink-2">Setiap angka ditarik dari basis data tunggal BRIDA sehingga capaian riset, serapan anggaran, dan jangkauan wilayah dapat diaudit publik kapan saja.</p>
           </Reveal>
+          {!EKO ? (
+            stats.error
+              ? <ErrorState error={stats.error} onRetry={stats.reload} title="Statistik belum dapat dimuat" />
+              : <SkeletonGrid count={8} className="grid grid-cols-2 gap-4 lg:grid-cols-4" itemClassName="h-36" />
+          ) : (
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {EKO.map((e) => (
               <Reveal key={e.l} className="rounded-xl border border-line bg-white p-5.5 shadow-card transition hover:-translate-y-1 hover:shadow-pop">
@@ -254,6 +268,7 @@ export default function Home() {
               </Reveal>
             ))}
           </div>
+          )}
         </div>
       </section>
 
@@ -341,6 +356,8 @@ export default function Home() {
               Lihat semua skema →
             </Link>
           </Reveal>
+          <AsyncState loading={pendanaan.loading} error={pendanaan.error} isEmpty={PENDANAAN.length === 0} onRetry={pendanaan.reload}
+            empty={<EmptyState icon="money" title="Belum ada skema yang dibuka" text="Pantau halaman Peluang Pendanaan untuk pengumuman berikutnya." />}>
           <Reveal className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {PENDANAAN.slice(0, 3).map((f) => {
               const sisa = hariMenuju(f.deadline);
@@ -364,7 +381,7 @@ export default function Home() {
                     ))}
                   </ul>
                   <p className="mb-3.5 text-[.79rem] text-ink-3">{f.ket}</p>
-                  <div className="mt-auto flex gap-2">
+                  {f.situs && <div className="mt-auto flex gap-2">
                     <a
                       href={f.situs} target="_blank" rel="noopener noreferrer"
                       className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-maroon-800 px-3 py-2 text-center text-[.82rem] font-semibold text-white no-underline hover:bg-maroon-600"
@@ -378,11 +395,12 @@ export default function Home() {
                     >
                       Syarat <Icon name="external" size={13} />
                     </a>
-                  </div>
+                  </div>}
                 </article>
               );
             })}
           </Reveal>
+          </AsyncState>
         </div>
       </section>
 
@@ -399,16 +417,25 @@ export default function Home() {
               Lihat semua berita →
             </Link>
           </Reveal>
-          {beritaBesar && (
-            <Reveal className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-              <NewsCard n={beritaBesar} i={0} big onOpen={setDetailBerita} />
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {beritaKecil.map((n, i) => (
-                  <NewsCard key={n.id} n={n} i={i + 1} onOpen={setDetailBerita} />
-                ))}
-              </div>
-            </Reveal>
-          )}
+          <AsyncState
+            loading={berita.loading}
+            error={berita.error}
+            isEmpty={beritaSorot.length === 0}
+            onRetry={berita.reload}
+            skeleton={<SkeletonGrid count={2} className="grid grid-cols-1 gap-5 lg:grid-cols-2" itemClassName="h-[420px] rounded-2xl" />}
+            empty={<EmptyState icon="doc" title="Belum ada berita terbit" text="Kabar terbaru dari BRIDA Buleleng akan tampil di sini." />}
+          >
+            {beritaBesar && (
+              <Reveal className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                <NewsCard key={beritaBesar.id} n={beritaBesar} i={0} big onOpen={setDetailBerita} />
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  {beritaKecil.map((n, i) => (
+                    <NewsCard key={n.id} n={n} i={i + 1} onOpen={setDetailBerita} />
+                  ))}
+                </div>
+              </Reveal>
+            )}
+          </AsyncState>
         </div>
       </section>
 

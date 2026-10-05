@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react';
 import PageHero from '../components/PageHero.jsx';
 import Reveal from '../components/Reveal.jsx';
 import Icon from '../components/Icon.jsx';
+import AsyncState, { EmptyState } from '../components/AsyncState.jsx';
 import { SKEMA } from '../data/singaData.js';
-import { useContent } from '../context/ContentContext.jsx';
+import { useFunding } from '../hooks/useContent.js';
 import { tanggal, hariMenuju } from '../lib/format.js';
 
 const FUND_STATUS = {
@@ -20,7 +21,8 @@ const STATUSES = [
 ];
 
 export default function Pendanaan() {
-  const { pendanaan: PENDANAAN } = useContent();
+  const { data, loading, error, reload } = useFunding();
+  const PENDANAAN = useMemo(() => data || [], [data]);
   const [status, setStatus] = useState('');
   const [skema, setSkema] = useState('');
 
@@ -37,7 +39,7 @@ export default function Pendanaan() {
         title="Peluang Pendanaan Riset"
         lead="Skema hibah, insentif, dan kemitraan riset yang sedang atau akan dibuka untuk peneliti dan mitra di Kabupaten Buleleng."
         badges={[
-          <span key="1" className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">{PENDANAAN.length} skema terdaftar</span>,
+          <span key="1" className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">{data ? `${PENDANAAN.length} skema terdaftar` : 'Memuat skema…'}</span>,
           <span key="2" className="rounded-full bg-gold-500 px-3 py-1.5 text-[.8rem] font-semibold text-[#4A2D00]">{PENDANAAN.filter((f) => f.status === 'open').length} sedang dibuka</span>
         ]}
       />
@@ -63,8 +65,12 @@ export default function Pendanaan() {
             </select>
           </Reveal>
 
+          <AsyncState loading={loading} error={error} isEmpty={hits.length === 0} onRetry={reload}
+            empty={PENDANAAN.length
+              ? <EmptyState title="Tidak ada skema yang cocok" text="Longgarkan filter untuk melihat skema lainnya." />
+              : <EmptyState icon="money" title="Belum ada skema pendanaan" text="Skema hibah dan insentif riset akan diumumkan di halaman ini." />}>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {hits.length ? hits.map((f, i) => {
+            {hits.map((f, i) => {
               const sisa = hariMenuju(f.deadline);
               const fs = FUND_STATUS[f.status] || FUND_STATUS.open;
               const dlCls = sisa < 0 ? 'bg-surface-1 text-ink-2' : sisa <= 30 ? 'bg-danger-bg text-danger font-semibold' : sisa <= 75 ? 'bg-warning-bg text-warning font-semibold' : 'bg-surface-1 text-ink-2';
@@ -87,7 +93,7 @@ export default function Pendanaan() {
                       ))}
                     </ul>
                     <p className="mb-3.5 text-[.79rem] text-ink-3">{f.ket}</p>
-                    <div className="mt-auto flex gap-2">
+                    {f.situs && <div className="mt-auto flex gap-2">
                       <a
                         href={f.situs} target="_blank" rel="noopener noreferrer"
                         className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-maroon-800 px-3 py-2 text-center text-[.82rem] font-semibold text-white no-underline hover:bg-maroon-600"
@@ -101,18 +107,13 @@ export default function Pendanaan() {
                       >
                         Syarat <Icon name="external" size={13} />
                       </a>
-                    </div>
+                    </div>}
                   </article>
                 </Reveal>
               );
-            }) : (
-              <Reveal className="col-span-full py-14 text-center text-ink-3">
-                <Icon name="search" size={46} className="mx-auto mb-3.5 opacity-40" />
-                <h3 className="text-[1.02rem] text-ink-2">Tidak ada skema yang cocok</h3>
-                <p>Longgarkan filter untuk melihat skema lainnya.</p>
-              </Reveal>
-            )}
+            })}
           </div>
+          </AsyncState>
         </div>
       </section>
     </>

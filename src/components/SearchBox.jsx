@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { buildSearchIndex } from '../lib/searchIndex.js';
+import { loadDynamicSearchIndex, staticSearchIndex } from '../lib/searchIndex.js';
 import Icon from './Icon.jsx';
 
 export default function SearchBox({ variant = 'hero', placeholder, onNavigate }) {
@@ -9,10 +9,17 @@ export default function SearchBox({ variant = 'hero', placeholder, onNavigate })
   const [cursor, setCursor] = useState(-1);
   const hostRef = useRef(null);
   const navigate = useNavigate();
-  const idx = useRef(buildSearchIndex());
+  const [idx, setIdx] = useState(staticSearchIndex);
+  const dimuat = useRef(false);
+
+  function muatIndeks() {
+    if (dimuat.current) return;
+    dimuat.current = true;
+    loadDynamicSearchIndex().then((items) => setIdx([...items, ...staticSearchIndex()]));
+  }
 
   const hits = q.trim().length >= 2
-    ? idx.current.filter((it) => it.key.includes(q.trim().toLowerCase())).slice(0, 7)
+    ? idx.filter((it) => it.key.includes(q.trim().toLowerCase())).slice(0, 7)
     : [];
 
   useEffect(() => {
@@ -59,8 +66,8 @@ export default function SearchBox({ variant = 'hero', placeholder, onNavigate })
           autoComplete="off"
           value={q}
           placeholder={placeholder || 'Cari riset, peneliti, komoditas, atau kecamatan…'}
-          onChange={(e) => { setQ(e.target.value); setOpen(true); setCursor(-1); }}
-          onFocus={() => q.trim().length >= 2 && setOpen(true)}
+          onChange={(e) => { muatIndeks(); setQ(e.target.value); setOpen(true); setCursor(-1); }}
+          onFocus={() => { muatIndeks(); if (q.trim().length >= 2) setOpen(true); }}
           onKeyDown={onKeyDown}
           className={
             isHero

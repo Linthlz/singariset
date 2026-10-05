@@ -4,10 +4,11 @@ import Icon from '../components/Icon.jsx';
 import Reveal from '../components/Reveal.jsx';
 import Modal from '../components/Modal.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useSubmissions } from '../context/SubmissionsContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-import { INSTITUSI, SKEMA, BIDANG, KECAMATAN, MITRA_SASARAN } from '../data/singaData.js';
-import { skemaById, kecById, rupiah, hariMenuju, tanggal, wordCount } from '../lib/format.js';
+import { SKEMA, BIDANG, KECAMATAN, MITRA_SASARAN } from '../data/singaData.js';
+import { bidangById, skemaById, kecById, rupiah, hariMenuju, tanggal, wordCount } from '../lib/format.js';
+import { errorMessage } from '../services/api.js';
+import { researchService } from '../services/researchService.js';
 
 const DRAFT_KEY = 'singa.draft.kolaborasi';
 const DEADLINE = '2025-11-28';
@@ -34,7 +35,6 @@ const SYARAT_UTAMA = [
 ];
 
 const initialForm = {
-  namaKetua: '', nidn: '', institusi: '', jabatan: '', email: '', telp: '', anggota: '',
   judul: '', skema: '', bidang: '', kecamatan: '', dana: '', sasaranRpjmd: '', urgensi: '', luaran: '',
   mitra: [], mitraNama: '', manfaat: '',
   paktaOrisinal: false, paktaIntegritas: false, paktaData: false
@@ -44,11 +44,6 @@ function fmtSize(b) { return b >= 1048576 ? (b / 1048576).toFixed(1).replace('.'
 
 function validate(form, files) {
   const errs = {};
-  if (!form.namaKetua.trim()) errs.namaKetua = 'Nama ketua peneliti wajib diisi.';
-  if (!form.nidn.trim()) errs.nidn = 'NIDN / NIP wajib diisi.';
-  if (!form.institusi) errs.institusi = 'Pilih institusi asal pengusul.';
-  if (!form.email.trim()) errs.email = 'Surel wajib diisi.';
-  if (!form.telp.trim()) errs.telp = 'Nomor telepon wajib diisi.';
   if (!form.judul.trim()) errs.judul = 'Judul riset wajib diisi.';
   if (!form.skema) errs.skema = 'Pilih skema pendanaan yang dituju.';
   if (!form.bidang) errs.bidang = 'Pilih bidang prioritas riset.';
@@ -67,7 +62,6 @@ function validate(form, files) {
 
 export default function Kolaborasi() {
   const { user } = useAuth();
-  const { addSubmission } = useSubmissions();
   const toast = useToast();
   const [params] = useSearchParams();
   const [form, setForm] = useState(initialForm);
@@ -92,9 +86,9 @@ export default function Kolaborasi() {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
       const o = JSON.parse(raw);
-      setForm((f) => ({ ...f, ...o.form }));
-      setFiles(o.files || []);
-      setDraftInfo(`Draf dipulihkan dari penyimpanan peramban (${tanggal(o.savedAt.slice(0, 10))}). Lanjutkan pengisian atau kosongkan formulir.`);
+      const simpan = Object.fromEntries(Object.entries(o.form || {}).filter(([k]) => k in initialForm));
+      setForm((f) => ({ ...f, ...simpan }));
+      setDraftInfo(`Draf dipulihkan dari penyimpanan peramban (${tanggal(o.savedAt.slice(0, 10))}). Unggah ulang berkas proposal sebelum mengirim.`);
       toast('info', 'Draf dipulihkan', 'Isian terakhir Anda dimuat kembali dari peramban ini.');
       // eslint-disable-next-line no-empty
     } catch { }
@@ -118,21 +112,21 @@ export default function Kolaborasi() {
     setForm((f) => ({ ...f, mitra: f.mitra.includes(id) ? f.mitra.filter((x) => x !== id) : [...f.mitra, id] }));
   }
 
+  // Backend menerima satu PDF proposal; berkas baru yang valid menggantikan yang lama.
   function addFiles(list) {
-    const next = [];
+    let valid = null;
     Array.from(list).forEach((f) => {
-      const isPdf = f.type === 'application/pdf' || /\.pdf$/i.test(f.name);
+      const isPdf = f.type === 'application/pdf';
       let err = null;
       if (!isPdf) err = 'Ditolak, hanya berkas PDF yang diterima.';
       else if (f.size > MAX_FILE) err = `Ditolak, ukuran ${fmtSize(f.size)} melampaui batas 10 MB.`;
-      next.push({ name: f.name, size: f.size, err });
       if (err) toast('danger', 'Berkas ditolak', `${f.name}: ${err}`);
+      else valid = { name: f.name, size: f.size, err: null, file: f };
     });
-    setFiles((fs) => [...fs, ...next]);
+    if (valid) setFiles([valid]);
   }
 
   const GROUPS = [
-    { l: 'Identitas pengusul', ok: !liveErrors.namaKetua && !liveErrors.nidn && !liveErrors.institusi && !liveErrors.email && !liveErrors.telp },
     { l: 'Substansi riset & RPJMD', ok: !liveErrors.judul && !liveErrors.skema && !liveErrors.bidang && !liveErrors.kecamatan && !liveErrors.dana && !liveErrors.sasaranRpjmd && !liveErrors.urgensi && !liveErrors.luaran },
     { l: 'Mitra sasaran terpilih', ok: form.mitra.length > 0 },
     { l: 'Berkas proposal terunggah', ok: files.some((f) => !f.err) },
@@ -142,8 +136,8 @@ export default function Kolaborasi() {
 
   function saveDraft() {
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ form, files: files.filter((f) => !f.err), savedAt: new Date().toISOString() }));
-      setDraftInfo(`Draf tersimpan pada ${new Date().toLocaleTimeString('id-ID')} di peramban Anda. Draf tidak terkirim ke BRIDA sampai tombol kirim ditekan.`);
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ form, savedAt: new Date().toISOString() }));
+      setDraftInfo(`Draf tersimpan pada ${new Date().toLocaleTimeString('id-ID')} di peramban Anda (tanpa berkas PDF). Draf tidak terkirim ke BRIDA sampai tombol kirim ditekan.`);
       toast('success', 'Draf tersimpan', 'Isian formulir disimpan di peramban ini dan akan dipulihkan saat Anda kembali.');
     } catch {
       toast('danger', 'Gagal menyimpan draf', 'Peramban menolak penyimpanan lokal, kemungkinan sedang dalam mode privat.');
@@ -158,7 +152,7 @@ export default function Kolaborasi() {
     toast('info', 'Formulir dikosongkan', 'Seluruh isian dan draf lokal telah dihapus.');
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     setAttemptedSubmit(true);
@@ -171,16 +165,36 @@ export default function Kolaborasi() {
       return;
     }
 
+    const berkas = files.filter((f) => !f.err && f.file);
+    const lokasi = form.kecamatan === 'lintas' ? 'Lintas kecamatan' : kecById(form.kecamatan).nama;
+    const payload = {
+      title: form.judul.trim(),
+      purpose: form.urgensi.trim(),
+      category: bidangById(form.bidang).nama,
+      funding_scheme: skemaById(form.skema).nama,
+      fund_amount: form.dana.replace(/\D/g, ''),
+      location: lokasi,
+      address: form.kecamatan === 'lintas' ? 'Kabupaten Buleleng, Bali' : `Kecamatan ${lokasi}, Kabupaten Buleleng, Bali`,
+      rpjmd: form.sasaranRpjmd,
+      promised_output: form.luaran.trim(),
+      research_time_range: 'Tahun Anggaran 2026',
+      partnership_target_selection: form.mitra.map((m) => MITRA_SASARAN.find((x) => x.id === m)?.nama).filter(Boolean).join(', '),
+      partner_name: form.mitraNama.trim(),
+      estimated_number_of_direct_beneficiaries: form.manfaat.trim()
+    };
+
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      const riset = await researchService.submit(payload, berkas[0].file);
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* abaikan */ }
-      const berkas = files.filter((f) => !f.err);
-      const item = addSubmission({ ...form, mitraEmail: user.email, files: berkas });
-      setSuccessModal({ noReg: item.id, form, files: berkas });
+      setSuccessModal({ noReg: riset.kode, form, files: berkas });
       setForm(initialForm); setFiles([]); setErrors({}); setTouched({}); setAttemptedSubmit(false);
-      toast('success', 'Pengajuan terkirim', `Nomor registrasi ${item.id} telah dicatat dalam antrean BRIDA.`);
-    }, 900);
+      toast('success', 'Pengajuan terkirim', `Nomor registrasi ${riset.kode} tersimpan di sistem BRIDA.`);
+    } catch (error) {
+      toast('danger', 'Pengajuan gagal dikirim', errorMessage(error));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function err(name) { return (touched[name] || attemptedSubmit) ? liveErrors[name] : null; }
@@ -218,49 +232,24 @@ export default function Kolaborasi() {
         <div className="mx-auto grid max-w-[1240px] gap-6.5 px-5 lg:grid-cols-[1.55fr_.95fr]">
           <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
 
-            {/* 2.2 Identitas Pengusul */}
-            <Reveal className="rounded-xl border border-line bg-white p-6.5 shadow-card" ref={firstErrorRef}>
-              <div className="mb-1.5 flex flex-wrap items-center gap-3"><span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">Bagian 1 dari 4</span><span className="text-[.8rem] text-ink-3">Data ini diverifikasi silang dengan pangkalan data PDDikti.</span></div>
-              <h2 className="text-[1.22rem]">Identitas Pengusul Riset</h2>
-              <hr className="my-4.5 border-line" />
-
-              <div className="grid gap-x-4.5 sm:grid-cols-2">
-                <Field label="Nama lengkap ketua peneliti" required error={err('namaKetua')}>
-                  <input className="input-base" value={form.namaKetua} onChange={(e) => setField('namaKetua', e.target.value)} onBlur={() => blurField('namaKetua')} placeholder="Lengkap dengan gelar akademik" />
-                </Field>
-                <Field label="NIDN / NIP" required error={err('nidn')}>
-                  <input className="input-base" value={form.nidn} onChange={(e) => setField('nidn', e.target.value)} onBlur={() => blurField('nidn')} inputMode="numeric" placeholder="10 digit NIDN atau 18 digit NIP" />
-                </Field>
-                <Field label="Institusi / afiliasi" required error={err('institusi')}>
-                  <select className="input-base" value={form.institusi} onChange={(e) => setField('institusi', e.target.value)} onBlur={() => blurField('institusi')}>
-                    <option value="">Pilih institusi asal</option>
-                    {INSTITUSI.filter((i) => i.tipe !== 'OPD Mitra').map((i) => <option key={i.abbr} value={i.abbr}>{i.nama} ({i.abbr})</option>)}
-                    <option value="LAIN">Institusi lain (tulis pada catatan mitra)</option>
-                  </select>
-                </Field>
-                <Field label="Jabatan fungsional">
-                  <select className="input-base" value={form.jabatan} onChange={(e) => setField('jabatan', e.target.value)}>
-                    <option value="">Pilih jabatan fungsional</option>
-                    {['Asisten Ahli', 'Lektor', 'Lektor Kepala', 'Guru Besar', 'Peneliti Ahli Pertama', 'Peneliti Ahli Muda', 'Peneliti Ahli Madya', 'Lainnya'].map((j) => <option key={j}>{j}</option>)}
-                  </select>
-                </Field>
-                <Field label="Surel institusi" required error={err('email')}>
-                  <input className="input-base" type="email" value={form.email} onChange={(e) => setField('email', e.target.value)} onBlur={() => blurField('email')} placeholder="nama@kampus.ac.id" />
-                </Field>
-                <Field label="Nomor telepon / WhatsApp" required error={err('telp')}>
-                  <input className="input-base" type="tel" value={form.telp} onChange={(e) => setField('telp', e.target.value)} onBlur={() => blurField('telp')} placeholder="08xx-xxxx-xxxx" />
-                </Field>
+            {/* Pengusul diambil dari akun yang sedang masuk */}
+            <Reveal className="flex flex-wrap items-center gap-4 rounded-xl border border-line bg-white px-5.5 py-4.5 shadow-card">
+              <span className="grid h-11 w-11 flex-none place-items-center rounded-full bg-maroon-800 text-[.85rem] font-extrabold text-gold-500">
+                {inisial(user.nama)}
+              </span>
+              <div className="min-w-[200px] flex-1">
+                <div className="text-[.72rem] font-bold uppercase tracking-wide text-ink-3">Diajukan sebagai</div>
+                <div className="font-semibold text-ink">{user.nama}</div>
+                <div className="text-[.8rem] text-ink-3">
+                  {[user.jabatan, user.instansi].filter((v) => v && v !== '-').join(' · ') || 'Institusi belum diisi'} · {user.email}
+                </div>
               </div>
-
-              <Field label="Anggota tim peneliti" hint="Maksimal 4 anggota dosen dan 3 mahasiswa untuk skema hibah daerah.">
-                <textarea className="input-base min-h-[96px]" value={form.anggota} onChange={(e) => setField('anggota', e.target.value)}
-                  placeholder={'Satu nama per baris, lengkap dengan NIDN/NIM dan peran. Contoh:\nDr. Ni Luh Pastini, M.Cs., 0021078502, Anggota (analisis data)'} />
-              </Field>
+              <span className="text-[.76rem] text-ink-3">Data pengusul mengikuti profil akun Anda.</span>
             </Reveal>
 
             {/* 2.3 Substansi Riset */}
-            <Reveal className="rounded-xl border border-line bg-white p-6.5 shadow-card">
-              <div className="mb-1.5 flex flex-wrap items-center gap-3"><span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">Bagian 2 dari 4</span><span className="text-[.8rem] text-ink-3">Menentukan indikator pertama penilaian tim pakar.</span></div>
+            <Reveal className="rounded-xl border border-line bg-white p-6.5 shadow-card" ref={firstErrorRef}>
+              <div className="mb-1.5 flex flex-wrap items-center gap-3"><span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">Bagian 1 dari 3</span><span className="text-[.8rem] text-ink-3">Menentukan indikator pertama penilaian tim pakar.</span></div>
               <h2 className="text-[1.22rem]">Substansi Riset &amp; Relevansi RPJMD</h2>
               <hr className="my-4.5 border-line" />
 
@@ -319,7 +308,7 @@ export default function Kolaborasi() {
 
             {/* 2.4 Mitra Sasaran */}
             <Reveal className="rounded-xl border border-line bg-white p-6.5 shadow-card">
-              <div className="mb-1.5 flex flex-wrap items-center gap-3"><span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">Bagian 3 dari 4</span><span className="text-[.8rem] text-ink-3">Pilih satu atau lebih penerima manfaat riset.</span></div>
+              <div className="mb-1.5 flex flex-wrap items-center gap-3"><span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">Bagian 2 dari 3</span><span className="text-[.8rem] text-ink-3">Pilih satu atau lebih penerima manfaat riset.</span></div>
               <h2 className="text-[1.22rem]">Pemilihan Mitra Sasaran</h2>
               <hr className="my-4.5 border-line" />
 
@@ -345,7 +334,7 @@ export default function Kolaborasi() {
 
             {/* 2.5 Unggah Berkas */}
             <Reveal className="rounded-xl border border-line bg-white p-6.5 shadow-card">
-              <div className="mb-1.5 flex flex-wrap items-center gap-3"><span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">Bagian 4 dari 4</span><span className="text-[.8rem] text-ink-3">Berkas PDF, maksimal 10 MB per dokumen.</span></div>
+              <div className="mb-1.5 flex flex-wrap items-center gap-3"><span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">Bagian 3 dari 3</span><span className="text-[.8rem] text-ink-3">Berkas PDF, maksimal 10 MB per dokumen.</span></div>
               <h2 className="text-[1.22rem]">Berkas Proposal &amp; Pakta Integritas</h2>
               <hr className="my-4.5 border-line" />
 
@@ -368,9 +357,9 @@ export default function Kolaborasi() {
               >
                 <Icon name="upload" size={42} className="mx-auto mb-2.5 text-maroon-600" />
                 <div className="mb-0.5 font-bold text-ink">Seret berkas ke sini atau klik untuk memilih</div>
-                <div className="text-[.8rem] text-ink-3">Proposal lengkap, RAB, surat pernyataan mitra · PDF · maksimal 10 MB per berkas</div>
+                <div className="text-[.8rem] text-ink-3">Satu berkas PDF berisi proposal lengkap, RAB, dan surat pernyataan mitra · maksimal 10 MB</div>
               </div>
-              <input ref={fileInputRef} type="file" accept="application/pdf,.pdf" multiple hidden onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }} />
+              <input ref={fileInputRef} type="file" accept="application/pdf,.pdf" hidden onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }} />
 
               {files.length > 0 && (
                 <ul className="m-0 mt-3.5 flex list-none flex-col gap-2 p-0">
@@ -493,7 +482,7 @@ export default function Kolaborasi() {
           </div>
           <dl className="my-4.5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.75 text-[.845rem]">
             <dt className="font-semibold text-ink-3">Judul riset</dt><dd className="m-0 font-semibold">{successModal.form.judul}</dd>
-            <dt className="font-semibold text-ink-3">Ketua peneliti</dt><dd className="m-0 font-semibold">{successModal.form.namaKetua} · {successModal.form.institusi}</dd>
+            <dt className="font-semibold text-ink-3">Ketua peneliti</dt><dd className="m-0 font-semibold">{user.nama} · {user.instansi}</dd>
             <dt className="font-semibold text-ink-3">Skema</dt><dd className="m-0 font-semibold">{skemaById(successModal.form.skema).nama}</dd>
             <dt className="font-semibold text-ink-3">Usulan dana</dt><dd className="m-0 font-semibold">Rp {successModal.form.dana}</dd>
             <dt className="font-semibold text-ink-3">Lokasi</dt><dd className="m-0 font-semibold">{successModal.form.kecamatan === 'lintas' ? 'Lintas kecamatan' : kecById(successModal.form.kecamatan).nama}</dd>
@@ -511,12 +500,17 @@ export default function Kolaborasi() {
           </ol>
           <div className="mt-4 flex items-start gap-3 rounded-xl border border-info-bg bg-info-bg px-4 py-3.5 text-[.855rem] text-[#1E3A8A]">
             <Icon name="info" size={19} className="mt-0.5 flex-none text-info" />
-            <p className="m-0"><strong className="mr-1">Catatan prototipe.</strong>Payload pengajuan pada versi ini tidak dikirim ke server. Pada implementasi produksi, data diteruskan ke sistem antrean verifikasi BRIDA dan terhubung autentikasi PDDikti.</p>
+            <p className="m-0">Status usulan dapat dipantau kapan saja melalui <Link to="/dashboard/mitra" onClick={() => setSuccessModal(null)} className="font-semibold text-info underline">Dashboard Mitra</Link>.</p>
           </div>
         </Modal>
       )}
     </>
   );
+}
+
+function inisial(nama = '') {
+  const kata = nama.replace(/,.*$/, '').replace(/\b(Prof|Dr|Ir|Drs|Hj?)\.?\s*/gi, '').trim().split(/\s+/).filter(Boolean);
+  return ((kata[0]?.[0] || '') + (kata[1]?.[0] || '')).toUpperCase() || 'P';
 }
 
 function Field({ label, required, error, hint, children }) {

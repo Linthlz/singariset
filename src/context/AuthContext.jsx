@@ -1,11 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-
-/* ==========================================================================
-   Autentikasi — PROTOTIPE ANTARMUKA SAJA.
-   Tidak ada backend: akun disimpan di localStorage peramban dan kata sandi
-   tidak di-hash. Jangan pakai pola ini di produksi — ganti dengan API auth
-   resmi BRIDA (sesi server / token) saat backend tersedia.
-   ========================================================================== */
+import { configureAuth } from '../services/api.js';
+import { authService, isTokenExpired } from '../services/authService.js';
 
 export const ROLES = {
   mitra: {
@@ -25,99 +20,65 @@ export const ROLES = {
   }
 };
 
-/* Akun demo bawaan agar prototipe bisa langsung dicoba. */
-export const DEMO_ACCOUNTS = [
-  {
-    email: 'admin@bulelengkab.go.id', password: 'admin123', role: 'admin',
-    nama: 'Ni Wayan Sukerti, S.Kom., M.T.', instansi: 'BRIDA Kabupaten Buleleng',
-    jabatan: 'Administrator Sistem', status: 'aktif', terdaftar: '2025-01-06'
-  },
-  {
-    email: 'opd@bulelengkab.go.id', password: 'opd123', role: 'opd',
-    nama: 'I Gede Wirawan, S.T., M.T.', instansi: 'Dinas Pertanian Kabupaten Buleleng',
-    jabatan: 'Kepala Bidang Program dan Pelaporan', status: 'aktif', terdaftar: '2025-01-14'
-  },
-  {
-    email: 'mitra@undiksha.ac.id', password: 'mitra123', role: 'mitra',
-    nama: 'Prof. Dr. I Gede Suarnaya, M.T.', instansi: 'Universitas Pendidikan Ganesha',
-    jabatan: 'Ketua Peneliti', status: 'aktif', terdaftar: '2025-02-03'
-  }
-];
-
 const SESSION_KEY = 'singa.auth.session';
-const USERS_KEY = 'singa.auth.users';
 
-function readJson(key, fallback) {
+function readSession() {
   try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    if (!s?.token || !s?.user || isTokenExpired(s.token)) return null;
+    return s;
   } catch {
-    return fallback;
+    return null;
   }
 }
-function writeJson(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* mode privat */ }
+
+function writeSession(session) {
+  try {
+    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    else localStorage.removeItem(SESSION_KEY);
+  } catch { /* mode privat: sesi hanya bertahan di memori */ }
 }
 
-/** Akun hasil pendaftaran mandiri (di luar akun demo). */
-export function getRegisteredUsers() { return readJson(USERS_KEY, []); }
+let currentToken = readSession()?.token ?? null;
 
 const AuthCtx = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => readJson(SESSION_KEY, null));
+  const [session, setSession] = useState(readSession);
 
-  const login = useCallback(({ email, password }) => {
-    const mail = String(email || '').trim().toLowerCase();
-    const semua = [...DEMO_ACCOUNTS, ...getRegisteredUsers()];
-    const akun = semua.find((a) => a.email.toLowerCase() === mail);
-
-    if (!akun) return { ok: false, error: 'Akun dengan surel tersebut belum terdaftar.' };
-    if (akun.password !== password) return { ok: false, error: 'Kata sandi yang Anda masukkan salah.' };
-    if (akun.status === 'nonaktif') return { ok: false, error: 'Akun ini dinonaktifkan. Hubungi administrator BRIDA.' };
-
-    const sesi = {
-      email: akun.email, nama: akun.nama, role: akun.role,
-      instansi: akun.instansi, jabatan: akun.jabatan
-    };
-    setUser(sesi);
-    writeJson(SESSION_KEY, sesi);
-    return { ok: true, user: sesi };
+  const applySession = useCallback((next) => {
+    currentToken = next?.token ?? null;
+    writeSession(next);
+    setSession(next);
   }, []);
 
-  const register = useCallback((data) => {
-    const mail = String(data.email || '').trim().toLowerCase();
-    const semua = [...DEMO_ACCOUNTS, ...getRegisteredUsers()];
-    if (semua.some((a) => a.email.toLowerCase() === mail)) {
-      return { ok: false, error: 'Surel tersebut sudah terdaftar. Silakan masuk atau gunakan surel lain.' };
-    }
+  const logout = useCallback(() => applySession(null), [applySession]);
 
-    const akun = {
-      email: mail, password: data.password, role: data.role,
-      nama: data.nama, instansi: data.instansi, jabatan: data.jabatan || '-',
-      jenis: data.jenis || '', telepon: data.telepon || '',
-      status: 'aktif', terdaftar: new Date().toISOString().slice(0, 10)
-    };
-    writeJson(USERS_KEY, [...getRegisteredUsers(), akun]);
+  configureAuth({ getToken: () => currentToken, onUnauthorized: logout });
 
-    const sesi = { email: akun.email, nama: akun.nama, role: akun.role, instansi: akun.instansi, jabatan: akun.jabatan };
-    setUser(sesi);
-    writeJson(SESSION_KEY, sesi);
-    return { ok: true, user: sesi };
-  }, []);
+  const login = useCallback(async ({ email, password }) => {
+    const next = await authService.login(email, password);
+    applySession(next);
+    return next.user;
+  }, [applySession]);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    try { localStorage.removeItem(SESSION_KEY); } catch { /* mode privat */ }
-  }, []);
+  const register = useCallback((payload) => authService.register(payload), []);
+
+  const verifyEmail = useCallback(async (code) => {
+    const next = await authService.verifyEmail(code);
+    applySession(next);
+    return next.user;
+  }, [applySession]);
+
+  const user = session?.user ?? null;
 
   const value = useMemo(() => ({
     user,
     isAuth: !!user,
     role: user ? ROLES[user.role] : null,
     hasRole: (...roles) => !!user && roles.includes(user.role),
-    login, register, logout
-  }), [user, login, register, logout]);
+    login, register, verifyEmail, logout
+  }), [user, login, register, verifyEmail, logout]);
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }

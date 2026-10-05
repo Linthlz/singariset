@@ -5,9 +5,10 @@ import Reveal from '../components/Reveal.jsx';
 import Icon from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
 import SmartImage from '../components/SmartImage.jsx';
-import { BIDANG, RISET } from '../data/singaData.js';
-import { useContent } from '../context/ContentContext.jsx';
-import { bidangById, kecById, tanggal } from '../lib/format.js';
+import AsyncState, { EmptyState } from '../components/AsyncState.jsx';
+import { BIDANG } from '../data/singaData.js';
+import { useDocumentations } from '../hooks/useResearch.js';
+import { bidangById, tanggal } from '../lib/format.js';
 
 /** Ubah tautan YouTube apa pun menjadi URL sematan. */
 function embedYoutube(url) {
@@ -17,7 +18,8 @@ function embedYoutube(url) {
 }
 
 export default function Publikasi() {
-  const { dokumentasi: DOKUMENTASI } = useContent();
+  const { data, meta, loading, error, reload } = useDocumentations({ limit: 100 });
+  const DOKUMENTASI = useMemo(() => data || [], [data]);
   const [params] = useSearchParams();
   const [bidang, setBidang] = useState('');
   const [q, setQ] = useState('');
@@ -34,7 +36,7 @@ export default function Publikasi() {
   const hits = useMemo(
     () =>
       DOKUMENTASI.filter((d) => {
-        if (bidang && d.bidang !== bidang) return false;
+        if (bidang && d.bidangId !== bidang) return false;
         if (q && !`${d.judul} ${d.narasi}`.toLowerCase().includes(q.toLowerCase())) return false;
         return true;
       }),
@@ -50,7 +52,7 @@ export default function Publikasi() {
         title="Galeri Kegiatan BRIDA"
         lead="Dokumentasi internal BRIDA Kabupaten Buleleng atas pelaksanaan riset di lapangan — foto kegiatan, rekaman video, dan narasi proses dari hulu sampai hasilnya dipakai masyarakat Buleleng."
         badges={[
-          <span key="1" className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">{DOKUMENTASI.length} riset terdokumentasi</span>,
+          <span key="1" className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">{meta ? `${meta.total} kegiatan terdokumentasi` : 'Memuat galeri…'}</span>,
           <span key="2" className="rounded-full bg-gold-500 px-3 py-1.5 text-[.8rem] font-semibold text-[#4A2D00]">{totalFoto} foto lapangan</span>
         ]}
       />
@@ -68,7 +70,7 @@ export default function Publikasi() {
                 Semua bidang
               </button>
               {BIDANG.map((b) => {
-                const n = DOKUMENTASI.filter((d) => d.bidang === b.id).length;
+                const n = DOKUMENTASI.filter((d) => d.bidangId === b.id).length;
                 if (!n) return null;
                 const aktif = bidang === b.id;
                 return (
@@ -90,17 +92,13 @@ export default function Publikasi() {
             />
           </Reveal>
 
-          {hits.length === 0 ? (
-            <div className="py-16 text-center text-ink-3">
-              <Icon name="camera" size={46} className="mx-auto mb-3.5 opacity-40" />
-              <h3 className="text-[1.02rem] text-ink-2">Belum ada dokumentasi yang cocok</h3>
-              <p>Longgarkan filter atau gunakan kata kunci lain.</p>
-            </div>
-          ) : (
+          <AsyncState loading={loading} error={error} isEmpty={hits.length === 0} onRetry={reload}
+            empty={DOKUMENTASI.length
+              ? <EmptyState icon="camera" title="Belum ada dokumentasi yang cocok" text="Longgarkan filter atau gunakan kata kunci lain." />
+              : <EmptyState icon="camera" title="Belum ada dokumentasi" text="Dokumentasi pelaksanaan riset akan tampil setelah diunggah tim peneliti." />}>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               {hits.map((d, i) => {
-                const b = bidangById(d.bidang);
-                const riset = RISET.find((r) => r.id === d.risetId);
+                const b = d.bidangId ? bidangById(d.bidangId) : { nama: d.bidang || 'Umum', warna: '#6B7280' };
                 return (
                   <Reveal key={d.id} delay={i * 50} className="flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-card transition hover:-translate-y-1 hover:shadow-pop">
                     {/* Mozaik foto */}
@@ -151,7 +149,7 @@ export default function Publikasi() {
                       <h3 className="mb-1.5 text-[1.05rem] leading-snug">{d.judul}</h3>
                       <div className="mb-3 flex flex-wrap items-center gap-3 text-[.78rem] text-ink-3">
                         <span className="inline-flex items-center gap-1.5"><Icon name="calendar" size={13} />{tanggal(d.tanggal)}</span>
-                        <span className="inline-flex items-center gap-1.5"><Icon name="pin" size={13} />Kec. {kecById(d.kecamatan).nama}</span>
+                        <span className="inline-flex items-center gap-1.5"><Icon name="pin" size={13} />{d.lokasi || '-'}</span>
                       </div>
 
                       <p className="mb-4 flex-1 text-[.86rem] text-ink-2 line-clamp-3">{d.narasi}</p>
@@ -163,8 +161,8 @@ export default function Publikasi() {
                         >
                           Lihat dokumentasi
                         </button>
-                        {riset && (
-                          <Link to={`/riset/${riset.id}`} className="flex items-center gap-1.5 text-[.8rem] font-semibold text-ink-2 no-underline hover:text-maroon-800">
+                        {d.risetSlug && (
+                          <Link to={`/riset/${d.risetSlug}`} className="flex items-center gap-1.5 text-[.8rem] font-semibold text-ink-2 no-underline hover:text-maroon-800">
                             Detail riset <Icon name="arrow" size={14} />
                           </Link>
                         )}
@@ -174,7 +172,7 @@ export default function Publikasi() {
                 );
               })}
             </div>
-          )}
+          </AsyncState>
         </div>
       </section>
 
@@ -183,8 +181,8 @@ export default function Publikasi() {
         <Modal title={detail.judul} wide onClose={() => setDetail(null)}>
           <div className="mb-4 flex flex-wrap items-center gap-3 text-[.8rem] text-ink-3">
             <span className="inline-flex items-center gap-1.5"><Icon name="calendar" size={13} />{tanggal(detail.tanggal)}</span>
-            <span className="inline-flex items-center gap-1.5"><Icon name="pin" size={13} />Kec. {kecById(detail.kecamatan).nama}</span>
-            <span className="inline-flex items-center gap-1.5"><Icon name="flask" size={13} />{detail.risetId}</span>
+            <span className="inline-flex items-center gap-1.5"><Icon name="pin" size={13} />{detail.lokasi || '-'}</span>
+            <span className="inline-flex items-center gap-1.5"><Icon name="flask" size={13} />{detail.risetKode} · {detail.risetJudul}</span>
           </div>
 
           <h4 className="mb-2 text-[.95rem]">Narasi pelaksanaan</h4>
@@ -221,10 +219,8 @@ export default function Publikasi() {
             <div className="flex items-start gap-3 rounded-xl border border-dashed border-line-strong bg-surface-1 px-4 py-4 text-[.85rem] text-ink-2">
               <Icon name="video" size={19} className="mt-0.5 flex-none text-ink-3" />
               <p className="m-0">
-                <strong className="mr-1 text-ink">{detail.galeriVideo || 'Video belum tersedia.'}</strong>
-                Tambahkan tautan YouTube pada kolom <code className="rounded bg-white px-1.5 py-0.5 text-[.8rem]">video</code> di
-                <code className="mx-1 rounded bg-white px-1.5 py-0.5 text-[.8rem]">src/data/singaData.js</code>
-                untuk menampilkannya di sini.
+                <strong className="mr-1 text-ink">Video belum tersedia.</strong>
+                Tim peneliti dapat menambahkan tautan YouTube saat mengunggah dokumentasi.
               </p>
             </div>
           )}

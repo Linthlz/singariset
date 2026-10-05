@@ -4,6 +4,7 @@ import LionMark from '../components/LionMark.jsx';
 import Icon from '../components/Icon.jsx';
 import { ROLES, useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
+import { errorMessage } from '../services/api.js';
 
 const AKTOR = [
   {
@@ -39,10 +40,10 @@ const initial = {
 export default function Register() {
   const { register } = useAuth();
   const toast = useToast();
-  const navigate = useNavigate();
   const [form, setForm] = useState(initial);
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
+  const [emailTerdaftar, setEmailTerdaftar] = useState('');
 
   const isOpd = form.role === 'opd';
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -58,12 +59,13 @@ export default function Register() {
     else if (isOpd && !/@bulelengkab\.go\.id$/i.test(form.email.trim())) e.email = 'Akun OPD wajib memakai surel resmi @bulelengkab.go.id.';
     if (form.telepon.replace(/\D/g, '').length < 10) e.telepon = 'Nomor telepon aktif minimal 10 digit.';
     if (form.password.length < 8) e.password = 'Kata sandi minimal 8 karakter.';
+    else if (form.password.length > 72) e.password = 'Kata sandi maksimal 72 karakter.';
     if (form.konfirmasi !== form.password) e.konfirmasi = 'Konfirmasi kata sandi tidak cocok.';
     if (!form.setuju) e.setuju = 'Anda harus menyetujui ketentuan penggunaan portal.';
     return e;
   }
 
-  function submit(ev) {
+  async function submit(ev) {
     ev.preventDefault();
     const e = validate();
     setErrors(e);
@@ -73,19 +75,32 @@ export default function Register() {
     }
 
     setBusy(true);
-    setTimeout(() => {
-      const res = register({
-        role: form.role, nama: form.nama, instansi: form.instansi,
-        jenis: isOpd ? 'Perangkat Daerah' : form.jenis,
-        jabatan: isOpd ? form.jabatan : 'Penanggung Jawab Mitra',
-        email: form.email, telepon: form.telepon, password: form.password
+    try {
+      await register({
+        name: form.nama.trim(),
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+        phone_number: form.telepon.trim(),
+        institution: form.instansi,
+        position: isOpd ? form.jabatan.trim() : 'Penanggung Jawab Mitra'
       });
+      setEmailTerdaftar(form.email.trim().toLowerCase());
+      toast('success', 'Akun berhasil dibuat', 'Kode verifikasi telah dikirim ke surel Anda.');
+    } catch (err) {
+      if (err?.status === 409) {
+        setErrors({ email: 'Surel tersebut sudah terdaftar. Silakan masuk atau gunakan surel lain.' });
+      } else if (err?.status === 400) {
+        setErrors({ form: errorMessage(err) });
+      } else {
+        setErrors({ form: err?.status >= 500 ? 'Pendaftaran gagal: server tidak dapat mengirim kode verifikasi. Coba lagi nanti.' : errorMessage(err) });
+      }
+      toast('danger', 'Pendaftaran gagal', errorMessage(err));
+    } finally {
       setBusy(false);
-      if (!res.ok) { setErrors({ email: res.error }); toast('danger', 'Pendaftaran gagal', res.error); return; }
-      toast('success', 'Akun berhasil dibuat', `Selamat datang, ${res.user.nama}.`);
-      navigate(ROLES[res.user.role].beranda, { replace: true });
-    }, 500);
+    }
   }
+
+  if (emailTerdaftar) return <VerifikasiEmail email={emailTerdaftar} />;
 
   return (
     <div className="min-h-screen bg-surface-1">
@@ -215,6 +230,18 @@ export default function Register() {
               </span>
             </label>
             {errors.setuju && <p className="mt-1.5 text-[.78rem] font-semibold text-danger">{errors.setuju}</p>}
+            {isOpd && (
+              <p className="mt-3 flex items-start gap-2 text-[.8rem] text-ink-3">
+                <Icon name="info" size={14} className="mt-0.5 flex-none" />
+                Hak akses OPD diaktifkan oleh administrator BRIDA setelah akun Anda terverifikasi.
+              </p>
+            )}
+            {errors.form && (
+              <div role="alert" className="mt-4 flex items-start gap-2.5 rounded-lg border border-danger-bg bg-danger-bg px-3.5 py-3 text-[.84rem] text-[#7F1D1D]">
+                <Icon name="alert" size={17} className="mt-0.5 flex-none text-danger" />
+                <span>{errors.form}</span>
+              </div>
+            )}
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <button type="submit" disabled={busy}
@@ -232,6 +259,64 @@ export default function Register() {
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+function VerifikasiEmail({ email }) {
+  const { verifyEmail } = useAuth();
+  const toast = useToast();
+  const navigate = useNavigate();
+  const [kode, setKode] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    setError('');
+    if (!/^[0-9a-f]{6}$/i.test(kode.trim())) {
+      setError('Kode verifikasi terdiri dari 6 karakter (angka 0–9 dan huruf a–f).');
+      return;
+    }
+    setBusy(true);
+    try {
+      const user = await verifyEmail(kode.trim().toLowerCase());
+      toast('success', 'Surel terverifikasi', `Selamat datang, ${user.nama}.`);
+      navigate(ROLES[user.role].beranda, { replace: true });
+    } catch (err) {
+      setError(err?.status === 400 ? 'Kode tidak valid atau sudah kedaluwarsa.' : errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="grid min-h-screen place-items-center bg-surface-1 px-5 py-12">
+      <form onSubmit={submit} noValidate className="w-full max-w-[420px] rounded-xl border border-line bg-white p-7">
+        <span className="mb-4 grid h-12 w-12 place-items-center rounded-full bg-maroon-50 text-maroon-800">
+          <Icon name="mail" size={22} />
+        </span>
+        <h1 className="mb-1 text-[1.3rem]">Verifikasi surel Anda</h1>
+        <p className="mb-5 text-[.875rem] text-ink-2">
+          Masukkan kode 6 karakter yang kami kirim ke <b>{email}</b>.
+        </p>
+        {error && (
+          <div role="alert" className="mb-4 flex items-start gap-2.5 rounded-lg border border-danger-bg bg-danger-bg px-3.5 py-3 text-[.84rem] text-[#7F1D1D]">
+            <Icon name="alert" size={17} className="mt-0.5 flex-none text-danger" />
+            <span>{error}</span>
+          </div>
+        )}
+        <label htmlFor="kode" className="mb-1.5 block text-[.84rem] font-semibold text-ink">Kode verifikasi</label>
+        <input id="kode" className="input-base mb-4 font-mono tracking-[.3em]" autoComplete="one-time-code" maxLength={6}
+          value={kode} onChange={(e) => setKode(e.target.value)} placeholder="a1b2c3" />
+        <button type="submit" disabled={busy}
+          className="w-full rounded-lg bg-maroon-800 px-5 py-3 text-[.92rem] font-semibold text-white transition hover:bg-maroon-600 disabled:opacity-50">
+          {busy ? 'Memverifikasi…' : 'Verifikasi'}
+        </button>
+        <p className="mt-5 text-center text-[.83rem] text-ink-3">
+          Sudah verifikasi sebelumnya? <Link to="/login" className="font-semibold text-maroon-800 hover:underline">Masuk</Link>
+        </p>
+      </form>
     </div>
   );
 }

@@ -1,12 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import PageHero from '../components/PageHero.jsx';
 import Reveal from '../components/Reveal.jsx';
 import Icon from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
 import SmartImage from '../components/SmartImage.jsx';
+import AsyncState, { EmptyState, SkeletonGrid } from '../components/AsyncState.jsx';
 import { SOSMED_RESMI } from '../data/singaData.js';
-import { useContent } from '../context/ContentContext.jsx';
+import { useNewsCategories, usePublishedNews } from '../hooks/useNews.js';
+import { useDebounce } from '../hooks/useDebounce.js';
 import { tanggal } from '../lib/format.js';
+
+const PER_PAGE = 10;
 
 const KAT_WARNA = {
   Kebijakan: '#8E1B1B', Pendanaan: '#15803D', Monev: '#B45309',
@@ -45,20 +49,30 @@ function TautanSosmed({ ukuran = 'kecil' }) {
 }
 
 export default function Berita() {
-  const { berita: BERITA } = useContent();
   const [kategori, setKategori] = useState('');
   const [q, setQ] = useState('');
+  const [page, setPage] = useState(1);
   const [detail, setDetail] = useState(null);
+  const cari = useDebounce(q.trim(), 400);
 
-  const kategoriList = useMemo(() => ['', ...new Set(BERITA.map((b) => b.kategori))], [BERITA]);
+  const { data: kategoriData } = useNewsCategories();
+  const kategoriList = [{ slug: '', nama: 'Semua kategori' }, ...(kategoriData || [])];
 
-  const hits = BERITA.filter((n) => {
-    if (kategori && n.kategori !== kategori) return false;
-    if (q && !`${n.judul} ${n.ringkas} ${n.penulis}`.toLowerCase().includes(q.toLowerCase())) return false;
-    return true;
-  });
+  const { data, meta, loading, error, reload } = usePublishedNews({ page, limit: PER_PAGE, q: cari, category: kategori });
+  const hits = data || [];
+  const totalPage = meta?.total_page || 1;
+  const adaFilter = !!(kategori || cari);
 
-  const [utama, ...sisa] = hits;
+  const [utama, ...sisa] = page === 1 ? hits : [null, ...hits];
+
+  function pilihKategori(slug) {
+    setKategori(slug);
+    setPage(1);
+  }
+  function ubahCari(v) {
+    setQ(v);
+    setPage(1);
+  }
 
   return (
     <>
@@ -67,7 +81,7 @@ export default function Berita() {
         title="Berita & Diseminasi Riset"
         lead="Kabar seputar ekosistem riset Kabupaten Buleleng dari berbagai sektor dan sumber eksternal — pengumuman pendanaan, hasil monitoring, adopsi kebijakan, hingga agenda diseminasi kepada masyarakat."
         badges={[
-          <span key="1" className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">{BERITA.length} kabar terbit</span>,
+          <span key="1" className="rounded-full bg-white/14 px-3 py-1.5 text-[.8rem] font-semibold text-white">{meta ? `${meta.total} kabar terbit` : error ? 'Kabar belum dapat dimuat' : 'Memuat kabar…'}</span>,
           <span key="2" className="rounded-full bg-gold-500 px-3 py-1.5 text-[.8rem] font-semibold text-[#4A2D00]">Humas BRIDA Buleleng</span>
         ]}
       />
@@ -78,36 +92,47 @@ export default function Berita() {
           <Reveal className="mb-7 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-2" role="group" aria-label="Saring kategori berita">
               {kategoriList.map((k) => {
-                const aktif = kategori === k;
+                const aktif = kategori === k.slug;
                 return (
                   <button
-                    key={k || 'semua'} type="button" aria-pressed={aktif} onClick={() => setKategori(k)}
+                    key={k.slug || 'semua'} type="button" aria-pressed={aktif} onClick={() => pilihKategori(k.slug)}
                     className={`rounded-full border px-3.5 py-1.75 text-[.8rem] font-semibold transition ${
                       aktif ? 'border-maroon-800 bg-maroon-800 text-white' : 'border-line-strong bg-white text-ink-2 hover:border-maroon-600 hover:text-maroon-800'
                     }`}
                   >
-                    {k || 'Semua kategori'}
+                    {k.nama}
                   </button>
                 );
               })}
             </div>
             <input
-              type="search" value={q} onChange={(e) => setQ(e.target.value)}
-              placeholder="Cari judul atau isi berita…" aria-label="Cari berita"
+              type="search" value={q} onChange={(e) => ubahCari(e.target.value)}
+              placeholder="Cari judul berita…" aria-label="Cari berita"
               className="input-base w-auto min-w-[240px]"
             />
           </Reveal>
 
-          {hits.length === 0 ? (
-            <div className="py-16 text-center text-ink-3">
-              <Icon name="search" size={46} className="mx-auto mb-3.5 opacity-40" />
-              <h3 className="text-[1.02rem] text-ink-2">Tidak ada berita yang cocok</h3>
-              <p>Coba kata kunci lain atau pilih kategori berbeda.</p>
-            </div>
-          ) : (
-            <>
+          <AsyncState
+            loading={loading}
+            error={error}
+            isEmpty={hits.length === 0}
+            onRetry={reload}
+            skeleton={
+              <>
+                <SkeletonGrid count={1} className="mb-8" itemClassName="h-[340px] rounded-2xl" />
+                <SkeletonGrid count={3} />
+              </>
+            }
+            empty={
+              adaFilter
+                ? <EmptyState title="Tidak ada berita yang cocok" text="Coba kata kunci lain atau pilih kategori berbeda." />
+                : <EmptyState icon="doc" title="Belum ada berita terbit" text="Kabar terbaru dari BRIDA Buleleng akan tampil di sini." />
+            }
+          >
+            <div className={loading ? 'opacity-60 transition-opacity' : 'transition-opacity'} aria-busy={loading}>
               {/* Berita utama */}
-              <Reveal className="mb-8 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+              {utama && (
+              <Reveal key={utama.id} className="mb-8 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
                 <div className="grid lg:grid-cols-2">
                   <SmartImage
                     src={utama.gambar} alt={utama.judul} seed={0}
@@ -141,6 +166,7 @@ export default function Berita() {
                   </div>
                 </div>
               </Reveal>
+              )}
 
               {/* Daftar berita lain */}
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -175,8 +201,22 @@ export default function Berita() {
                   </Reveal>
                 ))}
               </div>
-            </>
-          )}
+
+              {totalPage > 1 && (
+                <nav className="mt-8 flex items-center justify-center gap-3" aria-label="Halaman berita">
+                  <button type="button" disabled={page <= 1 || loading} onClick={() => setPage((p) => p - 1)}
+                    className="rounded-lg border border-line-strong bg-white px-4 py-2 text-[.84rem] font-semibold text-ink-2 transition hover:border-maroon-600 hover:text-maroon-800 disabled:opacity-40">
+                    ← Sebelumnya
+                  </button>
+                  <span className="text-[.84rem] text-ink-3">Halaman {page} dari {totalPage}</span>
+                  <button type="button" disabled={page >= totalPage || loading} onClick={() => setPage((p) => p + 1)}
+                    className="rounded-lg border border-line-strong bg-white px-4 py-2 text-[.84rem] font-semibold text-ink-2 transition hover:border-maroon-600 hover:text-maroon-800 disabled:opacity-40">
+                    Berikutnya →
+                  </button>
+                </nav>
+              )}
+            </div>
+          </AsyncState>
         </div>
       </section>
 
@@ -231,6 +271,9 @@ export default function Berita() {
           {(detail.isi || [detail.ringkas]).map((p, i) => (
             <p key={i} className="text-[.92rem] leading-relaxed text-ink-2">{p}</p>
           ))}
+          {detail.sumber && (
+            <p className="mt-4 border-t border-line pt-3 text-[.8rem] text-ink-3">Sumber: {detail.sumber}</p>
+          )}
         </Modal>
       )}
     </>

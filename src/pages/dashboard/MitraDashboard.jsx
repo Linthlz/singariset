@@ -1,20 +1,34 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/DashboardLayout.jsx';
 import Icon from '../../components/Icon.jsx';
 import Modal from '../../components/Modal.jsx';
+import AsyncState, { EmptyState, ErrorState, SkeletonGrid } from '../../components/AsyncState.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { STATUS_USULAN, useSubmissions } from '../../context/SubmissionsContext.jsx';
-import { bidangById, kecById, skemaById, tanggal } from '../../lib/format.js';
+import { useToast } from '../../context/ToastContext.jsx';
+import { useMutation } from '../../hooks/useData.js';
+import { useMyResearches, useResearchDetail } from '../../hooks/useResearch.js';
+import { errorMessage } from '../../services/api.js';
+import { DECISION_LABEL, researchService, statusResearch } from '../../services/researchService.js';
+import { rupiah, tanggal } from '../../lib/format.js';
 
 const MENU = [{ id: 'pengajuan', label: 'Pengajuan Riset Saya', ikon: 'flask' }];
 
 const FILTER = [
   { id: '', label: 'Semua' },
-  { id: 'diajukan', label: 'Diajukan' },
-  { id: 'berjalan', label: 'Berjalan' },
-  { id: 'ditolak', label: 'Ditolak' }
+  { id: 'proses', label: 'Dalam proses', match: ['pending', 'under-review', 'revision'] },
+  { id: 'berjalan', label: 'Berjalan', match: ['on-going', 'approved'] },
+  { id: 'ditolak', label: 'Ditolak', match: ['rejected'] }
 ];
+
+const PESAN_STATUS = {
+  pending: ['warning', 'clock', 'Usulan masuk antrean dan menunggu ditugaskan ke reviewer BRIDA.'],
+  'under-review': ['info', 'eye', 'Usulan sedang ditelaah oleh reviewer BRIDA.'],
+  revision: ['warning', 'refresh', 'Reviewer meminta revisi. Perbarui usulan Anda sesuai catatan reviewer.'],
+  rejected: ['danger', 'alert', 'Usulan tidak dilanjutkan pada batch ini.'],
+  'on-going': ['success', 'checkCircle', 'Usulan disetujui dan riset berjalan dalam pemantauan BRIDA.'],
+  approved: ['success', 'checkCircle', 'Usulan disetujui.']
+};
 
 function Card({ title, desc, action, children }) {
   return (
@@ -33,24 +47,151 @@ function Card({ title, desc, action, children }) {
   );
 }
 
-function PengajuanSaya() {
-  const { user } = useAuth();
-  const { submissions } = useSubmissions();
-  const [filter, setFilter] = useState('');
-  const [detail, setDetail] = useState(null);
-
-  const milikSaya = useMemo(
-    () => submissions.filter((s) => s.mitraEmail === user.email),
-    [submissions, user.email]
+function StatusBadge({ status }) {
+  const st = statusResearch(status);
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[.71rem] font-bold ${st.badge}`}>
+      <Icon name={st.ikon} size={12} /> {st.label}
+    </span>
   );
+}
 
-  const hits = filter ? milikSaya.filter((s) => s.status === filter) : milikSaya;
+function FormRevisi({ d, onDone }) {
+  const toast = useToast();
+  const [form, setForm] = useState({ judul: d.judul, tujuan: d.tujuan, dana: d.dana, luaran: d.luaran, mitra: d.mitra });
+  const [salah, setSalah] = useState('');
+  const kirim = useMutation((payload) => researchService.revise(d.id, payload));
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  async function submit(e) {
+    e.preventDefault();
+    setSalah('');
+    if (!form.judul.trim() || !form.tujuan.trim() || !form.luaran.trim()) { setSalah('Judul, urgensi, dan luaran wajib diisi.'); return; }
+    if (!/^\d+$/.test(String(form.dana).replace(/\D/g, '')) || !String(form.dana).replace(/\D/g, '')) { setSalah('Usulan dana harus berupa angka.'); return; }
+    try {
+      await kirim.mutate({
+        title: form.judul.trim(), purpose: form.tujuan.trim(), fund_amount: String(form.dana).replace(/\D/g, ''),
+        promised_output: form.luaran.trim(), partner_name: form.mitra.trim()
+      });
+      toast('success', 'Revisi terkirim', 'Usulan kembali masuk antrean reviewer.');
+      onDone();
+    } catch (err) {
+      setSalah(errorMessage(err));
+    }
+  }
+
+  return (
+    <form onSubmit={submit} noValidate className="mt-4 rounded-xl border border-warning-bg bg-[#FFFBEB] p-4">
+      <h4 className="mb-3 text-[.95rem]">Perbarui usulan sesuai catatan reviewer</h4>
+      {[['judul', 'Judul riset', 'input'], ['tujuan', 'Urgensi & keterhubungan dengan kebutuhan daerah', 'textarea'], ['dana', 'Usulan dana (Rp)', 'input'], ['luaran', 'Luaran yang dijanjikan', 'textarea'], ['mitra', 'Mitra spesifik', 'input']].map(([k, l, t]) => (
+        <label key={k} className="mb-3 block">
+          <span className="mb-1 block text-[.82rem] font-semibold text-ink">{l}</span>
+          {t === 'textarea'
+            ? <textarea className="input-base min-h-[90px]" value={form[k]} onChange={(e) => set(k, e.target.value)} />
+            : <input className="input-base" value={form[k]} inputMode={k === 'dana' ? 'numeric' : undefined} onChange={(e) => set(k, e.target.value)} />}
+        </label>
+      ))}
+      {salah && <p role="alert" className="mb-3 text-[.82rem] font-semibold text-danger">{salah}</p>}
+      <button type="submit" disabled={kirim.loading} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon-600 disabled:opacity-50">
+        {kirim.loading ? 'Mengirim…' : 'Kirim revisi'}
+      </button>
+    </form>
+  );
+}
+
+function DetailUsulan({ slug, onClose, onChanged }) {
+  const { data: d, loading, error, reload } = useResearchDetail(slug);
+  const pesan = d && PESAN_STATUS[d.status];
+  const warna = { warning: 'border-warning-bg bg-warning-bg text-[#78350F]', info: 'border-info-bg bg-info-bg text-[#1E3A8A]', danger: 'border-danger-bg bg-danger-bg text-danger', success: 'border-success-bg bg-success-bg text-[#14532D]' };
+
+  return (
+    <Modal title={d?.judul || 'Detail usulan'} wide onClose={onClose}>
+      {loading && !d && <SkeletonGrid count={4} className="flex flex-col gap-3" itemClassName="h-10" />}
+      {error && !d && <ErrorState compact error={error} onRetry={reload} title="Gagal memuat detail usulan" />}
+      {d && (
+        <>
+          <div className="mb-4 flex flex-wrap items-center gap-2.5">
+            <StatusBadge status={d.status} />
+            <span className="text-[.78rem] text-ink-3">No. registrasi {d.kode}{d.tanggal ? ` · Diajukan ${tanggal(d.tanggal)}` : ''}</span>
+          </div>
+
+          <dl className="mb-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.75 text-[.845rem]">
+            <dt className="font-semibold text-ink-3">Skema</dt><dd className="m-0 font-semibold">{d.skema || '-'}</dd>
+            <dt className="font-semibold text-ink-3">Bidang</dt><dd className="m-0 font-semibold">{d.bidang || '-'}</dd>
+            <dt className="font-semibold text-ink-3">Lokasi</dt><dd className="m-0 font-semibold">{d.lokasi || '-'}</dd>
+            <dt className="font-semibold text-ink-3">Usulan dana</dt><dd className="m-0 font-semibold">{d.dana ? rupiah(d.dana) : '-'}</dd>
+            <dt className="font-semibold text-ink-3">Sasaran RPJMD</dt><dd className="m-0 font-semibold">{d.rpjmd || '-'}</dd>
+            <dt className="font-semibold text-ink-3">Mitra sasaran</dt><dd className="m-0 font-semibold">{[d.targetMitra, d.mitra].filter(Boolean).join(' · ') || '-'}</dd>
+            <dt className="font-semibold text-ink-3">Berkas</dt>
+            <dd className="m-0 font-semibold">
+              {d.berkas ? <a href={d.berkas} target="_blank" rel="noopener noreferrer" className="text-maroon-800 underline">Lihat proposal (PDF)</a> : '-'}
+            </dd>
+          </dl>
+
+          <h4 className="mb-2 text-[.92rem]">Urgensi</h4>
+          <p className="mb-4 whitespace-pre-line text-[.86rem] leading-relaxed text-ink-2">{d.tujuan || '-'}</p>
+
+          <h4 className="mb-2 text-[.92rem]">Luaran</h4>
+          <p className="mb-4 whitespace-pre-line text-[.86rem] leading-relaxed text-ink-2">{d.luaran || '-'}</p>
+
+          {pesan && (
+            <div className={`flex items-start gap-3 rounded-xl border px-4 py-3.5 text-[.855rem] ${warna[pesan[0]]}`}>
+              <Icon name={pesan[1]} size={19} className="mt-0.5 flex-none" />
+              <p className="m-0">{pesan[2]}</p>
+            </div>
+          )}
+
+          {d.komentar.length > 0 && (
+            <div className="mt-4">
+              <h4 className="mb-2 text-[.92rem]">Catatan reviewer</h4>
+              <ul className="m-0 flex list-none flex-col gap-2 p-0">
+                {d.komentar.map((c) => (
+                  <li key={c.id} className="rounded-lg border border-line bg-surface-1 p-3 text-[.85rem]">
+                    <div className="mb-1 flex flex-wrap items-center gap-2 text-[.76rem] text-ink-3">
+                      <b className="text-ink">{c.penulis}</b>{c.jabatan && <span>· {c.jabatan}</span>}<span>· {tanggal(c.tanggal)}</span>
+                      {c.keputusan && <span className="rounded-full bg-white px-2 py-0.5 font-bold text-ink-2">{DECISION_LABEL[c.keputusan] || c.keputusan}{c.putaran ? ` · putaran ${c.putaran}` : ''}</span>}
+                    </div>
+                    <p className="m-0 whitespace-pre-line text-ink-2">{c.pesan}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {d.grup && (
+            <div className="mt-4 rounded-xl border border-line p-4 text-[.85rem]">
+              <h4 className="mb-2 text-[.92rem]">Tim riset</h4>
+              {d.grup.kodeGabung && (
+                <p className="mb-2 text-ink-2">Bagikan kode gabung <b className="font-mono text-maroon-800">{d.grup.kodeGabung}</b> kepada anggota tim agar mereka dapat bergabung.</p>
+              )}
+              <ul className="m-0 list-none space-y-1 p-0">
+                {d.grup.anggota.map((a) => <li key={a.nama} className="text-ink-2"><b className="text-ink">{a.nama}</b> · {a.institusi || '-'} · {a.peran === 'leader' ? 'Ketua' : 'Anggota'}</li>)}
+              </ul>
+            </div>
+          )}
+
+          {d.status === 'revision' && <FormRevisi d={d} onDone={() => { reload(); onChanged(); }} />}
+        </>
+      )}
+    </Modal>
+  );
+}
+
+function PengajuanSaya() {
+  const [filter, setFilter] = useState('');
+  const [slug, setSlug] = useState(null);
+  const { data, loading, error, reload } = useMyResearches();
+  const tutup = useCallback(() => setSlug(null), []);
+  const milikSaya = data || [];
+  const aktif = FILTER.find((f) => f.id === filter);
+  const hits = aktif?.match ? milikSaya.filter((s) => aktif.match.includes(s.status)) : milikSaya;
+  const hitung = (ids) => milikSaya.filter((s) => ids.includes(s.status)).length;
 
   const kpi = [
     { l: 'Total pengajuan', v: milikSaya.length },
-    { l: 'Diajukan', v: milikSaya.filter((s) => s.status === 'diajukan').length },
-    { l: 'Berjalan', v: milikSaya.filter((s) => s.status === 'berjalan').length },
-    { l: 'Ditolak', v: milikSaya.filter((s) => s.status === 'ditolak').length }
+    { l: 'Dalam proses', v: hitung(FILTER[1].match) },
+    { l: 'Berjalan', v: hitung(FILTER[2].match) },
+    { l: 'Ditolak', v: hitung(FILTER[3].match) }
   ];
 
   return (
@@ -59,7 +200,7 @@ function PengajuanSaya() {
         {kpi.map((k) => (
           <div key={k.l} className="rounded-xl border border-line bg-white p-4.5">
             <div className="text-[.78rem] font-semibold text-ink-3">{k.l}</div>
-            <div className="mt-1 text-[1.75rem] font-extrabold leading-tight text-ink">{k.v}</div>
+            <div className="mt-1 text-[1.75rem] font-extrabold leading-tight text-ink">{loading && !data ? '…' : k.v}</div>
           </div>
         ))}
       </div>
@@ -88,13 +229,18 @@ function PengajuanSaya() {
           </div>
         }
       >
-        {hits.length === 0 ? (
-          <div className="py-12 text-center text-ink-3">
-            <Icon name="flask" size={40} className="mx-auto mb-3 opacity-40" />
-            <h3 className="text-[1rem] text-ink-2">Belum ada pengajuan pada kategori ini</h3>
-            <p className="mb-0">Gunakan tombol &quot;Ajukan riset baru&quot; untuk mengirim usulan kolaborasi riset.</p>
-          </div>
-        ) : (
+        <AsyncState
+          loading={loading}
+          error={error}
+          isEmpty={hits.length === 0}
+          onRetry={reload}
+          skeleton={<SkeletonGrid count={3} className="flex flex-col gap-2" itemClassName="h-14" />}
+          empty={
+            <EmptyState icon="flask"
+              title={filter ? 'Belum ada pengajuan pada kategori ini' : 'Belum ada pengajuan riset'}
+              text='Gunakan tombol "Ajukan riset baru" untuk mengirim usulan kolaborasi riset.' />
+          }
+        >
           <div className="overflow-x-auto rounded-lg border border-line">
             <table className="w-full min-w-[760px] border-collapse text-[.845rem]">
               <caption className="sr-only">Daftar pengajuan riset saya</caption>
@@ -106,81 +252,32 @@ function PengajuanSaya() {
                 </tr>
               </thead>
               <tbody>
-                {hits.map((s) => {
-                  const st = STATUS_USULAN[s.status];
-                  return (
-                    <tr key={s.id} className="border-b border-line last:border-0 hover:bg-surface-1">
-                      <td className="px-4 py-3.5 font-semibold tabular-nums text-ink">{s.id}</td>
-                      <td className="px-4 py-3.5">
-                        <div className="max-w-[320px] font-semibold text-ink">{s.judul}</div>
-                        <div className="text-[.765rem] text-ink-3">{skemaById(s.skema).nama}</div>
-                      </td>
-                      <td className="px-4 py-3.5 text-ink-2">{bidangById(s.bidang).nama.split(' ')[0]}</td>
-                      <td className="px-4 py-3.5 tabular-nums text-ink-2">{tanggal(s.createdAt.slice(0, 10))}</td>
-                      <td className="px-4 py-3.5">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[.71rem] font-bold ${st.badge}`}>
-                          <Icon name={st.ikon} size={12} /> {st.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <button type="button" onClick={() => setDetail(s)}
-                          className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-maroon-800 hover:border-maroon-800 hover:bg-maroon-50">
-                          Lihat detail
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {hits.map((s) => (
+                  <tr key={s.id} className="border-b border-line last:border-0 hover:bg-surface-1">
+                    <td className="px-4 py-3.5 font-semibold tabular-nums text-ink">{s.kode}</td>
+                    <td className="px-4 py-3.5">
+                      <div className="max-w-[320px] font-semibold text-ink">{s.judul}</div>
+                      <div className="text-[.765rem] text-ink-3">{s.skema || '-'}</div>
+                    </td>
+                    <td className="px-4 py-3.5 text-ink-2">{s.bidang.split(' ')[0] || '-'}</td>
+                    <td className="px-4 py-3.5 tabular-nums text-ink-2">{tanggal(s.tanggal)}</td>
+                    <td className="px-4 py-3.5"><StatusBadge status={s.status} /></td>
+                    <td className="px-4 py-3.5">
+                      <button type="button" onClick={() => setSlug(s.slug)}
+                        className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-maroon-800 hover:border-maroon-800 hover:bg-maroon-50">
+                        Lihat detail
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-        )}
-        <p className="mt-3 text-[.82rem] text-ink-3">Menampilkan {hits.length} dari {milikSaya.length} pengajuan.</p>
+          <p className="mt-3 text-[.82rem] text-ink-3">Menampilkan {hits.length} dari {milikSaya.length} pengajuan.</p>
+        </AsyncState>
       </Card>
 
-      {detail && (
-        <Modal title={detail.judul} wide onClose={() => setDetail(null)}>
-          <div className="mb-4 flex flex-wrap items-center gap-2.5">
-            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[.71rem] font-bold ${STATUS_USULAN[detail.status].badge}`}>
-              <Icon name={STATUS_USULAN[detail.status].ikon} size={12} /> {STATUS_USULAN[detail.status].label}
-            </span>
-            <span className="text-[.78rem] text-ink-3">No. registrasi {detail.id} · Diajukan {tanggal(detail.createdAt.slice(0, 10))}</span>
-          </div>
-
-          <dl className="mb-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.75 text-[.845rem]">
-            <dt className="font-semibold text-ink-3">Skema</dt><dd className="m-0 font-semibold">{skemaById(detail.skema).nama}</dd>
-            <dt className="font-semibold text-ink-3">Bidang</dt><dd className="m-0 font-semibold">{bidangById(detail.bidang).nama}</dd>
-            <dt className="font-semibold text-ink-3">Lokasi</dt><dd className="m-0 font-semibold">{detail.kecamatan === 'lintas' ? 'Lintas kecamatan' : kecById(detail.kecamatan).nama}</dd>
-            <dt className="font-semibold text-ink-3">Usulan dana</dt><dd className="m-0 font-semibold">Rp {detail.dana}</dd>
-            <dt className="font-semibold text-ink-3">Berkas</dt><dd className="m-0 font-semibold">{detail.files?.length || 0} dokumen</dd>
-          </dl>
-
-          <h4 className="mb-2 text-[.92rem]">Urgensi</h4>
-          <p className="mb-4 whitespace-pre-line text-[.86rem] leading-relaxed text-ink-2">{detail.urgensi}</p>
-
-          <h4 className="mb-2 text-[.92rem]">Luaran</h4>
-          <p className="mb-4 whitespace-pre-line text-[.86rem] leading-relaxed text-ink-2">{detail.luaran}</p>
-
-          {detail.status === 'ditolak' && (
-            <div className="flex items-start gap-3 rounded-xl border border-danger-bg bg-danger-bg px-4 py-3.5 text-[.855rem] text-danger">
-              <Icon name="alert" size={19} className="mt-0.5 flex-none" />
-              <p className="m-0"><strong className="mr-1">Catatan penolakan.</strong>{detail.catatan || 'Tidak ada catatan tambahan dari BRIDA.'}</p>
-            </div>
-          )}
-          {detail.status === 'berjalan' && (
-            <div className="flex items-start gap-3 rounded-xl border border-success-bg bg-success-bg px-4 py-3.5 text-[.855rem] text-[#14532D]">
-              <Icon name="checkCircle" size={19} className="mt-0.5 flex-none text-success" />
-              <p className="m-0">Pengajuan telah disetujui dan riset berjalan dalam pemantauan BRIDA.</p>
-            </div>
-          )}
-          {detail.status === 'diajukan' && (
-            <div className="flex items-start gap-3 rounded-xl border border-warning-bg bg-warning-bg px-4 py-3.5 text-[.855rem] text-[#78350F]">
-              <Icon name="clock" size={19} className="mt-0.5 flex-none text-warning" />
-              <p className="m-0">Masih dalam antrean verifikasi administrasi dan telaah substansi tim pakar BRIDA.</p>
-            </div>
-          )}
-        </Modal>
-      )}
+      {slug && <DetailUsulan slug={slug} onClose={tutup} onChanged={reload} />}
     </div>
   );
 }
