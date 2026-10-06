@@ -1,7 +1,18 @@
 /* Klien REST API terpusat: base URL dari env, token Bearer otomatis,
    timeout, validasi format respons, dan normalisasi error. */
 
-const API_URL = String(import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+/** VITE_API_URL boleh berupa alamat utama (http://host) atau lengkap dengan prefix (http://host/api). */
+function resolveApiUrl(raw) {
+  const value = String(raw || '').trim().replace(/\/+$/, '');
+  if (!value) return '';
+  try {
+    return new URL(value).pathname === '/' ? `${value}/api` : value;
+  } catch {
+    return value;
+  }
+}
+
+const API_URL = resolveApiUrl(import.meta.env.VITE_API_URL);
 
 if (!API_URL) {
   console.error('[api] VITE_API_URL belum diatur. Salin frontend/.env.example lalu jalankan ulang Vite.');

@@ -1,0 +1,29 @@
+# Dipakai Apache/LiteSpeed di Rumahweb (cPanel). Vite menyalinnya ke dist/ saat build.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Paksa HTTPS: aktifkan (hapus tanda #) setelah SSL subdomain terpasang
+  # RewriteCond %{HTTPS} !=on
+  # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # React Router: semua URL yang bukan file/folder dikembalikan ke index.html
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  # File di /assets memakai hash pada namanya, aman di-cache lama
+  <FilesMatch "\.(js|css|woff2?|png|jpe?g|svg|webp|ico)$">
+    ExpiresDefault "access plus 1 month"
+  </FilesMatch>
+  <FilesMatch "index\.html$">
+    ExpiresDefault "access plus 0 seconds"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
