@@ -4,19 +4,20 @@ import HBarChart from '../../components/charts/HBarChart.jsx';
 import Icon from '../../components/Icon.jsx';
 import Modal from '../../components/Modal.jsx';
 import MonevModule from './MonevModule.jsx';
+import RisetMonitoringModule from './RisetMonitoringModule.jsx';
 import { DEMO_ACCOUNTS, ROLES, getRegisteredUsers } from '../../context/AuthContext.jsx';
 import { useContent } from '../../context/ContentContext.jsx';
 import { STATUS_USULAN, useSubmissions } from '../../context/SubmissionsContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { RISET, BIDANG, KECAMATAN, SKEMA, STATS } from '../../data/singaData.js';
-import { bidangById, kecById, rupiah, rupiahRingkas, skemaById, tanggal, statusMeta, angka } from '../../lib/format.js';
+import { bidangById, kecById, rupiah, rupiahRingkas, skemaById, tanggal, angka } from '../../lib/format.js';
 
 const MENU = [
   { id: 'ringkasan', label: 'Ringkasan', ikon: 'chart' },
   { id: 'monev', label: 'Monitoring & Evaluasi', ikon: 'chart' },
+  { id: 'monitoring-riset', label: 'Monitoring Direktori Riset', ikon: 'flask' },
   { id: 'pengguna', label: 'Manajemen Pengguna', ikon: 'users' },
   { id: 'usulan', label: 'Usulan Riset Mitra', ikon: 'handshake' },
-  { id: 'riset', label: 'Katalog Riset', ikon: 'flask' },
   { id: 'konten', label: 'Berita & Publikasi', ikon: 'doc' },
   { id: 'pengaturan', label: 'Pengaturan Situs', ikon: 'shield' }
 ];
@@ -245,57 +246,6 @@ function Pengguna() {
         </Modal>
       )}
     </div>
-  );
-}
-
-/* ---------------- Katalog riset ---------------- */
-function KatalogRiset() {
-  const [q, setQ] = useState('');
-  const hits = RISET.filter((r) => !q || `${r.judul} ${r.peneliti} ${r.institusi}`.toLowerCase().includes(q.toLowerCase()));
-
-  return (
-    <Card
-      title="Katalog riset daerah"
-      desc="Seluruh judul riset yang tercatat dalam basis data BRIDA."
-      action={
-        <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari judul, peneliti, institusi…"
-          className="input-base w-auto min-w-[240px]" aria-label="Cari riset" />
-      }
-    >
-      <div className="overflow-x-auto rounded-lg border border-line">
-        <table className="w-full min-w-[860px] border-collapse text-[.845rem]">
-          <caption className="sr-only">Katalog riset daerah</caption>
-          <thead>
-            <tr className="border-b border-line bg-surface-1">
-              {['Kode', 'Judul & peneliti', 'Bidang', 'TA', 'Nilai kontrak', 'Status'].map((h) => (
-                <th key={h} scope="col" className="whitespace-nowrap px-4 py-3 text-left text-[.72rem] font-bold uppercase tracking-wide text-ink-3">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {hits.map((r) => {
-              const sm = statusMeta(r.status);
-              return (
-                <tr key={r.id} className="border-b border-line last:border-0 hover:bg-surface-1">
-                  <td className="px-4 py-3.5 font-semibold tabular-nums text-ink">{r.id}</td>
-                  <td className="px-4 py-3.5">
-                    <div className="font-semibold text-ink">{r.judul.length > 58 ? r.judul.slice(0, 58) + '…' : r.judul}</div>
-                    <div className="text-[.765rem] text-ink-3">{r.peneliti} · {r.institusi}</div>
-                  </td>
-                  <td className="px-4 py-3.5 text-ink-2">{bidangById(r.bidang).nama.split(' ')[0]}</td>
-                  <td className="px-4 py-3.5 tabular-nums text-ink-2">{r.tahun}</td>
-                  <td className="px-4 py-3.5 tabular-nums text-ink-2">{rupiah(r.anggaran)}</td>
-                  <td className="px-4 py-3.5">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[.71rem] font-bold before:h-1.5 before:w-1.5 before:rounded-full before:bg-current ${sm.badge}`}>{sm.label}</span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <p className="mt-3 text-[.82rem] text-ink-3">Menampilkan {hits.length} dari {RISET.length} riset.</p>
-    </Card>
   );
 }
 
@@ -704,9 +654,9 @@ function Pengaturan() {
 const JUDUL = {
   ringkasan: ['Ringkasan portal', 'Pantauan menyeluruh ekosistem riset dan aktivitas portal'],
   monev: ['Monitoring & Evaluasi', 'Review tindak lanjut kajian dan pemantauan kinerja seluruh OPD'],
+  'monitoring-riset': ['Monitoring Direktori Riset', 'Progres, tahapan, anggaran, dan luaran kajian daerah'],
   pengguna: ['Manajemen pengguna', 'Verifikasi dan kelola akun mitra serta perangkat daerah'],
   usulan: ['Usulan riset mitra', 'Verifikasi, setujui, atau tolak pengajuan kolaborasi riset dari mitra'],
-  riset: ['Katalog riset', 'Seluruh judul riset dalam basis data BRIDA'],
   konten: ['Berita & publikasi', 'Kelola konten yang tampil di portal publik'],
   pengaturan: ['Pengaturan situs', 'Identitas, kontak, dan kendali portal']
 };
@@ -727,9 +677,9 @@ export default function AdminDashboard() {
     <DashboardLayout menu={menu} active={active} onSelect={setActive} title={judul} subtitle={sub}>
       {active === 'ringkasan' && <Ringkasan />}
       {active === 'monev' && <MonevModule />}
+      {active === 'monitoring-riset' && <RisetMonitoringModule />}
       {active === 'pengguna' && <Pengguna />}
       {active === 'usulan' && <UsulanMitra />}
-      {active === 'riset' && <KatalogRiset />}
       {active === 'konten' && <Konten />}
       {active === 'pengaturan' && <Pengaturan />}
     </DashboardLayout>

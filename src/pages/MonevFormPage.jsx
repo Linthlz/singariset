@@ -1,48 +1,17 @@
 import { useMemo, useRef, useState } from 'react';
+import { MONEV_SEED } from '../data/monevData.js';
+import { useMonev } from '../context/MonevContext.jsx';
 
-const OPD_OPTIONS = [
-  'Dinas Kebudayaan dan Pariwisata',
-  'Badan Perencanaan Pembangunan Daerah (Bappeda)',
-  'Dinas Pendidikan',
-  'Dinas Komunikasi dan Informatika',
-  'Dinas Kesehatan',
-  'Dinas Pertanian',
-  'Dinas PUPR',
-  'Dinas Sosial'
-];
+const OPD_OPTIONS = [...new Set(MONEV_SEED.map((record) => record.opd))].sort((a, b) => a.localeCompare(b));
 
-const JUDUL_OPTIONS = [
-  {
-    value: 'kajian-1',
-    label: 'Kajian Efektivitas Program Desa Wisata Berbasis Budaya dalam Meningkatkan Kunjungan Wisatawan',
-    rekomendasi:
-      'Rekomendasi utama: penguatan koordinasi antar OPD dalam pengelolaan desa wisata, penyesuaian standar promosi digital, serta pemetaan kebutuhan fasilitasi UMKM lokal. Kajian menyoroti perlunya dukungan pendampingan kapasitas pelaku usaha agar dampak ekonomi lebih merata.'
-  },
-  {
-    value: 'kajian-2',
-    label: 'Analisis Strategi Peningkatan Literasi Digital Masyarakat Desa untuk Mendukung Transformasi Digital Daerah',
-    rekomendasi:
-      'Rekomendasi utama: pengembangan modul pelatihan literasi digital yang terstruktur, pembangunan sarana akses internet yang merata, dan integrasi program pelatihan dengan kegiatan UMKM serta layanan administrasi publik. Kajian juga menegaskan pentingnya kolaborasi dengan sekolah dan perangkat desa.'
-  },
-  {
-    value: 'kajian-3',
-    label: 'Evaluasi Dampak Kebijakan Pemberdayaan Kewirausahaan Pemuda terhadap Pertumbuhan Ekonomi Lokal',
-    rekomendasi:
-      'Rekomendasi utama: perluasan pendampingan usaha pasca pelatihan, evaluasi kelayakan bantuan modal, serta pembentukan jaringan kemitraan dengan pelaku industri lokal. Hasil kajian menunjukkan bahwa keberlanjutan program sangat tergantung pada mentoring dan akses pasar.'
-  },
-  {
-    value: 'kajian-4',
-    label: 'Kajian Kebutuhan Infrastruktur Pendukung Kesehatan Lingkungan di Wilayah Perkotaan dan Pedesaan',
-    rekomendasi:
-      'Rekomendasi utama: prioritas pembangunan saluran drainase, pengelolaan sampah terpadu, dan intervensi sanitasi berbasis komunitas. Kajian merekomendasikan pendekatan berbasis wilayah dengan pemantauan berkala untuk memastikan efektivitas perlindungan kesehatan masyarakat.'
-  }
-];
+const JUDUL_OPTIONS = MONEV_SEED.map((record) => ({
+  value: record.judul,
+  label: record.judul,
+  opd: record.opd,
+  rekomendasi: record.rekomendasi.map((item) => item.judul)
+}));
 
-const INITIAL_FORM = {
-  nama: '',
-  nip: '',
-  opd: '',
-  judul: '',
+const EMPTY_REKOMENDASI = {
   monitoring: '',
   uraian: '',
   kendala: '',
@@ -51,21 +20,49 @@ const INITIAL_FORM = {
   fileSize: ''
 };
 
+const INITIAL_FORM = {
+  nama: '',
+  nip: '',
+  opd: '',
+  judul: '',
+  rekomendasi: []
+};
+
 export default function MonevFormPage() {
+  const { addMonev } = useMonev();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
-  const fileInputRef = useRef(null);
+  const fileInputRefs = useRef({});
 
   const selectedTitle = useMemo(
     () => JUDUL_OPTIONS.find((item) => item.value === form.judul) || null,
     [form.judul]
   );
+  const judulUntukOpd = JUDUL_OPTIONS.filter((item) => item.opd === form.opd);
 
   const updateField = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: '' }));
+    setForm((prev) => {
+      const next = { ...prev, [field]: value };
+      if (field === 'opd') {
+        next.judul = '';
+        next.rekomendasi = [];
+      } else if (field === 'judul') {
+        const title = JUDUL_OPTIONS.find((item) => item.value === value);
+        next.rekomendasi = title?.rekomendasi.map(() => ({ ...EMPTY_REKOMENDASI })) || [];
+      }
+      return next;
+    });
+    setErrors((prev) => ({ ...prev, [field]: '', ...(field === 'opd' ? { judul: '' } : {}) }));
+  };
+
+  const updateRecommendation = (index, field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      rekomendasi: prev.rekomendasi.map((item, itemIndex) => itemIndex === index ? { ...item, [field]: value } : item)
+    }));
+    setErrors((prev) => ({ ...prev, [`rekomendasi-${index}-${field}`]: '' }));
   };
 
   const validateRequired = (fields) => {
@@ -103,31 +100,54 @@ export default function MonevFormPage() {
 
   const handleBack = () => setStep((prev) => Math.max(prev - 1, 1));
 
-  const handleFileChange = (event) => {
+  const handleFileChange = (event, index) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
-      setErrors((prev) => ({ ...prev, file: 'Ukuran file maksimal 10 MB.' }));
+      setErrors((prev) => ({ ...prev, [`file-${index}`]: 'Ukuran file maksimal 10 MB.' }));
       event.target.value = '';
       return;
     }
 
-    setErrors((prev) => ({ ...prev, file: '' }));
-    updateField('fileName', file.name);
-    updateField('fileSize', `${(file.size / 1024 / 1024).toFixed(2)} MB`);
+    setErrors((prev) => ({ ...prev, [`file-${index}`]: '' }));
+    setForm((prev) => ({
+      ...prev,
+      rekomendasi: prev.rekomendasi.map((item, itemIndex) => itemIndex === index ? {
+        ...item,
+        fileName: file.name,
+        fileSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`
+      } : item)
+    }));
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const nextErrors = validateRequired(['monitoring', 'uraian', 'kendala', 'manfaat']);
+    const nextErrors = {};
+    form.rekomendasi.forEach((item, index) => {
+      ['monitoring', 'uraian', 'kendala', 'manfaat'].forEach((field) => {
+        if (!item[field] || !item[field].trim()) {
+          nextErrors[`rekomendasi-${index}-${field}`] = 'Field ini wajib diisi.';
+        }
+      });
+    });
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       return;
     }
 
+    addMonev({
+      nama: form.nama,
+      nip: form.nip,
+      opd: form.opd,
+      judul: selectedTitle.label,
+      rekomendasi: form.rekomendasi.map((response, index) => ({
+        judul: selectedTitle.rekomendasi[index],
+        ...response
+      }))
+    });
     setSubmitted(true);
   };
 
@@ -174,7 +194,7 @@ export default function MonevFormPage() {
                       {complete ? '✓' : item}
                     </div>
                     <span className="hidden text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 sm:inline-block">
-                      {item === 1 ? 'Data diri' : item === 2 ? 'Judul riset' : 'Evaluasi'}
+                      {item === 1 ? 'Data diri' : item === 2 ? 'Judul riset' : 'Poin rekomendasi'}
                     </span>
                   </div>
                 );
@@ -245,7 +265,7 @@ export default function MonevFormPage() {
                       </label>
 
                       <div className="space-y-3">
-                        {JUDUL_OPTIONS.map((item) => {
+                        {judulUntukOpd.map((item) => {
                           const checked = form.judul === item.value;
 
                           return (
@@ -272,6 +292,9 @@ export default function MonevFormPage() {
                         })}
                       </div>
 
+                      {judulUntukOpd.length === 0 && (
+                        <p className="mt-3 text-sm text-slate-500">Belum ada kajian yang terhubung dengan OPD ini.</p>
+                      )}
                       {renderInputError('judul')}
                     </div>
                   </section>
@@ -280,120 +303,104 @@ export default function MonevFormPage() {
                 {step === 3 && (
                   <section className="space-y-6">
                     {selectedTitle && (
-                      <div className="rounded-2xl border border-[#f0d8d8] bg-[#fff8f8] p-5">
-                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#7f1d1d]">
-                          Rincian rekomendasi kajian
-                        </p>
-                        <p className="text-sm leading-7 text-slate-700">{selectedTitle.rekomendasi}</p>
+                      <div className="space-y-4">
+                        <div className="rounded-2xl border border-[#f0d8d8] bg-[#fff8f8] p-5">
+                          <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#7f1d1d]">
+                            Judul lengkap riset/kajian
+                          </p>
+                          <h2 className="m-0 text-base font-bold leading-6 text-slate-800">{selectedTitle.label}</h2>
+                          <p className="mb-0 mt-2 text-xs text-slate-500">Isi hasil monitoring untuk setiap poin rekomendasi di bawah.</p>
+                        </div>
+
+                        {selectedTitle.rekomendasi.map((point, index) => {
+                          const response = form.rekomendasi[index] || EMPTY_REKOMENDASI;
+                          const errorKey = (field) => `rekomendasi-${index}-${field}`;
+
+                          return (
+                            <article key={`${selectedTitle.value}-${index}`} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                              <div className="mb-5 flex items-start gap-3">
+                                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[#8b2a2a] text-sm font-bold text-white">{index + 1}</span>
+                                <div>
+                                  <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-[#7f1d1d]">Poin rekomendasi {index + 1}</p>
+                                  <h3 className="m-0 text-sm font-semibold leading-6 text-slate-800">{point}</h3>
+                                </div>
+                              </div>
+
+                              <div className="space-y-5">
+                                <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+                                  <div className="mb-3">
+                                    <p className="mb-1 text-sm font-semibold text-slate-700">Bukti tindak lanjut</p>
+                                    <p className="m-0 text-xs text-slate-500">Opsional · Maksimal 10 MB · PDF, JPG, PNG, atau dokumen pendukung</p>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => fileInputRefs.current[index]?.click()}
+                                    className="inline-flex items-center justify-center rounded-xl border border-[#8b2a2a] bg-white px-4 py-2.5 text-sm font-semibold text-[#8b2a2a] transition hover:bg-red-50"
+                                  >
+                                    Tambahkan file
+                                  </button>
+                                  <input
+                                    ref={(element) => { fileInputRefs.current[index] = element; }}
+                                    type="file"
+                                    className="hidden"
+                                    onChange={(e) => handleFileChange(e, index)}
+                                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                  />
+                                  {response.fileName && (
+                                    <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                                      <div className="font-semibold">{response.fileName}</div>
+                                      <div className="text-emerald-700">{response.fileSize}</div>
+                                    </div>
+                                  )}
+                                  {errors[`file-${index}`] && <p className="mt-2 text-xs font-medium text-red-600">{errors[`file-${index}`]}</p>}
+                                </div>
+
+                                <div>
+                                  <p className="mb-2 text-sm font-semibold text-slate-700">Hasil monitoring <span className="text-red-600">*</span></p>
+                                  <div className="grid gap-3 sm:grid-cols-2">
+                                    {['Sudah', 'Belum'].map((option) => (
+                                      <label key={option} className={[
+                                        'flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition',
+                                        response.monitoring === option ? 'border-[#8b2a2a] bg-[#fff6f6]' : 'border-slate-200 bg-slate-50 hover:border-slate-300'
+                                      ].join(' ')}>
+                                        <input type="radio" name={`monitoring-${index}`} value={option} checked={response.monitoring === option}
+                                          onChange={(e) => updateRecommendation(index, 'monitoring', e.target.value)} className="h-4 w-4 accent-[#8b2a2a]" />
+                                        <span className="text-sm font-medium text-slate-700">{option}</span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                  {renderInputError(errorKey('monitoring'))}
+                                </div>
+
+                                <div>
+                                  <label className="mb-2 block text-sm font-semibold text-slate-700">Uraian hasil monitoring <span className="text-red-600">*</span></label>
+                                  <textarea rows="3" value={response.uraian} onChange={(e) => updateRecommendation(index, 'uraian', e.target.value)}
+                                    className="input-base resize-none" placeholder="Contoh: Sensor telah dipasang di tiga tempek dan data debit dipakai untuk menyusun jadwal irigasi."
+                                    aria-invalid={Boolean(errors[errorKey('uraian')])} />
+                                  {renderInputError(errorKey('uraian'))}
+                                </div>
+
+                                <div>
+                                  <label className="mb-2 block text-sm font-semibold text-slate-700">Kendala pelaksanaan rekomendasi <span className="text-red-600">*</span></label>
+                                  <textarea rows="3" value={response.kendala} onChange={(e) => updateRecommendation(index, 'kendala', e.target.value)}
+                                    className="input-base resize-none" placeholder="Contoh: Integrasi format data dan jadwal kalibrasi sensor masih perlu disepakati."
+                                    aria-invalid={Boolean(errors[errorKey('kendala')])} />
+                                  {renderInputError(errorKey('kendala'))}
+                                </div>
+
+                                <div>
+                                  <label className="mb-2 block text-sm font-semibold text-slate-700">Manfaat kajian <span className="text-red-600">*</span></label>
+                                  <textarea rows="3" value={response.manfaat} onChange={(e) => updateRecommendation(index, 'manfaat', e.target.value)}
+                                    className="input-base resize-none" placeholder="Contoh: Pembagian air lebih terukur dan penggunaan air pada petak uji menjadi lebih efisien."
+                                    aria-invalid={Boolean(errors[errorKey('manfaat')])} />
+                                  {renderInputError(errorKey('manfaat'))}
+                                </div>
+                              </div>
+                            </article>
+                          );
+                        })}
                       </div>
                     )}
-
-                    <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
-                      <label className="mb-2 block text-sm font-semibold text-slate-700">
-                        Upload bukti dukung tindak lanjut rekomendasi kajian
-                      </label>
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="inline-flex items-center justify-center rounded-xl border border-[#8b2a2a] bg-white px-4 py-2.5 text-sm font-semibold text-[#8b2a2a] transition hover:bg-red-50"
-                        >
-                          Tambahkan file
-                        </button>
-                        <span className="text-xs text-slate-500">Maksimal 10 MB · PDF, JPG, PNG, atau dokumen pendukung</span>
-                      </div>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        className="hidden"
-                        onChange={handleFileChange}
-                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                      />
-
-                      {form.fileName && (
-                        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-                          <div className="font-semibold">{form.fileName}</div>
-                          <div className="text-emerald-700">{form.fileSize}</div>
-                        </div>
-                      )}
-
-                      {errors.file && <p className="mt-2 text-xs font-medium text-red-600">{errors.file}</p>}
-                    </div>
-
-                    <div>
-                      <label className="mb-3 block text-sm font-semibold text-slate-700">
-                        Hasil Monitoring <span className="text-red-600">*</span>
-                      </label>
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        {['Sudah', 'Belum'].map((option) => (
-                          <label
-                            key={option}
-                            className={[
-                              'flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition',
-                              form.monitoring === option
-                                ? 'border-[#8b2a2a] bg-[#fff6f6]'
-                                : 'border-slate-200 bg-slate-50 hover:border-slate-300'
-                            ].join(' ')}
-                          >
-                            <input
-                              type="radio"
-                              name="monitoring"
-                              value={option}
-                              checked={form.monitoring === option}
-                              onChange={(e) => updateField('monitoring', e.target.value)}
-                              className="h-4 w-4 accent-[#8b2a2a]"
-                            />
-                            <span className="text-sm font-medium text-slate-700">{option}</span>
-                          </label>
-                        ))}
-                      </div>
-                      {renderInputError('monitoring')}
-                    </div>
-
-                    <div>
-                      <label className="mb-2 block text-sm font-semibold text-slate-700">
-                        Uraian Hasil Monitoring <span className="text-red-600">*</span>
-                      </label>
-                      <textarea
-                        rows="4"
-                        value={form.uraian}
-                        onChange={(e) => updateField('uraian', e.target.value)}
-                        className="input-base resize-none"
-                        placeholder="Jelaskan kondisi, perkembangan, dan bukti tindak lanjut dari rekomendasi kajian..."
-                        aria-invalid={Boolean(errors.uraian)}
-                      />
-                      {renderInputError('uraian')}
-                    </div>
-
-                    <div>
-                      <label className="mb-2 block text-sm font-semibold text-slate-700">
-                        Kendala Pelaksanaan Rekomendasi <span className="text-red-600">*</span>
-                      </label>
-                      <textarea
-                        rows="4"
-                        value={form.kendala}
-                        onChange={(e) => updateField('kendala', e.target.value)}
-                        className="input-base resize-none"
-                        placeholder="Tuliskan kendala yang dihadapi, seperti pembiayaan, koordinasi, sumber daya, atau perizinan..."
-                        aria-invalid={Boolean(errors.kendala)}
-                      />
-                      {renderInputError('kendala')}
-                    </div>
-
-                    <div>
-                      <label className="mb-2 block text-sm font-semibold text-slate-700">
-                        Manfaat Kajian <span className="text-red-600">*</span>
-                      </label>
-                      <textarea
-                        rows="4"
-                        value={form.manfaat}
-                        onChange={(e) => updateField('manfaat', e.target.value)}
-                        className="input-base resize-none"
-                        placeholder="Jelaskan manfaat kajian terhadap program, layanan publik, atau peningkatan kinerja OPD..."
-                        aria-invalid={Boolean(errors.manfaat)}
-                      />
-                      {renderInputError('manfaat')}
-                    </div>
                   </section>
                 )}
 
