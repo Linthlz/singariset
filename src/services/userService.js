@@ -13,6 +13,9 @@ export const BACKEND_ROLES = [
 
 export const roleLabel = (value) => BACKEND_ROLES.find((r) => r.value === value)?.label || value;
 
+/** Peran yang boleh dipilih di form admin: akun mitra mendaftar sendiri, admin tidak dibuat dari UI. */
+export const ASSIGNABLE_ROLES = BACKEND_ROLES.filter((r) => r.value !== 'researcher' && r.value !== 'admin');
+
 const EMAIL = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 
 /** Validasi form pengguna di sisi klien; backend memvalidasi ulang. */
@@ -35,16 +38,24 @@ export const userService = {
     return { data: res.data.map(mapUser), meta: res.meta };
   },
 
+  /**
+   * Memakai /admin/create (tersedia di backend lama & baru). Semua field dikirim
+   * walau kosong, karena backend lama gagal bila salah satunya tidak ada.
+   * Backend lama tidak mengembalikan data pengguna, jadi hasilnya dibentuk dari form.
+   */
   async create(form) {
-    const res = await api.post('/v1/admin/user', {
+    const payload = {
       name: form.nama.trim(),
       email: form.email.trim().toLowerCase(),
       password: form.password,
       role: form.role,
       institution: form.instansi.trim(),
+      institution_address: '',
       position: form.jabatan.trim()
-    });
-    return mapUser(res.data);
+    };
+    const res = await api.post('/v1/admin/create', payload);
+    if (res.data && res.data.public_id) return mapUser(res.data);
+    return { publicId: '', nama: payload.name, email: payload.email, backendRole: payload.role, instansi: payload.institution || '-', jabatan: payload.position || '-', verified: true };
   },
 
   async update(publicId, form) {

@@ -15,7 +15,7 @@ import { useAdminNews, useNewsCategories } from '../../hooks/useNews.js';
 import { useDocumentations, useResearchDetail, useStaffResearches } from '../../hooks/useResearch.js';
 import { useUsers } from '../../hooks/useUsers.js';
 import { errorMessage } from '../../services/api.js';
-import { BACKEND_ROLES, roleLabel, userService, validateUserForm } from '../../services/userService.js';
+import { ASSIGNABLE_ROLES, BACKEND_ROLES, roleLabel, userService, validateUserForm } from '../../services/userService.js';
 import { NEWS_STATUS, newsService } from '../../services/newsService.js';
 import { contentService, validateFunding } from '../../services/contentService.js';
 import { DECISION_LABEL, researchService, statusResearch } from '../../services/researchService.js';
@@ -133,7 +133,7 @@ function Ringkasan() {
 }
 
 /* ---------------- Manajemen pengguna ---------------- */
-const KOSONG_USER = { nama: '', email: '', role: 'researcher', instansi: '', jabatan: '', password: '', verified: true };
+const KOSONG_USER = { nama: '', email: '', role: 'opd', instansi: '', jabatan: '', password: '', verified: true };
 
 function FormPengguna({ data, selfId, onClose, onSaved }) {
   const isCreate = !data;
@@ -172,7 +172,10 @@ function FormPengguna({ data, selfId, onClose, onSaved }) {
           </Field>
           <Field label="Peran" error={errors.role}>
             <select className="input-base" value={form.role} disabled={diriSendiri} onChange={(e) => set('role', e.target.value)}>
-              {BACKEND_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+              {!isCreate && !ASSIGNABLE_ROLES.some((r) => r.value === data.backendRole) && (
+                <option value={data.backendRole}>{roleLabel(data.backendRole)} (peran saat ini)</option>
+              )}
+              {ASSIGNABLE_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
             {diriSendiri && <span className="mt-1.5 block text-[.76rem] text-ink-3">Anda tidak dapat mengubah peran akun sendiri.</span>}
           </Field>
