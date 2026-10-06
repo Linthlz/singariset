@@ -92,9 +92,9 @@ function Ringkasan() {
       : <SkeletonGrid count={4} className="grid grid-cols-2 gap-4 lg:grid-cols-4" itemClassName="h-28" />;
   }
 
-  const perBidang = BIDANG.map((b) => ({ label: b.nama, value: st.by_category.find((c) => c.value === b.nama)?.total || 0 }))
+  const perBidang = BIDANG.map((b) => ({ label: b.nama, value: (st.by_category || []).find((c) => c.value === b.nama)?.total || 0 }))
     .sort((a, b) => b.value - a.value);
-  const perKecamatan = KECAMATAN.map((k) => ({ label: k.nama, value: st.by_location.find((c) => c.value === k.nama)?.total || 0 }))
+  const perKecamatan = KECAMATAN.map((k) => ({ label: k.nama, value: (st.by_location || []).find((c) => c.value === k.nama)?.total || 0 }))
     .sort((a, b) => b.value - a.value).slice(0, 6);
 
   const kpi = [
