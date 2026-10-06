@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import LionMark from '../components/LionMark.jsx';
 import Icon from '../components/Icon.jsx';
+import PasswordInput from '../components/PasswordInput.jsx';
 import { ROLES, useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { errorMessage } from '../services/api.js';
@@ -208,12 +209,12 @@ export default function Register() {
               </F>
 
               <F label="Kata sandi" required error={errors.password} hint="Minimal 8 karakter.">
-                <input className="input-base" type="password" autoComplete="new-password"
+                <PasswordInput autoComplete="new-password"
                   value={form.password} onChange={(e) => set('password', e.target.value)} placeholder="Buat kata sandi" />
               </F>
 
               <F label="Konfirmasi kata sandi" required error={errors.konfirmasi}>
-                <input className="input-base" type="password" autoComplete="new-password"
+                <PasswordInput autoComplete="new-password"
                   value={form.konfirmasi} onChange={(e) => set('konfirmasi', e.target.value)} placeholder="Ulangi kata sandi" />
               </F>
             </div>

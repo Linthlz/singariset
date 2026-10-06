@@ -53,3 +53,9 @@ export const STATUS_META = {
 export function statusMeta(s) { return STATUS_META[s] || STATUS_META.ontrack; }
 
 export function wordCount(s) { return s && s.trim() ? s.trim().split(/\s+/).length : 0; }
+
+/** Inisial 1–2 huruf dari nama, mengabaikan gelar (Prof., Dr., Ir., …) dan gelar di belakang koma. */
+export function inisial(nama = '') {
+  const kata = String(nama).replace(/,.*$/, '').replace(/(Prof|Dr|Ir|Drs|Dra|H|Hj)\.?\s+/gi, '').trim().split(/\s+/).filter(Boolean);
+  return ((kata[0]?.[0] || '') + (kata[1]?.[0] || '')).toUpperCase() || 'P';
+}

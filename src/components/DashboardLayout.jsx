@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import LionMark from './LionMark.jsx';
 import Icon from './Icon.jsx';
-import { ROLES, useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+import { inisial } from '../lib/format.js';
 import { useToast } from '../context/ToastContext.jsx';
 
 export default function DashboardLayout({ menu, active, onSelect, title, subtitle, children }) {
@@ -11,7 +12,16 @@ export default function DashboardLayout({ menu, active, onSelect, title, subtitl
   const toast = useToast();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const peran = ROLES[user.role];
+
+  const adaInstansi = user.instansi && user.instansi !== '-';
+  const labelDashboard = {
+    admin: 'Dashboard Administrator',
+    reviewer: 'Dashboard Reviewer',
+    'media-brida': 'Dashboard Pengelola Media',
+    researcher: adaInstansi ? `Mitra · ${user.instansi}` : 'Dashboard Mitra',
+    opd: adaInstansi ? `OPD · ${user.instansi}` : 'Dashboard OPD',
+    'pegawai-brida': 'Dashboard Pegawai BRIDA'
+  }[user.backendRole] || 'Dashboard';
 
   function keluar() {
     logout();
@@ -27,7 +37,7 @@ export default function DashboardLayout({ menu, active, onSelect, title, subtitl
           <LionMark size={34} />
           <span className="flex flex-col leading-tight">
             <span className="font-head text-[.82rem] font-extrabold tracking-tight text-white">SINGA RISET</span>
-            <span className="text-[.66rem] text-white/55">Dashboard {peran.id === 'admin' ? 'Administrator' : 'OPD'}</span>
+            <span className="max-w-[170px] truncate text-[.66rem] text-white/55" title={labelDashboard}>{labelDashboard}</span>
           </span>
         </Link>
 
@@ -53,7 +63,7 @@ export default function DashboardLayout({ menu, active, onSelect, title, subtitl
 
         <div className="border-t border-white/10 p-3">
           <div className="mb-2 flex items-center gap-2.5 rounded-lg bg-white/8 px-3 py-2.5">
-            <span className="grid h-8 w-8 flex-none place-items-center rounded-full bg-gold-500 text-[.7rem] font-extrabold text-[#4A2D00]">{peran.init}</span>
+            <span className="grid h-8 w-8 flex-none place-items-center rounded-full bg-gold-500 text-[.7rem] font-extrabold text-[#4A2D00]">{inisial(user.nama)}</span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-[.8rem] font-semibold text-white">{user.nama}</span>
               <span className="block truncate text-[.68rem] text-white/55">{user.instansi}</span>

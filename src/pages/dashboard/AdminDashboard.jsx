@@ -6,7 +6,8 @@ import Modal from '../../components/Modal.jsx';
 import NewsFormModal from '../../components/NewsFormModal.jsx';
 import AsyncState, { EmptyState, ErrorState, SkeletonGrid } from '../../components/AsyncState.jsx';
 import MonevModule from './MonevModule.jsx';
-import { ROLES, useAuth } from '../../context/AuthContext.jsx';
+import PasswordInput from '../../components/PasswordInput.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { useMutation } from '../../hooks/useData.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useFunding, useSettings, useStats } from '../../hooks/useContent.js';
@@ -14,6 +15,7 @@ import { useAdminNews, useNewsCategories } from '../../hooks/useNews.js';
 import { useDocumentations, useResearchDetail, useStaffResearches } from '../../hooks/useResearch.js';
 import { useUsers } from '../../hooks/useUsers.js';
 import { errorMessage } from '../../services/api.js';
+import { BACKEND_ROLES, roleLabel, userService, validateUserForm } from '../../services/userService.js';
 import { NEWS_STATUS, newsService } from '../../services/newsService.js';
 import { contentService, validateFunding } from '../../services/contentService.js';
 import { DECISION_LABEL, researchService, statusResearch } from '../../services/researchService.js';
@@ -131,12 +133,94 @@ function Ringkasan() {
 }
 
 /* ---------------- Manajemen pengguna ---------------- */
+const KOSONG_USER = { nama: '', email: '', role: 'researcher', instansi: '', jabatan: '', password: '', verified: true };
+
+function FormPengguna({ data, selfId, onClose, onSaved }) {
+  const isCreate = !data;
+  const diriSendiri = !isCreate && data.publicId === selfId;
+  const [form, setForm] = useState(data
+    ? { nama: data.nama, email: data.email, role: data.backendRole, instansi: data.instansi === '-' ? '' : data.instansi, jabatan: data.jabatan === '-' ? '' : data.jabatan, password: '', verified: data.verified }
+    : KOSONG_USER);
+  const [errors, setErrors] = useState({});
+  const simpan = useMutation((f) => (isCreate ? userService.create(f) : userService.update(data.publicId, f)));
+  const set = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setErrors((e) => ({ ...e, [k]: undefined })); };
+
+  async function submit(e) {
+    e.preventDefault();
+    const v = validateUserForm(form, { isCreate });
+    setErrors(v);
+    if (Object.keys(v).length) return;
+    try {
+      const saved = await simpan.mutate(form);
+      onSaved(saved, isCreate);
+    } catch (err) {
+      if (err?.status === 409 && isCreate) setErrors({ email: 'Surel tersebut sudah terdaftar.' });
+    }
+  }
+
+  const serverError = simpan.error && !(simpan.error.status === 409 && isCreate) ? errorMessage(simpan.error) : '';
+
+  return (
+    <Modal title={isCreate ? 'Tambah pengguna' : `Sunting pengguna: ${data.nama}`} wide onClose={onClose}>
+      <form onSubmit={submit} noValidate>
+        <div className="grid gap-x-4.5 sm:grid-cols-2">
+          <Field label="Nama lengkap" error={errors.nama}>
+            <input className="input-base" maxLength={255} value={form.nama} onChange={(e) => set('nama', e.target.value)} />
+          </Field>
+          <Field label="Surel" error={errors.email}>
+            <input className="input-base" type="email" value={form.email} disabled={!isCreate} onChange={(e) => set('email', e.target.value)} placeholder="nama@instansi.go.id" />
+          </Field>
+          <Field label="Peran" error={errors.role}>
+            <select className="input-base" value={form.role} disabled={diriSendiri} onChange={(e) => set('role', e.target.value)}>
+              {BACKEND_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+            </select>
+            {diriSendiri && <span className="mt-1.5 block text-[.76rem] text-ink-3">Anda tidak dapat mengubah peran akun sendiri.</span>}
+          </Field>
+          <Field label="Instansi">
+            <input className="input-base" maxLength={255} value={form.instansi} onChange={(e) => set('instansi', e.target.value)} placeholder="Contoh: Dinas Pertanian" />
+          </Field>
+          <Field label="Jabatan">
+            <input className="input-base" maxLength={100} value={form.jabatan} onChange={(e) => set('jabatan', e.target.value)} />
+          </Field>
+          <div className="mb-4 block">
+            <span className="mb-1.5 block text-[.84rem] font-semibold text-ink">{isCreate ? 'Kata sandi' : 'Kata sandi baru (kosongkan jika tidak diganti)'}</span>
+            <PasswordInput autoComplete="new-password" value={form.password} onChange={(e) => set('password', e.target.value)}
+              placeholder={isCreate ? 'Minimal 8 karakter' : 'Biarkan kosong'} />
+            {errors.password && <span className="mt-1.5 block text-[.78rem] font-semibold text-danger">{errors.password}</span>}
+          </div>
+          {!isCreate && (
+            <label className={`mb-4 flex cursor-pointer items-start gap-2.5 rounded-lg border px-3.5 py-3 text-[.86rem] sm:col-span-2 ${form.verified ? 'border-maroon-800 bg-maroon-50' : 'border-line'}`}>
+              <input type="checkbox" className="mt-0.5 h-4 w-4 flex-none accent-maroon-800" checked={form.verified} onChange={(e) => set('verified', e.target.checked)} />
+              <span><span className="block font-semibold text-ink">Surel terverifikasi</span>
+                <span className="block text-[.78rem] text-ink-3">Hanya akun terverifikasi yang dapat memakai fitur terproteksi. Centang untuk memverifikasi manual.</span></span>
+            </label>
+          )}
+          {isCreate && <p className="mb-4 text-[.8rem] text-ink-3 sm:col-span-2">Akun yang dibuat administrator langsung berstatus terverifikasi.</p>}
+        </div>
+        {serverError && <p role="alert" className="mb-3 text-[.84rem] font-semibold text-danger">{serverError}</p>}
+        <div className="flex justify-end gap-2.5 border-t border-line pt-4">
+          <button type="button" onClick={onClose} className="rounded-lg border border-line-strong px-5 py-2.5 text-sm font-semibold text-ink-2 hover:bg-surface-1">Batal</button>
+          <button type="submit" disabled={simpan.loading} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon-600 disabled:opacity-50">
+            {simpan.loading ? 'Menyimpan…' : isCreate ? 'Buat pengguna' : 'Simpan perubahan'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 function Pengguna() {
+  const toast = useToast();
+  const { user: saya } = useAuth();
   const [q, setQ] = useState('');
+  const [role, setRole] = useState('');
   const [page, setPage] = useState(1);
-  const [detail, setDetail] = useState(null);
+  const [form, setForm] = useState(null);
+  const [hapus, setHapus] = useState(null);
   const cari = useDebounce(q.trim(), 400);
-  const { data, meta, loading, error, reload } = useUsers({ page, limit: 20, q: cari });
+  const { data, meta, loading, error, reload } = useUsers({ page, limit: 20, q: cari, role });
+  const tutupForm = useCallback(() => setForm(null), []);
+  const tutupHapus = useCallback(() => setHapus(null), []);
   const akun = data || [];
   const totalPage = meta?.total_page || 1;
 
@@ -144,14 +228,22 @@ function Pengguna() {
     <div className="flex flex-col gap-5">
       <Card
         title="Manajemen pengguna"
-        desc="Daftar akun terdaftar pada portal, diambil langsung dari server."
+        desc="Tambah, sunting, atau hapus akun pengguna portal. Perubahan langsung tersimpan di server."
         action={
           <div className="flex flex-wrap gap-2">
             <input type="search" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="Cari nama atau surel…"
-              className="input-base w-auto min-w-[220px]" aria-label="Cari akun" />
+              className="input-base w-auto min-w-[200px]" aria-label="Cari akun" />
+            <select value={role} onChange={(e) => { setRole(e.target.value); setPage(1); }} className="input-base w-auto" aria-label="Saring peran">
+              <option value="">Semua peran</option>
+              {BACKEND_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+            </select>
             <button type="button" onClick={reload} disabled={loading} aria-label="Muat ulang daftar akun"
               className="grid h-10 w-10 place-items-center rounded-lg border border-line-strong text-ink-2 hover:border-maroon-600 hover:text-maroon-800 disabled:opacity-50">
               <Icon name="refresh" size={16} />
+            </button>
+            <button type="button" onClick={() => setForm({})}
+              className="flex items-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600">
+              <Icon name="plus" size={15} /> Tambah pengguna
             </button>
           </div>
         }
@@ -162,10 +254,10 @@ function Pengguna() {
           isEmpty={akun.length === 0}
           onRetry={reload}
           skeleton={<SkeletonGrid count={5} className="flex flex-col gap-2" itemClassName="h-14" />}
-          empty={<EmptyState icon="users" title={cari ? 'Tidak ada akun yang cocok' : 'Belum ada akun terdaftar'} />}
+          empty={<EmptyState icon="users" title={cari || role ? 'Tidak ada akun yang cocok' : 'Belum ada akun terdaftar'} />}
         >
           <div className={`overflow-x-auto rounded-lg border border-line ${loading ? 'opacity-60' : ''}`} aria-busy={loading}>
-            <table className="w-full min-w-[820px] border-collapse text-[.845rem]">
+            <table className="w-full min-w-[860px] border-collapse text-[.845rem]">
               <caption className="sr-only">Daftar akun pengguna portal</caption>
               <thead>
                 <tr className="border-b border-line bg-surface-1">
@@ -177,17 +269,18 @@ function Pengguna() {
               <tbody>
                 {akun.map((a) => {
                   const st = a.verified ? STATUS_AKUN.aktif : STATUS_AKUN.menunggu;
+                  const diri = a.publicId === saya.publicId;
                   return (
                     <tr key={a.publicId} className="border-b border-line last:border-0 hover:bg-surface-1">
                       <td className="px-4 py-3.5">
-                        <div className="font-semibold text-ink">{a.nama}</div>
+                        <div className="font-semibold text-ink">{a.nama}{diri && <span className="ml-1.5 rounded-full bg-gold-50 px-2 py-0.5 text-[.68rem] font-bold text-[#8A6400]">Anda</span>}</div>
                         <div className="text-[.765rem] text-ink-3">{a.email}</div>
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="text-ink-2">{a.instansi}</div>
                         <div className="text-[.765rem] text-ink-3">{a.jabatan}</div>
                       </td>
-                      <td className="px-4 py-3.5 text-ink-2">{ROLES[a.role]?.nama || a.role}<div className="text-[.72rem] text-ink-3">{a.backendRole}</div></td>
+                      <td className="px-4 py-3.5 text-ink-2">{roleLabel(a.backendRole)}</td>
                       <td className="px-4 py-3.5 tabular-nums text-ink-2">{tanggal(a.terdaftar, true)}</td>
                       <td className="px-4 py-3.5">
                         <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[.71rem] font-bold ${st.c}`}>
@@ -195,10 +288,12 @@ function Pengguna() {
                         </span>
                       </td>
                       <td className="px-4 py-3.5">
-                        <button type="button" onClick={() => setDetail(a)}
-                          className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-maroon-800 hover:border-maroon-800 hover:bg-maroon-50">
-                          Detail
-                        </button>
+                        <div className="flex flex-wrap gap-2">
+                          <button type="button" onClick={() => setForm({ data: a })}
+                            className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-ink-2 hover:border-maroon-600 hover:text-maroon-800">Sunting</button>
+                          <button type="button" onClick={() => setHapus(a)} disabled={diri} title={diri ? 'Akun sendiri tidak dapat dihapus' : undefined}
+                            className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-danger hover:border-danger hover:bg-danger-bg disabled:cursor-not-allowed disabled:opacity-40">Hapus</button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -208,31 +303,25 @@ function Pengguna() {
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[.82rem] text-ink-3">
             <span>Menampilkan {akun.length} dari {meta?.total ?? akun.length} akun terdaftar.</span>
-            {totalPage > 1 && (
-              <span className="flex items-center gap-2">
-                <button type="button" disabled={page <= 1 || loading} onClick={() => setPage((p) => p - 1)}
-                  className="rounded-lg border border-line-strong px-3 py-1.5 font-semibold text-ink-2 disabled:opacity-40">←</button>
-                Halaman {page} / {totalPage}
-                <button type="button" disabled={page >= totalPage || loading} onClick={() => setPage((p) => p + 1)}
-                  className="rounded-lg border border-line-strong px-3 py-1.5 font-semibold text-ink-2 disabled:opacity-40">→</button>
-              </span>
-            )}
+            <Pager page={page} totalPage={totalPage} loading={loading} onPage={setPage} />
           </div>
         </AsyncState>
       </Card>
 
-      {detail && (
-        <Modal title={`Detail akun: ${detail.nama}`} onClose={() => setDetail(null)}>
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[.855rem]">
-            <dt className="font-semibold text-ink-3">Nama</dt><dd className="m-0 font-semibold">{detail.nama}</dd>
-            <dt className="font-semibold text-ink-3">Surel</dt><dd className="m-0 font-semibold">{detail.email}</dd>
-            <dt className="font-semibold text-ink-3">Instansi</dt><dd className="m-0 font-semibold">{detail.instansi}</dd>
-            <dt className="font-semibold text-ink-3">Jabatan</dt><dd className="m-0 font-semibold">{detail.jabatan}</dd>
-            <dt className="font-semibold text-ink-3">Peran</dt><dd className="m-0 font-semibold">{ROLES[detail.role]?.nama} ({detail.backendRole})</dd>
-            <dt className="font-semibold text-ink-3">Terdaftar</dt><dd className="m-0 font-semibold">{tanggal(detail.terdaftar)}</dd>
-            <dt className="font-semibold text-ink-3">Status</dt><dd className="m-0 font-semibold">{detail.verified ? STATUS_AKUN.aktif.l : STATUS_AKUN.menunggu.l}</dd>
-          </dl>
-        </Modal>
+      {form && (
+        <FormPengguna data={form.data} selfId={saya.publicId} onClose={tutupForm} onSaved={(u, isCreate) => {
+          setForm(null);
+          toast('success', isCreate ? 'Pengguna ditambahkan' : 'Pengguna diperbarui', `${u.nama} (${roleLabel(u.backendRole)}).`);
+          reload();
+        }} />
+      )}
+      {hapus && (
+        <KonfirmasiHapus judul="Hapus pengguna?" nama={`${hapus.nama} (${hapus.email})`} onClose={tutupHapus} onConfirm={async () => {
+          await userService.remove(hapus.publicId);
+          setHapus(null);
+          toast('info', 'Pengguna dihapus', `${hapus.nama} telah dihapus.`);
+          reload();
+        }} />
       )}
     </div>
   );
@@ -1028,7 +1117,7 @@ function Pengaturan() {
 const JUDUL = {
   ringkasan: ['Ringkasan portal', 'Pantauan menyeluruh ekosistem riset dan aktivitas portal'],
   monev: ['Monitoring & Evaluasi', 'Review tindak lanjut kajian dan pemantauan kinerja seluruh OPD'],
-  pengguna: ['Manajemen pengguna', 'Verifikasi dan kelola akun mitra serta perangkat daerah'],
+  pengguna: ['Manajemen pengguna', 'Tambah, sunting, dan hapus akun semua peran pengguna portal'],
   usulan: ['Usulan riset mitra', 'Verifikasi, setujui, atau tolak pengajuan kolaborasi riset dari mitra'],
   riset: ['Katalog riset', 'Seluruh judul riset dalam basis data BRIDA'],
   konten: ['Berita & publikasi', 'Kelola konten yang tampil di portal publik'],
