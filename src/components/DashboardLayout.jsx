@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import LionMark from './LionMark.jsx';
 import Icon from './Icon.jsx';
+import NotificationBell from './NotificationBell.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { inisial } from '../lib/format.js';
 import { useToast } from '../context/ToastContext.jsx';
@@ -89,6 +90,7 @@ export default function DashboardLayout({ menu, active, onSelect, title, subtitl
             <h1 className="m-0 truncate text-[1.05rem] font-extrabold">{title}</h1>
             {subtitle && <p className="m-0 truncate text-[.78rem] text-ink-3">{subtitle}</p>}
           </div>
+          <NotificationBell />
           <Link to="/" className="hidden items-center gap-1.5 rounded-lg border border-line-strong px-3.5 py-2 text-[.82rem] font-semibold text-ink-2 no-underline transition hover:border-maroon-600 hover:text-maroon-800 sm:flex">
             <Icon name="globe" size={15} /> Lihat portal publik
           </Link>

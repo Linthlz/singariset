@@ -43,6 +43,7 @@ export function mapResearch(r) {
     dana: r.fund_amount || '',
     rpjmd: r.rpjmd || '',
     tujuan: r.purpose || r.Purpose || '',
+    abstrak: r.abstract || '',
     signifikansi: r.research_significance || '',
     luaran: r.promised_output || '',
     luaranList: splitList(r.promised_output),

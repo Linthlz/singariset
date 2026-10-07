@@ -17,6 +17,7 @@ const PATHS = {
   pin: '<path d="M12 21s7-5.6 7-11a7 7 0 10-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>',
   calendar: '<rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/>',
+  bell: '<path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 004 0"/>',
   money: '<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 10v4M18 10v4"/>',
   shield: '<path d="M12 3l7.5 3v6c0 4.4-3.1 8-7.5 9-4.4-1-7.5-4.6-7.5-9V6z"/><path d="M9 12l2 2 4-4"/>',
   lock: '<rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 018 0v2.5"/>',

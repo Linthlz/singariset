@@ -35,7 +35,7 @@ const SYARAT_UTAMA = [
 ];
 
 const initialForm = {
-  judul: '', skema: '', bidang: '', kecamatan: '', dana: '', sasaranRpjmd: '', urgensi: '', luaran: '',
+  judul: '', skema: '', bidang: '', kecamatan: '', dana: '', sasaranRpjmd: '', abstrak: '', urgensi: '', luaran: '',
   mitra: [], mitraNama: '', manfaat: '',
   paktaOrisinal: false, paktaIntegritas: false, paktaData: false
 };
@@ -170,6 +170,7 @@ export default function Kolaborasi() {
     const payload = {
       title: form.judul.trim(),
       purpose: form.urgensi.trim(),
+      abstract: form.abstrak.trim(),
       category: bidangById(form.bidang).nama,
       funding_scheme: skemaById(form.skema).nama,
       fund_amount: form.dana.replace(/\D/g, ''),
@@ -289,6 +290,11 @@ export default function Kolaborasi() {
                   <option value="">Pilih sasaran pembangunan daerah</option>
                   {RPJMD_OPTS.map((o) => <option key={o}>{o}</option>)}
                 </select>
+              </Field>
+
+              <Field label="Abstrak riset (opsional)">
+                <textarea className="input-base min-h-[110px]" value={form.abstrak} onChange={(e) => setField('abstrak', e.target.value)}
+                  placeholder="Ringkasan singkat latar belakang, metode, dan hasil yang diharapkan (±150–250 kata). Ditampilkan pada halaman publik riset." />
               </Field>
 
               <Field label="Urgensi & keterhubungan dengan kebutuhan daerah" required error={err('urgensi')}>

@@ -53,6 +53,12 @@ export default function RisetDetail() {
         <div className="mx-auto grid max-w-[1240px] gap-6 px-5 lg:grid-cols-[1.6fr_1fr]">
           <div className="flex flex-col gap-6">
             <Reveal className="rounded-xl border border-line bg-white p-6 shadow-card">
+              {r.abstrak && (
+                <>
+                  <h2 className="text-[1.15rem]">Abstrak</h2>
+                  <p className="mb-5 whitespace-pre-line text-[.92rem] leading-relaxed">{r.abstrak}</p>
+                </>
+              )}
               <h2 className="text-[1.15rem]">Urgensi &amp; tujuan riset</h2>
               <p className="whitespace-pre-line text-[.92rem] leading-relaxed">{r.tujuan || '-'}</p>
               {r.signifikansi && (

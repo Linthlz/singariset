@@ -1,4 +1,4 @@
-import { api, invalidResponse } from './api.js';
+import { api, assetUrl, invalidResponse } from './api.js';
 import { mapDocumentation, mapResearch } from './researchService.js';
 
 export const GROUP_ROLE = {
@@ -39,6 +39,21 @@ function mapDetail(d) {
     })),
     riset: d.research ? mapResearch(d.research) : null,
     pembimbing: person(d.supervisor)
+  };
+}
+
+function mapDeliverable(d) {
+  if (!d?.public_id) throw invalidResponse('deliverable');
+  return {
+    id: d.public_id,
+    judul: d.title || '',
+    deskripsi: d.description || '',
+    bukti: d.proof_type === 'file' ? 'file' : 'checkbox',
+    selesai: d.status === 'done',
+    fileUrl: assetUrl(d.file_path || ''),
+    fileName: d.file_path ? decodeURIComponent(String(d.file_path).split('/').pop()) : '',
+    selesaiPada: String(d.completed_at || '').slice(0, 10),
+    selesaiOleh: d.completed_by?.name || ''
   };
 }
 
@@ -99,6 +114,39 @@ export const groupService = {
 
   async setSupervisor(id, reviewerPublicId) {
     return mapDetail((await api.patch(`/v1/research/group/${encodeURIComponent(id)}/supervisor`, { reviewer_public_id: reviewerPublicId })).data);
+  },
+
+  // ---------- Luaran (deliverables) ----------
+  async deliverables(id, { signal } = {}) {
+    const res = await api.get(`/v1/research/group/${encodeURIComponent(id)}/deliverables`, { signal });
+    const d = res.data || {};
+    if (d.deliverables !== null && d.deliverables !== undefined && !Array.isArray(d.deliverables)) throw invalidResponse('deliverables');
+    const p = d.progress || {};
+    return {
+      data: {
+        progres: { total: p.total || 0, selesai: p.done || 0, persen: p.percent || 0 },
+        daftar: (d.deliverables || []).map(mapDeliverable)
+      },
+      meta: null
+    };
+  },
+
+  async addDeliverable(id, { judul, deskripsi = '', bukti = 'checkbox' }) {
+    return (await api.post(`/v1/research/group/${encodeURIComponent(id)}/deliverables`, { title: judul.trim(), description: deskripsi.trim(), proof_type: bukti })).data;
+  },
+
+  async markDeliverableDone(id, deliverableId, file) {
+    const fd = new FormData();
+    if (file) fd.append('file', file);
+    await api.post(`/v1/research/group/${encodeURIComponent(id)}/deliverables/${encodeURIComponent(deliverableId)}/done`, fd, { timeout: 60000 });
+  },
+
+  async markDeliverablePending(id, deliverableId) {
+    await api.post(`/v1/research/group/${encodeURIComponent(id)}/deliverables/${encodeURIComponent(deliverableId)}/pending`);
+  },
+
+  async deleteDeliverable(id, deliverableId) {
+    await api.delete(`/v1/research/group/${encodeURIComponent(id)}/deliverables/${encodeURIComponent(deliverableId)}`);
   },
 
   async documentations(id, { signal } = {}) {

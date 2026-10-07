@@ -6,7 +6,7 @@ import SmartImage from '../../components/SmartImage.jsx';
 import AsyncState, { EmptyState, ErrorState, SkeletonGrid } from '../../components/AsyncState.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { useMutation } from '../../hooks/useData.js';
-import { useGroupDetail, useGroupDocumentations, useMyGroups } from '../../hooks/useGroups.js';
+import { useGroupDeliverables, useGroupDetail, useGroupDocumentations, useMyGroups } from '../../hooks/useGroups.js';
 import { useUsers } from '../../hooks/useUsers.js';
 import { errorMessage } from '../../services/api.js';
 import { contentService } from '../../services/contentService.js';
@@ -403,6 +403,123 @@ function FormDokumentasi({ grupId, onClose, onSaved }) {
   );
 }
 
+function Luaran({ detail }) {
+  const toast = useToast();
+  const { data, loading, error, reload } = useGroupDeliverables(detail.id);
+  const [form, setForm] = useState({ judul: '', deskripsi: '', bukti: 'checkbox' });
+  const [tambah, setTambah] = useState(false);
+  const [busyId, setBusyId] = useState(null);
+  const [hapus, setHapus] = useState(null);
+  const tutupHapus = useCallback(() => setHapus(null), []);
+  const simpan = useMutation((f) => groupService.addDeliverable(detail.id, f));
+  const daftar = data?.daftar || [];
+  const progres = data?.progres || { total: 0, selesai: 0, persen: 0 };
+
+  async function aksi(id, fn, pesan) {
+    setBusyId(id);
+    try {
+      await fn();
+      toast('success', pesan);
+      reload();
+    } catch (err) {
+      toast('danger', 'Gagal memperbarui luaran', errorMessage(err));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+    if (!form.judul.trim()) return;
+    try {
+      await simpan.mutate(form);
+      toast('success', 'Luaran ditambahkan', form.judul);
+      setForm({ judul: '', deskripsi: '', bukti: 'checkbox' });
+      setTambah(false);
+      reload();
+    } catch { /* galat ditampilkan di form */ }
+  }
+
+  return (
+    <Card title="Luaran riset" desc="Target luaran tim beserta bukti penyelesaiannya."
+      action={(
+        <button type="button" onClick={() => setTambah((v) => !v)} className="flex items-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600">
+          <Icon name="plus" size={15} /> {tambah ? 'Tutup' : 'Tambah'}
+        </button>
+      )}>
+      {progres.total > 0 && (
+        <div className="mb-4">
+          <div className="mb-1.5 flex justify-between text-[.8rem]">
+            <span className="font-semibold text-ink-2">{progres.selesai} dari {progres.total} luaran selesai</span>
+            <span className="font-bold tabular-nums text-maroon-800">{progres.persen}%</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-line" role="progressbar" aria-label="Progres luaran riset" aria-valuemin="0" aria-valuemax="100" aria-valuenow={progres.persen}>
+            <div className="h-full rounded-full bg-maroon-800" style={{ width: `${progres.persen}%` }} />
+          </div>
+        </div>
+      )}
+
+      {tambah && (
+        <form onSubmit={submit} className="mb-4 grid gap-3 rounded-lg border border-line bg-surface-1 p-4 sm:grid-cols-[minmax(0,1fr)_170px]">
+          <input className="input-base" required value={form.judul} onChange={(e) => setForm((f) => ({ ...f, judul: e.target.value }))} placeholder="Contoh: Artikel jurnal SINTA 2" aria-label="Judul luaran" />
+          <select className="input-base" value={form.bukti} onChange={(e) => setForm((f) => ({ ...f, bukti: e.target.value }))} aria-label="Jenis bukti">
+            <option value="checkbox">Cukup dicentang</option>
+            <option value="file">Wajib unggah berkas</option>
+          </select>
+          <textarea className="input-base min-h-[64px] sm:col-span-2" value={form.deskripsi} onChange={(e) => setForm((f) => ({ ...f, deskripsi: e.target.value }))} placeholder="Keterangan (opsional)" aria-label="Keterangan luaran" />
+          {simpan.error && <p role="alert" className="m-0 text-[.8rem] font-semibold text-danger sm:col-span-2">{errorMessage(simpan.error)}</p>}
+          <button type="submit" disabled={simpan.loading} className="w-fit rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600 disabled:opacity-50">
+            {simpan.loading ? 'Menyimpan…' : 'Simpan luaran'}
+          </button>
+        </form>
+      )}
+
+      <AsyncState loading={loading} error={error} isEmpty={daftar.length === 0} onRetry={reload}
+        skeleton={<SkeletonGrid count={2} className="flex flex-col gap-2" itemClassName="h-14" />}
+        empty={<EmptyState icon="doc" title="Belum ada target luaran" text="Tambahkan luaran yang dijanjikan, misalnya jurnal, purwarupa, atau policy brief." />}>
+        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+          {daftar.map((d) => (
+            <li key={d.id} className={`flex flex-wrap items-start gap-3 rounded-lg border p-3 ${d.selesai ? 'border-success-bg bg-success-bg/40' : 'border-line'}`}>
+              <Icon name={d.selesai ? 'checkCircle' : 'clock'} size={18} className={`mt-0.5 flex-none ${d.selesai ? 'text-success' : 'text-ink-3'}`} />
+              <span className="min-w-0 flex-1 text-[.84rem]">
+                <span className="block font-semibold text-ink">{d.judul}</span>
+                {d.deskripsi && <span className="block text-[.78rem] text-ink-2">{d.deskripsi}</span>}
+                <span className="block text-[.74rem] text-ink-3">
+                  {d.bukti === 'file' ? 'Bukti berkas' : 'Bukti centang'}
+                  {d.selesai && d.selesaiPada ? ` · selesai ${tanggal(d.selesaiPada, true)}${d.selesaiOleh ? ` oleh ${d.selesaiOleh}` : ''}` : ''}
+                </span>
+                {d.fileUrl && <a href={d.fileUrl} target="_blank" rel="noopener noreferrer" className="mt-0.5 inline-flex items-center gap-1 text-[.76rem] font-semibold text-info hover:underline"><Icon name="doc" size={13} />{d.fileName}</a>}
+              </span>
+              <span className="flex flex-none flex-wrap items-center gap-1.5">
+                {d.selesai ? (
+                  <button type="button" disabled={busyId === d.id} onClick={() => aksi(d.id, () => groupService.markDeliverablePending(detail.id, d.id), 'Luaran dibuka kembali')}
+                    className="rounded-lg border border-line-strong px-2.5 py-1 text-[.74rem] font-semibold text-ink-2 hover:bg-surface-1 disabled:opacity-50">Buka lagi</button>
+                ) : d.bukti === 'file' ? (
+                  <label className={`cursor-pointer rounded-lg bg-success px-2.5 py-1 text-[.74rem] font-semibold text-white hover:opacity-90 ${busyId === d.id ? 'pointer-events-none opacity-50' : ''}`}>
+                    {busyId === d.id ? 'Mengunggah…' : 'Unggah & selesai'}
+                    <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip"
+                      onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) aksi(d.id, () => groupService.markDeliverableDone(detail.id, d.id, f), 'Luaran ditandai selesai'); }} />
+                  </label>
+                ) : (
+                  <button type="button" disabled={busyId === d.id} onClick={() => aksi(d.id, () => groupService.markDeliverableDone(detail.id, d.id), 'Luaran ditandai selesai')}
+                    className="rounded-lg bg-success px-2.5 py-1 text-[.74rem] font-semibold text-white hover:opacity-90 disabled:opacity-50">Tandai selesai</button>
+                )}
+                <button type="button" aria-label={`Hapus luaran ${d.judul}`} onClick={() => setHapus(d)}
+                  className="rounded-md p-1.5 text-ink-3 hover:bg-danger-bg hover:text-danger"><Icon name="trash" size={15} /></button>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </AsyncState>
+
+      {hapus && (
+        <Konfirmasi judul="Hapus luaran" pesan={`Hapus luaran "${hapus.judul}"?`} tombol="Hapus" onClose={tutupHapus}
+          onConfirm={async () => { await groupService.deleteDeliverable(detail.id, hapus.id); setHapus(null); toast('info', 'Luaran dihapus', hapus.judul); reload(); }} />
+      )}
+    </Card>
+  );
+}
+
 function Dokumentasi({ detail }) {
   const toast = useToast();
   const { data, loading, error, reload } = useGroupDocumentations(detail.id);
@@ -514,6 +631,7 @@ function DetailKelompok({ id, admin, onBack }) {
               <p className="m-0 whitespace-pre-line text-[.85rem] text-ink-2">{r.luaran || '-'}</p>
             </Card>
           )}
+          <Luaran detail={d} />
           <Dokumentasi detail={d} />
         </div>
         <div className="flex flex-col gap-5">

@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import DashboardLayout from '../../components/DashboardLayout.jsx';
 import Icon from '../../components/Icon.jsx';
+import AsyncState, { EmptyState, SkeletonGrid } from '../../components/AsyncState.jsx';
 import MonevFormPage from '../MonevFormPage.jsx';
 import MonevModule from './MonevModule.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useMonev } from '../../context/MonevContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
+import { useMyMonevEntries } from '../../hooks/useMonev.js';
+import { errorMessage } from '../../services/api.js';
+import { ENTRY_STATUS, entriesToRecords, monevService } from '../../services/monevService.js';
 import { tanggal } from '../../lib/format.js';
 
 const MENU_ITEMS = {
@@ -14,10 +17,10 @@ const MENU_ITEMS = {
   'riwayat-monev': { id: 'riwayat-monev', label: 'Riwayat Monev', ikon: 'clock' }
 };
 
-// Pegawai BRIDA mengelola Monev; akun OPD hanya mengisi dan memperbarui laporan instansinya.
+// Pegawai BRIDA & admin mengelola Monev; akun OPD mengisi dan memperbarui laporan instansinya.
 const MENU_PER_ROLE = {
-  'pegawai-brida': ['kelola-monev', 'riwayat-monev'],
-  admin: ['kelola-monev', 'isi-monev', 'riwayat-monev'],
+  'pegawai-brida': ['kelola-monev'],
+  admin: ['kelola-monev'],
   opd: ['isi-monev', 'riwayat-monev']
 };
 
@@ -32,11 +35,12 @@ function ringkasan(record) {
   return { sudah, total: record.rekomendasi.length };
 }
 
-function EditMonev({ record, onClose }) {
-  const { updateMonev } = useMonev();
+function EditMonev({ record, onClose, onSaved }) {
   const toast = useToast();
-  const [draft, setDraft] = useState(() => record.rekomendasi.map((item) => ({ ...item })));
+  const [draft, setDraft] = useState(() => record.rekomendasi.map((item) => ({ ...item, monitoring: item.terisi ? item.monitoring : '' })));
+  const [files, setFiles] = useState({});
   const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
 
   const ubah = (index, field, value) => {
     setDraft((list) => list.map((item, i) => i === index ? { ...item, [field]: value } : item));
@@ -46,18 +50,17 @@ function EditMonev({ record, onClose }) {
   function pilihFile(event, index) {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      setErrors((prev) => ({ ...prev, [`${index}-file`]: 'Ukuran file maksimal 10 MB.' }));
+    if (file.size > 20 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, [`${index}-file`]: 'Ukuran file maksimal 20 MB.' }));
       event.target.value = '';
       return;
     }
     setErrors((prev) => ({ ...prev, [`${index}-file`]: '' }));
-    setDraft((list) => list.map((item, i) => i === index
-      ? { ...item, fileName: file.name, fileSize: `${(file.size / 1024 / 1024).toFixed(2)} MB` }
-      : item));
+    setFiles((prev) => ({ ...prev, [draft[index].id]: file }));
+    setDraft((list) => list.map((item, i) => i === index ? { ...item, fileName: file.name, fileUrl: '' } : item));
   }
 
-  function simpan(event) {
+  async function simpan(event) {
     event.preventDefault();
     const nextErrors = {};
     draft.forEach((item, index) => {
@@ -69,12 +72,16 @@ function EditMonev({ record, onClose }) {
       setErrors(nextErrors);
       return;
     }
+    setSaving(true);
     try {
-      updateMonev(record.id, draft);
-      toast('success', 'Laporan Monev diperbarui', `${record.id} telah disimpan.`);
+      await monevService.savePoints(draft, files);
+      toast('success', 'Laporan Monev diperbarui', record.judul);
+      onSaved();
       onClose();
     } catch (error) {
-      toast('danger', 'Gagal memperbarui', error.message);
+      toast('danger', 'Gagal memperbarui', errorMessage(error));
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -83,7 +90,7 @@ function EditMonev({ record, onClose }) {
   return (
     <form onSubmit={simpan} className="mt-4 flex flex-col gap-3 border-t border-line pt-4">
       {draft.map((item, index) => (
-        <fieldset key={index} className="m-0 rounded-lg border border-line bg-surface-1 p-4">
+        <fieldset key={item.id} className="m-0 rounded-lg border border-line bg-surface-1 p-4">
           <legend className="px-1 text-[.84rem] font-semibold text-ink">{index + 1}. {item.judul}</legend>
           <div className="mb-3 flex flex-wrap gap-2">
             {['Sudah', 'Belum'].map((option) => (
@@ -107,18 +114,18 @@ function EditMonev({ record, onClose }) {
           <div className="mt-3 flex flex-wrap items-center gap-3 text-[.78rem]">
             <label className="cursor-pointer rounded-lg border border-line-strong bg-white px-3 py-1.5 font-semibold text-maroon-800 hover:border-maroon-800">
               {item.fileName ? 'Ganti bukti' : 'Tambahkan bukti'}
-              <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onChange={(e) => pilihFile(e, index)} />
+              <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip" onChange={(e) => pilihFile(e, index)} />
             </label>
             {item.fileName
-              ? <span className="flex items-center gap-1.5 font-semibold text-info"><Icon name="doc" size={14} />{item.fileName} · {item.fileSize}</span>
+              ? <span className="flex items-center gap-1.5 font-semibold text-info"><Icon name="doc" size={14} />{item.fileName}</span>
               : <span className="text-ink-3">Belum ada bukti tindak lanjut.</span>}
           </div>
           {galat(`${index}-file`)}
         </fieldset>
       ))}
       <div className="flex justify-end gap-2">
-        <button type="button" onClick={onClose} className="rounded-lg border border-line-strong px-4 py-2 text-[.82rem] font-semibold text-ink-2 hover:bg-surface-1">Batal</button>
-        <button type="submit" className="rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600">Simpan perubahan</button>
+        <button type="button" onClick={onClose} disabled={saving} className="rounded-lg border border-line-strong px-4 py-2 text-[.82rem] font-semibold text-ink-2 hover:bg-surface-1">Batal</button>
+        <button type="submit" disabled={saving} className="rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600 disabled:opacity-60">{saving ? 'Menyimpan…' : 'Simpan perubahan'}</button>
       </div>
     </form>
   );
@@ -126,51 +133,55 @@ function EditMonev({ record, onClose }) {
 
 function RiwayatMonev() {
   const { user } = useAuth();
-  const { records, canManage, canEditRecord } = useMonev();
+  const { data, loading, error, reload } = useMyMonevEntries();
   const [editId, setEditId] = useState(null);
-  // OPD hanya melihat laporan instansinya; pengelola Monev melihat seluruh laporan.
-  const riwayat = canManage ? records : records.filter((record) => record.opd === user.instansi);
+  const riwayat = entriesToRecords(data || []);
 
   return (
     <div className="flex flex-col gap-5">
       <section className="rounded-xl border border-line bg-white p-5.5">
         <h2 className="m-0 text-[1.05rem]">Riwayat input Monev</h2>
-        <p className="mt-1 text-[.84rem] text-ink-3">
-          {canManage ? 'Seluruh laporan Monev dari OPD.' : 'Hasil monitoring yang pernah diisi instansi Anda. Perbarui jawaban bila ada perkembangan tindak lanjut.'}
-        </p>
+        <p className="mt-1 text-[.84rem] text-ink-3">Hasil monitoring instansi Anda. Perbarui jawaban bila ada perkembangan tindak lanjut, selama laporan belum diverifikasi BRIDA.</p>
 
-        <div className="mt-5 flex flex-col gap-3">
-          {riwayat.map((record) => {
-            const { sudah, total } = ringkasan(record);
-            const selesai = sudah === total;
-            const editing = editId === record.id;
-            return (
-              <article key={record.id} className={`rounded-xl border p-4 transition ${editing ? 'border-maroon-100' : 'border-line hover:border-maroon-100 hover:bg-surface-1'}`}>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <h3 className="m-0 text-[.9rem] leading-snug">{record.judul}</h3>
-                    <p className="m-0 mt-1.5 text-[.76rem] text-ink-3">
-                      {record.id}{record.risetKode ? ` · ${record.risetKode}` : ''}{canManage ? ` · ${record.opd}` : ''} · Diisi {record.nama} pada {tanggal(record.createdAt.slice(0, 10))}
-                      {record.updatedAt ? ` · Diperbarui ${tanggal(record.updatedAt.slice(0, 10))}` : ''}
-                    </p>
-                  </div>
-                  <div className="flex flex-none flex-wrap items-center gap-2 self-start">
-                    <span className={`rounded-full px-2.5 py-1 text-[.7rem] font-bold ${selesai ? 'bg-success-bg text-success' : 'bg-warning-bg text-warning'}`}>
-                      {sudah} dari {total} rekomendasi dilaksanakan
-                    </span>
-                    {canEditRecord(record) && !editing && (
-                      <button type="button" onClick={() => setEditId(record.id)}
-                        className="rounded-lg border border-line-strong px-3 py-1.5 text-[.76rem] font-semibold text-maroon-800 hover:border-maroon-800 hover:bg-maroon-50">
-                        Perbarui
-                      </button>
-                    )}
-                  </div>
-                </div>
-                {editing && <EditMonev record={record} onClose={() => setEditId(null)} />}
-              </article>
-            );
-          })}
-          {riwayat.length === 0 && <p className="m-0 py-6 text-center text-[.84rem] text-ink-3">Belum ada laporan Monev untuk {user.instansi}.</p>}
+        <div className="mt-5">
+          <AsyncState loading={loading} error={error} isEmpty={riwayat.length === 0} onRetry={reload}
+            skeleton={<SkeletonGrid count={2} className="flex flex-col gap-3" itemClassName="h-20" />}
+            empty={<EmptyState icon="clock" title="Belum ada laporan Monev" text={error?.status === 400 ? 'Akun Anda belum terhubung ke OPD.' : `Belum ada kajian Monev untuk ${user.instansi}.`} />}>
+            <div className="flex flex-col gap-3">
+              {riwayat.map((record) => {
+                const { sudah, total } = ringkasan(record);
+                const selesai = total > 0 && sudah === total;
+                const editing = editId === record.id;
+                const st = ENTRY_STATUS[record.status] || ENTRY_STATUS.pending;
+                const bolehEdit = record.status !== 'verified' && record.batch?.status !== 'closed';
+                return (
+                  <article key={record.id} className={`rounded-xl border p-4 transition ${editing ? 'border-maroon-100' : 'border-line hover:border-maroon-100 hover:bg-surface-1'}`}>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <h3 className="m-0 text-[.9rem] leading-snug">{record.judul}</h3>
+                        <p className="m-0 mt-1.5 text-[.76rem] text-ink-3">
+                          Monev {record.batch?.tahun} · {record.nama ? `Diisi ${record.nama}` : 'Belum diisi'}{record.tanggal ? ` · ${tanggal(String(record.tanggal).slice(0, 10))}` : ''}
+                        </p>
+                      </div>
+                      <div className="flex flex-none flex-wrap items-center gap-2 self-start">
+                        <span className={`rounded-full px-2.5 py-1 text-[.7rem] font-bold ${st.badge}`}>{st.label}</span>
+                        <span className={`rounded-full px-2.5 py-1 text-[.7rem] font-bold ${selesai ? 'bg-success-bg text-success' : 'bg-warning-bg text-warning'}`}>
+                          {sudah} dari {total} rekomendasi dilaksanakan
+                        </span>
+                        {bolehEdit && !editing && total > 0 && (
+                          <button type="button" onClick={() => setEditId(record.id)}
+                            className="rounded-lg border border-line-strong px-3 py-1.5 text-[.76rem] font-semibold text-maroon-800 hover:border-maroon-800 hover:bg-maroon-50">
+                            Perbarui
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {editing && <EditMonev record={record} onClose={() => setEditId(null)} onSaved={reload} />}
+                  </article>
+                );
+              })}
+            </div>
+          </AsyncState>
         </div>
       </section>
     </div>
@@ -178,8 +189,8 @@ function RiwayatMonev() {
 }
 
 const JUDUL = {
-  'kelola-monev': ['Monitoring & Evaluasi', () => 'Kelola poin rekomendasi dan tinjau tindak lanjut seluruh OPD'],
-  'isi-monev': ['Isi Form Monitoring & Evaluasi', (user) => `${user.instansi} · Tahun Anggaran 2025`],
+  'kelola-monev': ['Monitoring & Evaluasi', () => 'Kelola batch, kajian, dan poin rekomendasi serta tinjau tindak lanjut seluruh OPD'],
+  'isi-monev': ['Isi Form Monitoring & Evaluasi', (user) => `${user.instansi} · Form Monev OPD`],
   'riwayat-monev': ['Riwayat Monev', (user) => `${user.instansi} · Riwayat pengajuan Monev`]
 };
 
