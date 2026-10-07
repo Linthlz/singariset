@@ -74,3 +74,13 @@ export const MONEV_SEED = [
     ]
   }
 ];
+
+export const MONEV_KAJIAN_SEED = MONEV_SEED.map((record) => ({
+  id: `KJN-${record.id}`,
+  opd: record.opd,
+  judul: record.judul,
+  rekomendasi: record.rekomendasi.map((item, index) => ({
+    id: `${record.id}-P${index + 1}`,
+    judul: item.judul
+  }))
+}));

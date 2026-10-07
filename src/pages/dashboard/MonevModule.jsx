@@ -8,6 +8,161 @@ function progressFor(record) {
   return Math.round((done / record.rekomendasi.length) * 100);
 }
 
+function RecommendationManager({ kajianList, onAddRecommendation, onAddKajian }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isKajianOpen, setIsKajianOpen] = useState(false);
+  const [selectedOpd, setSelectedOpd] = useState(() => kajianList[0]?.opd || '');
+  const [selectedKajianId, setSelectedKajianId] = useState(() => kajianList[0]?.id || '');
+  const [judulPoin, setJudulPoin] = useState('');
+  const [modeOpdKajian, setModeOpdKajian] = useState('existing');
+  const [opdBaru, setOpdBaru] = useState('');
+  const [judulKajianBaru, setJudulKajianBaru] = useState('');
+  const [poinAwal, setPoinAwal] = useState('');
+  const [kajianMessage, setKajianMessage] = useState(null);
+  const [savedMessage, setSavedMessage] = useState('');
+  const opdOptions = [...new Set(kajianList.map((item) => item.opd))].sort((a, b) => a.localeCompare(b));
+  const kajianUntukOpd = kajianList.filter((item) => item.opd === selectedOpd);
+  const selectedKajian = kajianList.find((item) => item.id === selectedKajianId) || kajianUntukOpd[0];
+
+  function pilihOpd(opd) {
+    setSelectedOpd(opd);
+    setSelectedKajianId(kajianList.find((item) => item.opd === opd)?.id || '');
+    setSavedMessage('');
+  }
+
+  function simpanRekomendasi(event) {
+    event.preventDefault();
+    const judul = judulPoin.trim();
+    if (!selectedKajian || !judul) return;
+    onAddRecommendation(selectedKajian.id, judul);
+    setJudulPoin('');
+    setSavedMessage('Poin tersimpan dan tersedia pada form Monev OPD.');
+  }
+
+  function simpanKajian(event) {
+    event.preventDefault();
+    const opd = modeOpdKajian === 'new' ? opdBaru.trim() : selectedOpd;
+    const judul = judulKajianBaru.trim();
+    const rekomendasi = poinAwal.trim();
+    if (!opd || !judul || !rekomendasi) return;
+
+    const sudahAda = kajianList.some((item) => item.opd.toLowerCase() === opd.toLowerCase() && item.judul.toLowerCase() === judul.toLowerCase());
+    if (sudahAda) {
+      setKajianMessage({ type: 'error', text: 'Judul kajian tersebut sudah terdaftar untuk OPD ini.' });
+      return;
+    }
+
+    const kajian = onAddKajian({ opd, judul, rekomendasi });
+    setSelectedOpd(opd);
+    setSelectedKajianId(kajian.id);
+    setOpdBaru('');
+    setJudulKajianBaru('');
+    setPoinAwal('');
+    setKajianMessage({ type: 'success', text: 'OPD/kajian dan poin rekomendasi sudah tersedia pada form Monev.' });
+    setIsKajianOpen(false);
+  }
+
+  return (
+    <section className="rounded-xl border border-line bg-white p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="m-0 text-[1.02rem]">Kelola poin rekomendasi Monev</h2>
+          <p className="m-0 mt-1 text-[.8rem] text-ink-3">Tambahkan poin yang akan diisi dan dipantau OPD melalui form Monev.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => setIsOpen((open) => !open)} className="rounded-lg border border-line-strong px-3.5 py-2 text-[.8rem] font-semibold text-maroon-800 transition hover:border-maroon-800 hover:bg-maroon-50">
+            {isOpen ? 'Tutup pengelolaan' : 'Tambah rekomendasi'}
+          </button>
+          <button type="button" onClick={() => { setIsOpen(true); setIsKajianOpen((open) => !open); }} className="rounded-lg bg-maroon-800 px-3.5 py-2 text-[.8rem] font-semibold text-white transition hover:bg-maroon-600">
+            Tambah OPD / kajian
+          </button>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="mt-5 grid gap-5 border-t border-line pt-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <form onSubmit={simpanRekomendasi} className="flex flex-col gap-4">
+            <label className="flex flex-col gap-1.5 text-[.78rem] font-semibold text-ink-2">
+              OPD pengampu
+              <select value={selectedOpd} onChange={(event) => pilihOpd(event.target.value)} className="input-base" required>
+                {opdOptions.map((opd) => <option key={opd} value={opd}>{opd}</option>)}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1.5 text-[.78rem] font-semibold text-ink-2">
+              Judul kajian Monev
+              <select value={selectedKajian?.id || ''} onChange={(event) => setSelectedKajianId(event.target.value)} className="input-base" required>
+                {kajianUntukOpd.map((kajian) => <option key={kajian.id} value={kajian.id}>{kajian.judul}</option>)}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1.5 text-[.78rem] font-semibold text-ink-2">
+              Poin rekomendasi baru
+              <textarea value={judulPoin} onChange={(event) => setJudulPoin(event.target.value)} rows={3} className="input-base resize-y" placeholder="Tuliskan rekomendasi yang perlu dipantau" required />
+            </label>
+            {savedMessage && <p role="status" className="m-0 text-[.8rem] font-semibold text-success">{savedMessage}</p>}
+            <button type="submit" disabled={!selectedKajian || !judulPoin.trim()} className="self-start rounded-lg bg-maroon-800 px-4 py-2.5 text-[.82rem] font-semibold text-white transition hover:bg-maroon-600 disabled:cursor-not-allowed disabled:opacity-50">
+              Simpan poin rekomendasi
+            </button>
+          </form>
+
+          <div>
+            <h3 className="mb-2 text-[.88rem]">Poin aktif pada kajian</h3>
+            <ol className="m-0 flex list-none flex-col gap-2 p-0">
+              {(selectedKajian?.rekomendasi || []).map((item, index) => (
+                <li key={item.id} className="flex items-start gap-2.5 rounded-lg border border-line bg-surface-1 px-3 py-2.5">
+                  <span className="grid h-6 w-6 flex-none place-items-center rounded-full bg-white text-[.7rem] font-bold text-ink-3">{index + 1}</span>
+                  <span className="pt-0.5 text-[.8rem] leading-5 text-ink-2">{item.judul}</span>
+                </li>
+              ))}
+              {!selectedKajian?.rekomendasi.length && <li className="py-3 text-[.8rem] text-ink-3">Belum ada poin rekomendasi.</li>}
+            </ol>
+          </div>
+        </div>
+      )}
+
+      {isKajianOpen && (
+        <form onSubmit={simpanKajian} className="mt-5 grid gap-4 border-t border-line pt-5 md:grid-cols-2">
+          <div className="md:col-span-2">
+            <h3 className="m-0 text-[.92rem]">Tambah OPD dan judul kajian Monev</h3>
+            <p className="m-0 mt-1 text-[.78rem] text-ink-3">Kajian dan poin pertamanya langsung tersedia untuk pengisian form OPD.</p>
+          </div>
+          <label className="flex flex-col gap-1.5 text-[.78rem] font-semibold text-ink-2">
+            OPD pengampu
+            <select value={modeOpdKajian} onChange={(event) => setModeOpdKajian(event.target.value)} className="input-base">
+              <option value="existing">Gunakan OPD yang sudah ada</option>
+              <option value="new">Tambah OPD baru</option>
+            </select>
+          </label>
+          {modeOpdKajian === 'existing' ? (
+            <label className="flex flex-col gap-1.5 text-[.78rem] font-semibold text-ink-2">
+              Pilih OPD
+              <select value={selectedOpd} onChange={(event) => setSelectedOpd(event.target.value)} className="input-base" required>
+                {opdOptions.map((opd) => <option key={opd} value={opd}>{opd}</option>)}
+              </select>
+            </label>
+          ) : (
+            <label className="flex flex-col gap-1.5 text-[.78rem] font-semibold text-ink-2">
+              Nama OPD baru
+              <input value={opdBaru} onChange={(event) => setOpdBaru(event.target.value)} className="input-base" placeholder="Contoh: Dinas Kesehatan Buleleng" required />
+            </label>
+          )}
+          <label className="flex flex-col gap-1.5 text-[.78rem] font-semibold text-ink-2 md:col-span-2">
+            Judul lengkap kajian
+            <input value={judulKajianBaru} onChange={(event) => setJudulKajianBaru(event.target.value)} className="input-base" placeholder="Masukkan judul kajian yang akan dimonev" required />
+          </label>
+          <label className="flex flex-col gap-1.5 text-[.78rem] font-semibold text-ink-2 md:col-span-2">
+            Poin rekomendasi pertama
+            <textarea value={poinAwal} onChange={(event) => setPoinAwal(event.target.value)} rows={3} className="input-base resize-y" placeholder="Tuliskan rekomendasi pertama untuk kajian ini" required />
+          </label>
+          {kajianMessage && <p role="status" className={`m-0 text-[.8rem] font-semibold md:col-span-2 ${kajianMessage.type === 'error' ? 'text-danger' : 'text-success'}`}>{kajianMessage.text}</p>}
+          <button type="submit" className="w-fit rounded-lg bg-maroon-800 px-4 py-2.5 text-[.82rem] font-semibold text-white transition hover:bg-maroon-600 md:col-span-2">
+            Simpan OPD dan kajian
+          </button>
+        </form>
+      )}
+    </section>
+  );
+}
+
 function RecommendationList({ records, onUpdateRecommendation, onSelectRecord }) {
   const opdList = useMemo(() => [...new Set(records.map((record) => record.opd))].map((nama) => ({
     nama,
@@ -181,16 +336,12 @@ function statusLaporan(record) {
 }
 
 export default function MonevModule() {
-  const { records, updateRecommendation } = useMonev();
+  const { records, kajianList, addMonevRecommendation, addMonevKajian, updateRecommendation } = useMonev();
   const [selectedRecordId, setSelectedRecordId] = useState('MNV-2025-001');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sortDirection, setSortDirection] = useState('desc');
   const selectedRecord = records.find((record) => record.id === selectedRecordId) || records[0] || null;
-  const totalRecommendations = records.reduce((sum, record) => sum + record.rekomendasi.length, 0);
-  const completedRecommendations = records.reduce((sum, record) => sum + record.rekomendasi.filter((item) => item.monitoring === 'Sudah').length, 0);
-  const pendingRecommendations = totalRecommendations - completedRecommendations;
-  const averageProgress = totalRecommendations ? Math.round((completedRecommendations / totalRecommendations) * 100) : 0;
 
   const filteredRecords = useMemo(() => records
     .filter((record) => {
@@ -231,6 +382,7 @@ export default function MonevModule() {
 
   return (
     <div className="flex flex-col gap-6">
+      <RecommendationManager kajianList={kajianList} onAddRecommendation={addMonevRecommendation} onAddKajian={addMonevKajian} />
       <RecommendationList records={records} onUpdateRecommendation={updateRecommendation} onSelectRecord={openRecord} />
       <MonevDetail record={selectedRecord} />
 
@@ -275,7 +427,7 @@ export default function MonevModule() {
                 return (
                   <tr key={record.id} onClick={() => openRecord(record.id)} className={`cursor-pointer border-b border-line transition last:border-0 hover:bg-surface-1 ${selectedRecord?.id === record.id ? 'bg-maroon-50' : ''}`}>
                     <td className="whitespace-nowrap px-4 py-3.5 font-semibold tabular-nums text-ink">{record.id}</td>
-                    <td className="px-4 py-3.5"><div className="max-w-[420px] font-semibold text-ink">{record.judul}</div></td>
+                    <td className="px-4 py-3.5"><div className="max-w-105 font-semibold text-ink">{record.judul}</div></td>
                     <td className="px-4 py-3.5"><div className="font-semibold text-ink-2">{record.opd}</div><div className="text-[.765rem] text-ink-3">{record.nama}</div></td>
                     <td className="whitespace-nowrap px-4 py-3.5 tabular-nums text-ink-2">{tanggal(record.createdAt.slice(0, 10), true)}</td>
                     <td className="px-4 py-3.5 tabular-nums text-ink-2">{progress}%</td>

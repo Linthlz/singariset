@@ -10,7 +10,7 @@ import { useContent } from '../../context/ContentContext.jsx';
 import { STATUS_USULAN, useSubmissions } from '../../context/SubmissionsContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { RISET, BIDANG, KECAMATAN, SKEMA, STATS } from '../../data/singaData.js';
-import { bidangById, kecById, rupiah, rupiahRingkas, skemaById, tanggal, angka } from '../../lib/format.js';
+import { bidangById, kecById, rupiahRingkas, skemaById, tanggal, angka } from '../../lib/format.js';
 
 const MENU = [
   { id: 'ringkasan', label: 'Ringkasan', ikon: 'chart' },

@@ -1,15 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { MONEV_SEED } from '../data/monevData.js';
 import { useMonev } from '../context/MonevContext.jsx';
-
-const OPD_OPTIONS = [...new Set(MONEV_SEED.map((record) => record.opd))].sort((a, b) => a.localeCompare(b));
-
-const JUDUL_OPTIONS = MONEV_SEED.map((record) => ({
-  value: record.judul,
-  label: record.judul,
-  opd: record.opd,
-  rekomendasi: record.rekomendasi.map((item) => item.judul)
-}));
 
 const EMPTY_REKOMENDASI = {
   monitoring: '',
@@ -29,7 +19,7 @@ const INITIAL_FORM = {
 };
 
 export default function MonevFormPage() {
-  const { addMonev } = useMonev();
+  const { addMonev, kajianList } = useMonev();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
@@ -37,10 +27,11 @@ export default function MonevFormPage() {
   const fileInputRefs = useRef({});
 
   const selectedTitle = useMemo(
-    () => JUDUL_OPTIONS.find((item) => item.value === form.judul) || null,
-    [form.judul]
+    () => kajianList.find((item) => item.id === form.judul) || null,
+    [form.judul, kajianList]
   );
-  const judulUntukOpd = JUDUL_OPTIONS.filter((item) => item.opd === form.opd);
+  const opdOptions = [...new Set(kajianList.map((item) => item.opd))].sort((a, b) => a.localeCompare(b));
+  const judulUntukOpd = kajianList.filter((item) => item.opd === form.opd);
 
   const updateField = (field, value) => {
     setForm((prev) => {
@@ -49,7 +40,7 @@ export default function MonevFormPage() {
         next.judul = '';
         next.rekomendasi = [];
       } else if (field === 'judul') {
-        const title = JUDUL_OPTIONS.find((item) => item.value === value);
+        const title = kajianList.find((item) => item.id === value);
         next.rekomendasi = title?.rekomendasi.map(() => ({ ...EMPTY_REKOMENDASI })) || [];
       }
       return next;
@@ -142,9 +133,9 @@ export default function MonevFormPage() {
       nama: form.nama,
       nip: form.nip,
       opd: form.opd,
-      judul: selectedTitle.label,
+      judul: selectedTitle.judul,
       rekomendasi: form.rekomendasi.map((response, index) => ({
-        judul: selectedTitle.rekomendasi[index],
+        judul: selectedTitle.rekomendasi[index].judul,
         ...response
       }))
     });
@@ -247,7 +238,7 @@ export default function MonevFormPage() {
                           aria-invalid={Boolean(errors.opd)}
                         >
                           <option value="">Pilih OPD</option>
-                          {OPD_OPTIONS.map((opd) => (
+                          {opdOptions.map((opd) => (
                             <option key={opd} value={opd}>{opd}</option>
                           ))}
                         </select>
@@ -266,11 +257,11 @@ export default function MonevFormPage() {
 
                       <div className="space-y-3">
                         {judulUntukOpd.map((item) => {
-                          const checked = form.judul === item.value;
+                          const checked = form.judul === item.id;
 
                           return (
                             <label
-                              key={item.value}
+                              key={item.id}
                               className={[
                                 'flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-all',
                                 checked
@@ -281,12 +272,12 @@ export default function MonevFormPage() {
                               <input
                                 type="radio"
                                 name="judul-riset"
-                                value={item.value}
+                                value={item.id}
                                 checked={checked}
                                 onChange={(e) => updateField('judul', e.target.value)}
                                 className="mt-1 h-4 w-4 accent-[#8b2a2a]"
                               />
-                              <span className="text-sm leading-6 text-slate-700">{item.label}</span>
+                              <span className="text-sm leading-6 text-slate-700">{item.judul}</span>
                             </label>
                           );
                         })}
@@ -308,7 +299,7 @@ export default function MonevFormPage() {
                           <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#7f1d1d]">
                             Judul lengkap riset/kajian
                           </p>
-                          <h2 className="m-0 text-base font-bold leading-6 text-slate-800">{selectedTitle.label}</h2>
+                          <h2 className="m-0 text-base font-bold leading-6 text-slate-800">{selectedTitle.judul}</h2>
                           <p className="mb-0 mt-2 text-xs text-slate-500">Isi hasil monitoring untuk setiap poin rekomendasi di bawah.</p>
                         </div>
 
@@ -317,12 +308,12 @@ export default function MonevFormPage() {
                           const errorKey = (field) => `rekomendasi-${index}-${field}`;
 
                           return (
-                            <article key={`${selectedTitle.value}-${index}`} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <article key={point.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                               <div className="mb-5 flex items-start gap-3">
                                 <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[#8b2a2a] text-sm font-bold text-white">{index + 1}</span>
                                 <div>
                                   <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-[#7f1d1d]">Poin rekomendasi {index + 1}</p>
-                                  <h3 className="m-0 text-sm font-semibold leading-6 text-slate-800">{point}</h3>
+                                  <h3 className="m-0 text-sm font-semibold leading-6 text-slate-800">{point.judul}</h3>
                                 </div>
                               </div>
 
@@ -440,7 +431,7 @@ export default function MonevFormPage() {
                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-2xl text-white">✓</div>
                 <h2 className="text-xl font-black text-emerald-800">Form Monev Berhasil Dikirim</h2>
                 <p className="mt-3 text-sm leading-6 text-emerald-700">
-                  Terima kasih, {form.nama}. Data monitoring untuk judul <span className="font-semibold">{selectedTitle?.label}</span> telah tercatat dan siap ditindaklanjuti.
+                  Terima kasih, {form.nama}. Data monitoring untuk judul <span className="font-semibold">{selectedTitle?.judul}</span> telah tercatat dan siap ditindaklanjuti.
                 </p>
 
                 <button
