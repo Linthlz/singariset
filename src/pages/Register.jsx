@@ -57,7 +57,6 @@ export default function Register() {
     if (isOpd && !/^\d{18}$/.test(form.nip.replace(/\D/g, ''))) e.nip = 'NIP harus 18 digit angka.';
     if (isOpd && !form.jabatan.trim()) e.jabatan = 'Jabatan wajib diisi.';
     if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(form.email.trim())) e.email = 'Masukkan alamat surel yang valid.';
-    else if (isOpd && !/@bulelengkab\.go\.id$/i.test(form.email.trim())) e.email = 'Akun OPD wajib memakai surel resmi @bulelengkab.go.id.';
     if (form.telepon.replace(/\D/g, '').length < 10) e.telepon = 'Nomor telepon aktif minimal 10 digit.';
     if (form.password.length < 8) e.password = 'Kata sandi minimal 8 karakter.';
     else if (form.password.length > 72) e.password = 'Kata sandi maksimal 72 karakter.';
@@ -198,9 +197,9 @@ export default function Register() {
               )}
 
               <F label="Surel" required error={errors.email}
-                hint={isOpd ? 'Wajib memakai surel resmi @bulelengkab.go.id.' : 'Gunakan surel resmi instansi bila tersedia.'}>
+                hint="Gunakan surel resmi instansi bila tersedia; surel pribadi juga dapat dipakai.">
                 <input className="input-base" type="email" value={form.email} onChange={(e) => set('email', e.target.value)}
-                  placeholder={isOpd ? 'nama@bulelengkab.go.id' : 'nama@instansi.ac.id'} />
+                  placeholder="nama@contoh.com" />
               </F>
 
               <F label="Nomor telepon / WhatsApp" required error={errors.telepon}>

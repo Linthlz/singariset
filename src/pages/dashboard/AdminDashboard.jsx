@@ -6,6 +6,8 @@ import Modal from '../../components/Modal.jsx';
 import NewsFormModal from '../../components/NewsFormModal.jsx';
 import AsyncState, { EmptyState, ErrorState, SkeletonGrid } from '../../components/AsyncState.jsx';
 import MonevModule from './MonevModule.jsx';
+import RisetMonitoringModule from './RisetMonitoringModule.jsx';
+import KelompokRiset from './KelompokRiset.jsx';
 import PasswordInput from '../../components/PasswordInput.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useMutation } from '../../hooks/useData.js';
@@ -26,9 +28,11 @@ import { rupiah, rupiahRingkas, tanggal, angka } from '../../lib/format.js';
 const MENU = [
   { id: 'ringkasan', label: 'Ringkasan', ikon: 'chart' },
   { id: 'monev', label: 'Monitoring & Evaluasi', ikon: 'chart' },
+  { id: 'monitoring-riset', label: 'Monitoring Direktori Riset', ikon: 'flask' },
   { id: 'pengguna', label: 'Manajemen Pengguna', ikon: 'users' },
   { id: 'usulan', label: 'Usulan Riset Mitra', ikon: 'handshake' },
   { id: 'riset', label: 'Katalog Riset', ikon: 'flask' },
+  { id: 'kelompok', label: 'Kelompok Riset', ikon: 'users' },
   { id: 'konten', label: 'Berita & Publikasi', ikon: 'doc' },
   { id: 'pengaturan', label: 'Pengaturan Situs', ikon: 'shield' }
 ];
@@ -405,6 +409,21 @@ function KatalogRiset() {
         </div>
       </AsyncState>
     </Card>
+  );
+}
+
+/* ---------------- Monitoring direktori riset ---------------- */
+function MonitoringRiset() {
+  // Batas maksimum endpoint reviewer adalah 100 data per halaman.
+  const { data, loading, error, reload } = useStaffResearches({ limit: 100 });
+  const list = data || [];
+
+  return (
+    <AsyncState loading={loading && !data} error={error} isEmpty={list.length === 0} onRetry={reload}
+      skeleton={<SkeletonGrid count={4} className="grid grid-cols-2 gap-4 lg:grid-cols-4" itemClassName="h-28" />}
+      empty={<EmptyState icon="flask" title="Belum ada riset tercatat" />}>
+      <RisetMonitoringModule risetData={list} />
+    </AsyncState>
   );
 }
 
@@ -1120,9 +1139,11 @@ function Pengaturan() {
 const JUDUL = {
   ringkasan: ['Ringkasan portal', 'Pantauan menyeluruh ekosistem riset dan aktivitas portal'],
   monev: ['Monitoring & Evaluasi', 'Review tindak lanjut kajian dan pemantauan kinerja seluruh OPD'],
+  'monitoring-riset': ['Monitoring Direktori Riset', 'Progres, tahapan, anggaran, dan luaran kajian daerah'],
   pengguna: ['Manajemen pengguna', 'Tambah, sunting, dan hapus akun semua peran pengguna portal'],
   usulan: ['Usulan riset mitra', 'Verifikasi, setujui, atau tolak pengajuan kolaborasi riset dari mitra'],
   riset: ['Katalog riset', 'Seluruh judul riset dalam basis data BRIDA'],
+  kelompok: ['Kelompok riset', 'Tim peneliti, pembimbing BRIDA, dan dokumentasi setiap riset berjalan'],
   konten: ['Berita & publikasi', 'Kelola konten yang tampil di portal publik'],
   pengaturan: ['Pengaturan situs', 'Identitas, kontak, dan kendali portal']
 };
@@ -1130,7 +1151,7 @@ const JUDUL = {
 // Menu yang boleh diakses per role backend; endpoint tetap divalidasi di server.
 const MENU_PER_ROLE = {
   admin: null,
-  reviewer: ['ringkasan', 'usulan', 'riset'],
+  reviewer: ['ringkasan', 'usulan', 'riset', 'monitoring-riset', 'kelompok'],
   'media-brida': ['ringkasan', 'konten']
 };
 
@@ -1148,9 +1169,13 @@ export default function AdminDashboard() {
   const bolehReview = !tampil || tampil.includes('usulan');
   const [active, setActive] = useState('ringkasan');
   const [pendingUsulan, setPendingUsulan] = useState(0);
-  const [judul, sub] = JUDUL[active];
+  const [judul, sub] = active === 'kelompok' && user.backendRole === 'reviewer'
+    ? ['Riset bimbingan', 'Riset yang Anda bimbing sebagai reviewer BRIDA']
+    : JUDUL[active];
 
+  const reviewer = user.backendRole === 'reviewer';
   const menu = MENU.filter((m) => !tampil || tampil.includes(m.id)).map((m) => {
+    if (m.id === 'kelompok' && reviewer) return { ...m, label: 'Riset Bimbingan' };
     if (m.id === 'usulan' && pendingUsulan > 0) return { ...m, badge: pendingUsulan };
     return m;
   });
@@ -1160,9 +1185,11 @@ export default function AdminDashboard() {
       {bolehReview && <PendingBadge onCount={setPendingUsulan} />}
       {active === 'ringkasan' && <Ringkasan />}
       {active === 'monev' && <MonevModule />}
+      {active === 'monitoring-riset' && <MonitoringRiset />}
       {active === 'pengguna' && <Pengguna />}
       {active === 'usulan' && <UsulanMitra />}
       {active === 'riset' && <KatalogRiset />}
+      {active === 'kelompok' && <KelompokRiset admin={user.backendRole === 'admin'} judulKosong={reviewer ? 'Belum ada riset yang Anda bimbing' : 'Belum ada kelompok riset'} />}
       {active === 'konten' && <Konten />}
       {active === 'pengaturan' && <Pengaturan />}
     </DashboardLayout>

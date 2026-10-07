@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/DashboardLayout.jsx';
+import KelompokRiset from './KelompokRiset.jsx';
 import Icon from '../../components/Icon.jsx';
 import Modal from '../../components/Modal.jsx';
 import AsyncState, { EmptyState, ErrorState, SkeletonGrid } from '../../components/AsyncState.jsx';
@@ -12,7 +13,15 @@ import { errorMessage } from '../../services/api.js';
 import { DECISION_LABEL, researchService, statusResearch } from '../../services/researchService.js';
 import { rupiah, tanggal } from '../../lib/format.js';
 
-const MENU = [{ id: 'pengajuan', label: 'Pengajuan Riset Saya', ikon: 'flask' }];
+const MENU = [
+  { id: 'pengajuan', label: 'Pengajuan Riset Saya', ikon: 'flask' },
+  { id: 'kelompok', label: 'Kelompok Riset', ikon: 'users' }
+];
+
+const JUDUL = {
+  pengajuan: ['Dashboard Mitra', 'Monitoring pengajuan kolaborasi riset'],
+  kelompok: ['Kelompok Riset', 'Tim peneliti, pembimbing BRIDA, dan dokumentasi riset berjalan']
+};
 
 const FILTER = [
   { id: '', label: 'Semua' },
@@ -284,16 +293,14 @@ function PengajuanSaya() {
 
 export default function MitraDashboard() {
   const { user } = useAuth();
+  const [active, setActive] = useState('pengajuan');
+  const [judul, sub] = JUDUL[active];
+  const instansi = user.instansi && user.instansi !== '-' ? `${user.instansi} · ` : '';
 
   return (
-    <DashboardLayout
-      menu={MENU}
-      active="pengajuan"
-      onSelect={() => {}}
-      title="Dashboard Mitra"
-      subtitle={`${user.instansi} · Monitoring pengajuan kolaborasi riset`}
-    >
-      <PengajuanSaya />
+    <DashboardLayout menu={MENU} active={active} onSelect={setActive} title={judul} subtitle={`${instansi}${sub}`}>
+      {active === 'pengajuan' && <PengajuanSaya />}
+      {active === 'kelompok' && <KelompokRiset bolehGabung judulKosong="Anda belum tergabung dalam kelompok riset" />}
     </DashboardLayout>
   );
 }

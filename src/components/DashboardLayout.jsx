@@ -41,7 +41,7 @@ export default function DashboardLayout({ menu, active, onSelect, title, subtitl
           </span>
         </Link>
 
-        <nav className="flex-1 overflow-y-auto p-3" aria-label="Navigasi dashboard">
+        <nav className="no-scrollbar flex-1 overflow-y-auto p-3" aria-label="Navigasi dashboard">
           <div className="px-2 pb-2 pt-1 text-[.65rem] font-bold uppercase tracking-widest text-white/40">Menu</div>
           {menu.map((m) => (
             <button
