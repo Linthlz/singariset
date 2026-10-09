@@ -58,7 +58,7 @@ function BatchBar({ batches, batch, onPilih, canManage, onChanged }) {
   }
 
   return (
-    <section className="rounded-xl border border-line bg-white p-5">
+    <section className="rounded-xl border border-line bg-white p-4 sm:p-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-wrap items-end gap-3">
           <label className="flex flex-col gap-1 text-[.76rem] font-semibold text-ink-3">
@@ -182,7 +182,7 @@ function RecommendationManager({ batch, onChanged }) {
   }
 
   return (
-    <section className="rounded-xl border border-line bg-white p-5">
+    <section className="rounded-xl border border-line bg-white p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="m-0 text-[1.02rem]">Kelola poin rekomendasi Monev</h2>
@@ -305,7 +305,7 @@ function RecommendationList({ records, canManage, onChanged, onSelectRecord }) {
   const overallPercent = total ? Math.round((done / total) * 100) : 0;
 
   return (
-    <section className="rounded-xl border border-line bg-white p-5">
+    <section className="rounded-xl border border-line bg-white p-4 sm:p-5">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="m-0 text-[1.05rem]">Penilaian tindak lanjut rekomendasi kajian</h2>
@@ -392,7 +392,7 @@ function RecommendationList({ records, canManage, onChanged, onSelectRecord }) {
 function MonevDetail({ record }) {
   if (!record) {
     return (
-      <section id="detail-monev-terpilih" className="rounded-xl border border-line bg-white p-5">
+      <section id="detail-monev-terpilih" className="rounded-xl border border-line bg-white p-4 sm:p-5">
         <h2 className="m-0 text-[1.05rem]">Detail pengisian Monev</h2>
         <p className="mb-0 mt-2 text-sm text-ink-3">Pilih laporan Monev untuk melihat jawaban per poin rekomendasi.</p>
       </section>
@@ -401,7 +401,7 @@ function MonevDetail({ record }) {
   const st = ENTRY_STATUS[record.status] || ENTRY_STATUS.pending;
 
   return (
-    <section id="detail-monev-terpilih" className="scroll-mt-6 rounded-xl border border-line bg-white p-5">
+    <section id="detail-monev-terpilih" className="scroll-mt-6 rounded-xl border border-line bg-white p-4 sm:p-5">
       <div className="mb-5">
         <div className="mb-1 flex flex-wrap items-center gap-2">
           <p className="m-0 text-[.73rem] font-bold uppercase tracking-wide text-maroon-800">Detail pengisian Monev{record.batch ? ` · ${record.batch.tahun}` : ''}</p>
@@ -594,7 +594,7 @@ export default function MonevModule() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4 sm:gap-6">
       {!canManage && (
         <p className="m-0 flex items-center gap-2 rounded-xl border border-info-bg bg-info-bg/40 px-4 py-3 text-[.82rem] text-info">
           <Icon name="lock" size={16} /> Mode baca saja. Pengelolaan Monev hanya untuk Administrator dan Pegawai BRIDA.

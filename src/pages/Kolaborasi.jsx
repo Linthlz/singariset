@@ -204,7 +204,7 @@ export default function Kolaborasi() {
     <>
       <section className="relative overflow-hidden bg-maroon-900 py-10 text-white" style={{ backgroundImage: 'linear-gradient(135deg,#7A1616 0%,#6B1414 55%,#3B0A0A 100%)' }}>
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(560px 300px at 92% 12%, rgba(249,199,79,.18), transparent 62%)' }} />
-        <div className="relative z-10 mx-auto max-w-[1240px] px-5">
+        <div className="relative z-10 mx-auto max-w-[1240px] px-4 sm:px-5">
           <nav className="mb-3.5 flex flex-wrap items-center gap-2 text-[.78rem] text-white/60">
             <Link to="/" className="text-white/82 hover:text-gold-500">Beranda</Link><span className="opacity-50">/</span><span>Pengajuan Kolaborasi Riset</span>
           </nav>
@@ -220,7 +220,7 @@ export default function Kolaborasi() {
       </section>
 
       <section className="pt-7">
-        <div className="mx-auto max-w-[1240px] px-5">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
           <div className="flex items-start gap-3.5 rounded-xl border border-warning-bg bg-warning-bg px-4.5 py-4 text-[.855rem] text-[#78350F]">
             <Icon name="alert" size={19} className="mt-0.5 flex-none text-warning" />
             <p className="m-0"><strong className="mr-1">Dasar hukum &amp; jadwal batch.</strong>Pengajuan tunduk pada Peraturan Bupati Buleleng tentang Penyelenggaraan Riset dan Inovasi Daerah serta Pedoman Hibah Riset BRIDA 2026.
@@ -230,18 +230,18 @@ export default function Kolaborasi() {
       </section>
 
       <section className="pb-18 pt-7">
-        <div className="mx-auto grid max-w-[1240px] gap-6.5 px-5 lg:grid-cols-[1.55fr_.95fr]">
-          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+        <div className="mx-auto grid max-w-[1240px] gap-5 px-4 sm:gap-6.5 sm:px-5 lg:grid-cols-[1.55fr_.95fr]">
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4 sm:gap-5">
 
             {/* Pengusul diambil dari akun yang sedang masuk */}
-            <Reveal className="flex flex-wrap items-center gap-4 rounded-xl border border-line bg-white px-5.5 py-4.5 shadow-card">
+            <Reveal className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-white px-4 py-3.5 shadow-card sm:gap-4 sm:px-5.5 sm:py-4.5">
               <span className="grid h-11 w-11 flex-none place-items-center rounded-full bg-maroon-800 text-[.85rem] font-extrabold text-gold-500">
                 {inisial(user.nama)}
               </span>
-              <div className="min-w-[200px] flex-1">
+              <div className="min-w-0 flex-1 sm:min-w-[200px]">
                 <div className="text-[.72rem] font-bold uppercase tracking-wide text-ink-3">Diajukan sebagai</div>
                 <div className="font-semibold text-ink">{user.nama}</div>
-                <div className="text-[.8rem] text-ink-3">
+                <div className="break-words text-[.8rem] text-ink-3">
                   {[user.jabatan, user.instansi].filter((v) => v && v !== '-').join(' · ') || 'Institusi belum diisi'} · {user.email}
                 </div>
               </div>
@@ -249,9 +249,9 @@ export default function Kolaborasi() {
             </Reveal>
 
             {/* 2.3 Substansi Riset */}
-            <Reveal className="rounded-xl border border-line bg-white p-6.5 shadow-card" ref={firstErrorRef}>
+            <Reveal className="rounded-xl border border-line bg-white p-4.5 sm:p-6.5 shadow-card" ref={firstErrorRef}>
               <div className="mb-1.5 flex flex-wrap items-center gap-3"><span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">Bagian 1 dari 3</span><span className="text-[.8rem] text-ink-3">Menentukan indikator pertama penilaian tim pakar.</span></div>
-              <h2 className="text-[1.22rem]">Substansi Riset &amp; Relevansi RPJMD</h2>
+              <h2 className="text-[1.08rem] sm:text-[1.22rem]">Substansi Riset &amp; Relevansi RPJMD</h2>
               <hr className="my-4.5 border-line" />
 
               <Field label="Judul riset yang diusulkan" required error={err('judul')}>
@@ -313,9 +313,9 @@ export default function Kolaborasi() {
             </Reveal>
 
             {/* 2.4 Mitra Sasaran */}
-            <Reveal className="rounded-xl border border-line bg-white p-6.5 shadow-card">
+            <Reveal className="rounded-xl border border-line bg-white p-4.5 sm:p-6.5 shadow-card">
               <div className="mb-1.5 flex flex-wrap items-center gap-3"><span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">Bagian 2 dari 3</span><span className="text-[.8rem] text-ink-3">Pilih satu atau lebih penerima manfaat riset.</span></div>
-              <h2 className="text-[1.22rem]">Pemilihan Mitra Sasaran</h2>
+              <h2 className="text-[1.08rem] sm:text-[1.22rem]">Pemilihan Mitra Sasaran</h2>
               <hr className="my-4.5 border-line" />
 
               <div className="grid gap-2.5 sm:grid-cols-2">
@@ -339,9 +339,9 @@ export default function Kolaborasi() {
             </Reveal>
 
             {/* 2.5 Unggah Berkas */}
-            <Reveal className="rounded-xl border border-line bg-white p-6.5 shadow-card">
+            <Reveal className="rounded-xl border border-line bg-white p-4.5 sm:p-6.5 shadow-card">
               <div className="mb-1.5 flex flex-wrap items-center gap-3"><span className="rounded-full bg-maroon-50 px-2.5 py-1 text-[.715rem] font-bold text-maroon-800">Bagian 3 dari 3</span><span className="text-[.8rem] text-ink-3">Berkas PDF, maksimal 10 MB per dokumen.</span></div>
-              <h2 className="text-[1.22rem]">Berkas Proposal &amp; Pakta Integritas</h2>
+              <h2 className="text-[1.08rem] sm:text-[1.22rem]">Berkas Proposal &amp; Pakta Integritas</h2>
               <hr className="my-4.5 border-line" />
 
               <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
@@ -359,7 +359,7 @@ export default function Kolaborasi() {
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={(e) => { e.preventDefault(); setDragOver(false); }}
                 onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files) addFiles(e.dataTransfer.files); }}
-                className={`cursor-pointer rounded-xl border-2 border-dashed p-7.5 text-center transition ${dragOver ? 'border-maroon-600 bg-maroon-50' : 'border-line-strong bg-surface-1 hover:border-maroon-600 hover:bg-maroon-50'}`}
+                className={`cursor-pointer rounded-xl border-2 border-dashed p-5 text-center sm:p-7.5 transition ${dragOver ? 'border-maroon-600 bg-maroon-50' : 'border-line-strong bg-surface-1 hover:border-maroon-600 hover:bg-maroon-50'}`}
               >
                 <Icon name="upload" size={42} className="mx-auto mb-2.5 text-maroon-600" />
                 <div className="mb-0.5 font-bold text-ink">Seret berkas ke sini atau klik untuk memilih</div>
@@ -402,11 +402,11 @@ export default function Kolaborasi() {
 
               <hr className="my-4.5 border-line" />
 
-              <div className="flex flex-wrap gap-2.5">
-                <button type="submit" disabled={submitting} className="rounded-lg bg-maroon-800 px-6.5 py-3.25 text-[.96rem] font-semibold text-white transition hover:bg-maroon-600 disabled:opacity-50">
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
+                <button type="submit" disabled={submitting} className="rounded-lg bg-maroon-800 px-6.5 py-3.25 text-[.92rem] sm:text-[.96rem] font-semibold text-white transition hover:bg-maroon-600 disabled:opacity-50">
                   {submitting ? 'Mengirim ke antrean BRIDA…' : 'Kirim Pengajuan Kolaborasi'}
                 </button>
-                <button type="button" onClick={saveDraft} className="rounded-lg border border-line-strong bg-white px-6.5 py-3.25 text-[.96rem] font-semibold text-maroon-800 hover:border-maroon-800 hover:bg-maroon-50">
+                <button type="button" onClick={saveDraft} className="rounded-lg border border-line-strong bg-white px-6.5 py-3.25 text-[.92rem] font-semibold text-maroon-800 sm:text-[.96rem] hover:border-maroon-800 hover:bg-maroon-50">
                   Simpan sebagai Draf
                 </button>
                 <button type="button" onClick={clearForm} className="rounded-lg px-4 py-3.25 text-[.85rem] font-semibold text-ink-2 hover:bg-surface-1">
@@ -418,8 +418,8 @@ export default function Kolaborasi() {
           </form>
 
           {/* 2.6 Panel Informasi */}
-          <aside className="flex flex-col gap-4.5 lg:sticky lg:top-23 lg:self-start">
-            <Reveal className="rounded-xl border border-line bg-white p-5.5 shadow-card">
+          <aside className="flex flex-col gap-4 sm:gap-4.5 lg:sticky lg:top-23 lg:self-start">
+            <Reveal className="rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card">
               <h3 className="text-[1rem]">Kelengkapan pengajuan</h3>
               <div className="mt-2.5 flex justify-between text-[.78rem] font-semibold text-ink-3"><span>Progres pengisian</span><b className="text-ink">{progressPct}%</b></div>
               <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-line"><div className={`h-full rounded-full transition-all ${progressPct === 100 ? 'bg-success' : 'bg-maroon-800'}`} style={{ width: `${progressPct}%` }} /></div>
@@ -433,7 +433,7 @@ export default function Kolaborasi() {
               </ul>
             </Reveal>
 
-            <Reveal className="rounded-xl border border-line bg-white p-5.5 shadow-card">
+            <Reveal className="rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card">
               <h3 className="text-[1rem]">Alur verifikasi 4 tahap</h3>
               <ol className="m-0 mt-3.5 list-none space-y-4.5 p-0 text-[.855rem]">
                 {[
@@ -454,14 +454,14 @@ export default function Kolaborasi() {
               </div>
             </Reveal>
 
-            <Reveal className="rounded-xl border border-line bg-white p-5.5 shadow-card">
+            <Reveal className="rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card">
               <h3 className="text-[1rem]">Syarat utama pengusul</h3>
               <ul className="m-0 mt-3.5 list-none space-y-1.5 p-0 text-[.81rem]">
                 {SYARAT_UTAMA.map((s) => <li key={s} className="flex items-start gap-2 text-ink-2"><Icon name="check" size={14} className="mt-0.5 flex-none text-success" />{s}</li>)}
               </ul>
             </Reveal>
 
-            <Reveal className="rounded-xl border border-maroon-100 bg-maroon-50 p-5.5">
+            <Reveal className="rounded-xl border border-maroon-100 bg-maroon-50 p-4 sm:p-5.5">
               <h3 className="text-[1rem]">Hotline layanan riset BRIDA</h3>
               <p className="mb-3 text-[.84rem]">Kesulitan mengisi formulir atau butuh klarifikasi skema pendanaan? Hubungi petugas layanan kami pada jam kerja.</p>
               <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[.84rem]">

@@ -27,7 +27,7 @@ function Accordion({ items }) {
             type="button"
             onClick={() => setOpen((o) => (o === i ? -1 : i))}
             aria-expanded={open === i}
-            className={`flex w-full items-center justify-between gap-3.5 px-5 py-4 text-left font-head text-[.93rem] font-bold text-ink transition ${open === i ? 'bg-maroon-50' : 'hover:bg-surface-1'}`}
+            className={`flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left font-head text-[.9rem] sm:gap-3.5 sm:px-5 sm:py-4 sm:text-[.93rem] font-bold text-ink transition ${open === i ? 'bg-maroon-50' : 'hover:bg-surface-1'}`}
           >
             {it.t}
             <Icon name="plus" size={19} className={`flex-none text-maroon-800 transition-transform ${open === i ? 'rotate-45' : ''}`} />
@@ -37,7 +37,7 @@ function Accordion({ items }) {
             aria-hidden={open !== i}
           >
             <div className="min-h-0 overflow-hidden">
-              <div className="border-t border-line px-5 pb-5 pt-4 text-[.87rem] leading-relaxed text-ink-2">{it.d}</div>
+              <div className="border-t border-line px-4 pb-4 pt-3.5 text-[.87rem] sm:px-5 sm:pb-5 sm:pt-4 leading-relaxed text-ink-2">{it.d}</div>
             </div>
           </div>
         </div>
@@ -59,40 +59,40 @@ export default function EtikaRegulasi() {
         ]}
       />
 
-      <section id="klirens" className="scroll-mt-24 py-14">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-6 max-w-[720px]">
+      <section id="klirens" className="scroll-mt-24 py-10 sm:py-14">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="mb-5 max-w-[720px] sm:mb-6">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">5.1 Klirens Etik</span>
-            <h2 className="text-[1.6rem]">Pedoman Komite Klirens Etik Riset Buleleng</h2>
+            <h2 className="text-[1.35rem] sm:text-[1.6rem]">Pedoman Komite Klirens Etik Riset Buleleng</h2>
             <p className="mb-0 text-ink-2">Menjaga agar setiap riset yang melibatkan masyarakat, data pribadi, atau kearifan lokal Buleleng dilakukan secara etis, aman, dan menghormati hak subjek riset.</p>
           </Reveal>
           <Reveal><Accordion items={KLIRENS} /></Reveal>
         </div>
       </section>
 
-      <section id="sop" className="scroll-mt-24 bg-surface-1 py-14">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-6 max-w-[720px]">
+      <section id="sop" className="scroll-mt-24 bg-surface-1 py-10 sm:py-14">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="mb-5 max-w-[720px] sm:mb-6">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">5.2 SOP Keuangan</span>
-            <h2 className="text-[1.6rem]">Standar Operasional Prosedur Pencairan Dana &amp; SPJ</h2>
+            <h2 className="text-[1.35rem] sm:text-[1.6rem]">Standar Operasional Prosedur Pencairan Dana &amp; SPJ</h2>
             <p className="mb-0 text-ink-2">Memastikan akuntabilitas setiap rupiah dana riset daerah, dari pencairan termin hingga pertanggungjawaban dan pengembalian sisa dana.</p>
           </Reveal>
           <Reveal><Accordion items={SOP} /></Reveal>
         </div>
       </section>
 
-      <section id="dokumen-kebijakan" className="scroll-mt-24 bg-surface-1 py-14">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-7 max-w-[720px]">
+      <section id="dokumen-kebijakan" className="scroll-mt-24 bg-surface-1 py-10 sm:py-14">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="mb-5 max-w-[720px] sm:mb-7">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">5.3 Dokumen Kebijakan</span>
-            <h2 className="text-[1.6rem]">Aturan &amp; kebijakan riset BRIDA</h2>
+            <h2 className="text-[1.35rem] sm:text-[1.6rem]">Aturan &amp; kebijakan riset BRIDA</h2>
             <p className="mb-0 text-ink-2">Unduh dokumen resmi yang memuat aturan, standar pelaksanaan, dan kebijakan riset sebagai acuan peneliti dan mitra BRIDA Kabupaten Buleleng.</p>
           </Reveal>
 
-          <Reveal className="rounded-xl border border-line bg-white p-6 shadow-card sm:p-7">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <Reveal className="rounded-xl border border-line bg-white p-4.5 shadow-card sm:p-7">
+            <div className="flex flex-col gap-4 sm:flex-row sm:gap-6 sm:items-center sm:justify-between">
               <div className="flex items-start gap-4">
-                <span className="grid h-14 w-14 flex-none place-items-center rounded-xl bg-maroon-50 text-maroon-800">
+                <span className="grid h-12 w-12 flex-none place-items-center rounded-xl bg-maroon-50 sm:h-14 sm:w-14 text-maroon-800">
                   <Icon name="doc" size={28} />
                 </span>
                 <div>

@@ -20,11 +20,11 @@ export default function Roadmap() {
       />
 
       {/* Dokumen resmi peta jalan BRIDA — taruh berkas di public/images/peta-jalan/dokumen.jpg */}
-      <section className="py-14 sm:py-18">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-7 max-w-[720px]">
+      <section className="py-10 sm:py-14 lg:py-18">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="mb-5 max-w-[720px] sm:mb-7">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Dokumen Resmi</span>
-            <h2 className="text-[1.6rem]">Peta jalan riset dari BRIDA Kabupaten Buleleng</h2>
+            <h2 className="text-[1.35rem] sm:text-[1.6rem]">Peta jalan riset dari BRIDA Kabupaten Buleleng</h2>
             <p className="mb-4 text-ink-2">Bagan resmi peta jalan riset daerah sebagaimana diterbitkan BRIDA, memuat tahapan, sasaran, dan sektor prioritas 2025–2029 secara utuh dalam satu dokumen.</p>
             <a
               href={ROADMAP_DOCUMENT}
@@ -46,11 +46,11 @@ export default function Roadmap() {
         </div>
       </section>
 
-      <section className="py-14">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-8 max-w-[720px]">
+      <section className="py-10 sm:py-14">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="mb-6 max-w-[720px] sm:mb-8">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Garis Waktu</span>
-            <h2 className="text-[1.6rem]">Tahapan tahunan 2025–2029</h2>
+            <h2 className="text-[1.35rem] sm:text-[1.6rem]">Tahapan tahunan 2025–2029</h2>
             <p className="mb-0 text-ink-2">Setiap usulan riset dinilai kesesuaiannya terhadap tahap berjalan pada garis waktu ini, indikator pertama dalam matriks evaluasi tim pakar BRIDA.</p>
           </Reveal>
 
@@ -60,7 +60,7 @@ export default function Roadmap() {
               <span className="timeline-glow absolute left-0 top-0 h-1/3 w-full rounded-full" />
             </div>
             {ROADMAP.map((r, i) => (
-              <Reveal key={r.tahun} delay={i * 70} className="relative mb-7 last:mb-0">
+              <Reveal key={r.tahun} delay={i * 70} className="relative mb-4 last:mb-0 sm:mb-7">
                 <span
                   className={`timeline-marker absolute -left-7.5 top-1.5 z-10 grid h-5 w-5 place-items-center rounded-full border-3 bg-white ${
                   r.status === 'current' ? 'border-maroon-800' : r.status === 'next' ? 'border-line-strong' : 'border-line-strong'
@@ -69,7 +69,7 @@ export default function Roadmap() {
                 >
                   <span className={`h-1.5 w-1.5 rounded-full ${r.status === 'current' ? 'bg-maroon-800' : 'bg-line-strong'}`} />
                 </span>
-                <div className="rounded-xl border border-line bg-white p-5.5 shadow-card">
+                <div className="rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card">
                   <div className="mb-2.5 flex flex-wrap items-center gap-3">
                     <span className={`font-head text-[1.15rem] font-extrabold ${r.status === 'current' ? 'text-maroon-800' : 'text-ink-3'}`}>{r.tahun}</span>
                     <h3 className="m-0 text-[1.05rem]">{r.tema}</h3>
@@ -89,19 +89,19 @@ export default function Roadmap() {
         </div>
       </section>
 
-      <section className="bg-surface-1 py-14">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-8 max-w-[720px]">
+      <section className="bg-surface-1 py-10 sm:py-14">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="mb-6 max-w-[720px] sm:mb-8">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Sektor Prioritas</span>
-            <h2 className="text-[1.6rem]">Lima sektor riset unggulan Buleleng</h2>
+            <h2 className="text-[1.35rem] sm:text-[1.6rem]">Lima sektor riset unggulan Buleleng</h2>
             <p className="mb-0 text-ink-2">Peta jalan lintas tahun diterjemahkan ke dalam sasaran per sektor, menjadi rujukan utama tim pakar saat menilai kesesuaian usulan riset dengan prioritas daerah.</p>
           </Reveal>
 
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-3 sm:gap-5">
             {SEKTOR_ROADMAP.map((s, i) => (
-              <Reveal key={s.id} id={`sektor-${s.id}`} delay={i * 60} className="scroll-mt-24 rounded-xl border border-line bg-white p-6 shadow-card">
-                <div className="grid gap-5 lg:grid-cols-[auto_1fr_auto]">
-                  <span className="grid h-13 w-13 flex-none place-items-center rounded-xl text-gold-500" style={{ backgroundImage: 'linear-gradient(140deg,#8E1B1B,#C62828)' }}>
+              <Reveal key={s.id} id={`sektor-${s.id}`} delay={i * 60} className="scroll-mt-24 rounded-xl border border-line bg-white p-4.5 sm:p-6 shadow-card">
+                <div className="grid gap-3.5 sm:gap-5 lg:grid-cols-[auto_1fr_auto]">
+                  <span className="grid h-11 w-11 flex-none place-items-center rounded-xl text-gold-500 sm:h-13 sm:w-13" style={{ backgroundImage: 'linear-gradient(140deg,#8E1B1B,#C62828)' }}>
                     <Icon name={s.ikon} size={26} />
                   </span>
                   <div>
@@ -112,7 +112,7 @@ export default function Roadmap() {
                     </div>
                   </div>
                   <div className="flex flex-row items-center gap-2 lg:flex-col lg:items-end lg:justify-center">
-                    <div className="font-head text-[1.8rem] font-extrabold leading-none text-maroon-800">{s.riset}</div>
+                    <div className="font-head text-[1.5rem] font-extrabold sm:text-[1.8rem] leading-none text-maroon-800">{s.riset}</div>
                     <div className="text-[.76rem] font-semibold text-ink-3">riset terkatalog</div>
                   </div>
                 </div>

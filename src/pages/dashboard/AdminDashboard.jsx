@@ -44,7 +44,7 @@ const STATUS_AKUN = {
 
 function Card({ title, desc, action, children }) {
   return (
-    <section className="rounded-xl border border-line bg-white p-5.5">
+    <section className="rounded-xl border border-line bg-white p-4 sm:p-5.5">
       {(title || action) && (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -95,7 +95,7 @@ function Ringkasan() {
   if (!st) {
     return error
       ? <ErrorState error={error} onRetry={reload} title="Statistik gagal dimuat" />
-      : <SkeletonGrid count={4} className="grid grid-cols-2 gap-4 lg:grid-cols-4" itemClassName="h-28" />;
+      : <SkeletonGrid count={4} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" itemClassName="h-28" />;
   }
 
   const perBidang = BIDANG.map((b) => ({ label: b.nama, value: (st.by_category || []).find((c) => c.value === b.nama)?.total || 0 }))
@@ -111,8 +111,8 @@ function Ringkasan() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div className="flex flex-col gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {kpi.map((k) => (
           <div key={k.l} className="rounded-xl border border-line bg-white p-4.5">
             <div className="text-[.78rem] font-semibold text-ink-3">{k.l}</div>
@@ -122,7 +122,7 @@ function Ringkasan() {
         ))}
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-4 sm:gap-5 lg:grid-cols-2">
         <Card title="Riset aktif per bidang prioritas" desc="Riset yang disetujui dan sedang berjalan">
           <HBarChart rows={perBidang} ariaLabel="Jumlah riset aktif per bidang prioritas" />
         </Card>
@@ -205,7 +205,7 @@ function FormPengguna({ data, selfId, onClose, onSaved }) {
           {isCreate && <p className="mb-4 text-[.8rem] text-ink-3 sm:col-span-2">Akun yang dibuat administrator langsung berstatus terverifikasi.</p>}
         </div>
         {serverError && <p role="alert" className="mb-3 text-[.84rem] font-semibold text-danger">{serverError}</p>}
-        <div className="flex justify-end gap-2.5 border-t border-line pt-4">
+        <div className="flex flex-wrap justify-end gap-2.5 border-t border-line pt-4">
           <button type="button" onClick={onClose} className="rounded-lg border border-line-strong px-5 py-2.5 text-sm font-semibold text-ink-2 hover:bg-surface-1">Batal</button>
           <button type="submit" disabled={simpan.loading} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon-600 disabled:opacity-50">
             {simpan.loading ? 'Menyimpan…' : isCreate ? 'Buat pengguna' : 'Simpan perubahan'}
@@ -232,14 +232,14 @@ function Pengguna() {
   const totalPage = meta?.total_page || 1;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4 sm:gap-5">
       <Card
         title="Manajemen pengguna"
         desc="Tambah, sunting, atau hapus akun pengguna portal. Perubahan langsung tersimpan di server."
         action={
           <div className="flex flex-wrap gap-2">
             <input type="search" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="Cari nama atau surel…"
-              className="input-base w-auto min-w-[200px]" aria-label="Cari akun" />
+              className="input-base w-auto min-w-[min(200px,100%)]" aria-label="Cari akun" />
             <select value={role} onChange={(e) => { setRole(e.target.value); setPage(1); }} className="input-base w-auto" aria-label="Saring peran">
               <option value="">Semua peran</option>
               {BACKEND_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
@@ -370,7 +370,7 @@ function KatalogRiset() {
       desc="Seluruh judul riset yang tercatat dalam basis data BRIDA, termasuk yang masih dalam proses review."
       action={
         <input type="search" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="Cari judul riset…"
-          className="input-base w-auto min-w-[240px]" aria-label="Cari riset" />
+          className="input-base w-auto min-w-[min(240px,100%)]" aria-label="Cari riset" />
       }
     >
       <AsyncState loading={loading} error={error} isEmpty={list.length === 0} onRetry={reload}
@@ -420,7 +420,7 @@ function MonitoringRiset() {
 
   return (
     <AsyncState loading={loading && !data} error={error} isEmpty={list.length === 0} onRetry={reload}
-      skeleton={<SkeletonGrid count={4} className="grid grid-cols-2 gap-4 lg:grid-cols-4" itemClassName="h-28" />}
+      skeleton={<SkeletonGrid count={4} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" itemClassName="h-28" />}
       empty={<EmptyState icon="flask" title="Belum ada riset tercatat" />}>
       <RisetMonitoringModule risetData={list} />
     </AsyncState>
@@ -724,7 +724,7 @@ function FormDokumentasi({ data, onClose, onSaved }) {
           )}
         </div>
         {simpan.error && <p role="alert" className="mb-3 text-[.84rem] font-semibold text-danger">{errorMessage(simpan.error)}</p>}
-        <div className="flex justify-end gap-2.5 border-t border-line pt-4">
+        <div className="flex flex-wrap justify-end gap-2.5 border-t border-line pt-4">
           <button type="button" onClick={onClose} className="rounded-lg border border-line-strong px-5 py-2.5 text-sm font-semibold text-ink-2 hover:bg-surface-1">Batal</button>
           <button type="submit" disabled={simpan.loading} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon-600 disabled:opacity-50">
             {simpan.loading ? 'Menyimpan…' : isCreate ? 'Simpan dokumentasi' : 'Simpan perubahan'}
@@ -754,7 +754,7 @@ function KelolaDokumentasi() {
           {list.map((d) => (
             <li key={d.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-line p-3.5">
               <span className="rounded-full bg-surface-2 px-2.5 py-1 text-[.71rem] font-bold text-ink-2">{(d.bidang || 'Umum').split(' ')[0]}</span>
-              <span className="min-w-[240px] flex-1">
+              <span className="min-w-[min(240px,100%)] flex-1">
                 <span className="block text-[.87rem] font-semibold text-ink">{d.judul}</span>
                 <span className="block text-[.76rem] text-ink-3">{tanggal(d.tanggal)} · {d.risetKode} · {d.foto.length} foto</span>
               </span>
@@ -842,7 +842,7 @@ function FormPendanaan({ data, onClose, onSaved }) {
           <Field label="Nama situs"><input className="input-base" value={form.situsNama} onChange={(e) => set('situsNama', e.target.value)} /></Field>
         </div>
         {simpan.error && <p role="alert" className="mb-3 text-[.84rem] font-semibold text-danger">{errorMessage(simpan.error)}</p>}
-        <div className="flex justify-end gap-2.5 border-t border-line pt-4">
+        <div className="flex flex-wrap justify-end gap-2.5 border-t border-line pt-4">
           <button type="button" onClick={onClose} className="rounded-lg border border-line-strong px-5 py-2.5 text-sm font-semibold text-ink-2 hover:bg-surface-1">Batal</button>
           <button type="submit" disabled={simpan.loading} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon-600 disabled:opacity-50">
             {simpan.loading ? 'Menyimpan…' : isCreate ? 'Tambahkan skema' : 'Simpan perubahan'}
@@ -961,7 +961,7 @@ function KelolaBerita() {
       action={
         <div className="flex flex-wrap gap-2">
           <input type="search" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="Cari judul…"
-            className="input-base w-auto min-w-[200px]" aria-label="Cari berita" />
+            className="input-base w-auto min-w-[min(200px,100%)]" aria-label="Cari berita" />
           <button type="button" onClick={() => setForm({})} disabled={!kategori.data}
             title={kategori.error ? 'Kategori gagal dimuat' : undefined}
             className="flex items-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600 disabled:opacity-50">
@@ -984,7 +984,7 @@ function KelolaBerita() {
               <span className={`rounded-full px-2.5 py-1 text-[.71rem] font-bold ${n.status === 'published' ? 'bg-success-bg text-success' : 'bg-warning-bg text-warning'}`}>
                 {NEWS_STATUS[n.status] || n.status}
               </span>
-              <span className="min-w-[240px] flex-1">
+              <span className="min-w-[min(240px,100%)] flex-1">
                 <span className="block text-[.87rem] font-semibold text-ink">{n.judul}</span>
                 <span className="block text-[.76rem] text-ink-3">{tanggal(n.tanggal)} · {n.penulis}</span>
               </span>
@@ -1034,7 +1034,7 @@ function Konten() {
   const { user } = useAuth();
   const admin = user.backendRole === 'admin';
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4 sm:gap-5">
       <KelolaBerita />
       {admin && <KelolaDokumentasi />}
       {admin && <KelolaPendanaan />}
@@ -1130,7 +1130,7 @@ function Pengaturan() {
   if (!data) {
     return error
       ? <ErrorState error={error} onRetry={reload} title="Pengaturan gagal dimuat" />
-      : <SkeletonGrid count={3} className="flex flex-col gap-5" itemClassName="h-40" />;
+      : <SkeletonGrid count={3} className="flex flex-col gap-4 sm:gap-5" itemClassName="h-40" />;
   }
   return <FormPengaturan key={loading ? 'muat' : 'siap'} awal={data} onSaved={reload} />;
 }

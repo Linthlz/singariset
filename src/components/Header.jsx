@@ -34,6 +34,13 @@ function navClass({ isActive }) {
   }`;
 }
 
+/* Versi menu HP: baris lebih tinggi (±44px) agar mudah disentuh. */
+function mobileNavClass({ isActive }) {
+  return `block rounded-lg px-3 py-2.75 text-[.9rem] font-semibold transition ${
+    isActive ? 'bg-maroon-50 text-maroon-800' : 'text-ink-2 hover:bg-surface-1 hover:text-maroon-800'
+  }`;
+}
+
 /* ---------- Dropdown navigasi ---------- */
 function NavDropdown({ item, terbuka, setTerbuka }) {
   const ref = useRef(null);
@@ -124,7 +131,7 @@ function AccountMenu({ onNavigate }) {
       <button
         type="button" aria-haspopup="true" aria-expanded={open}
         onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
-        className="flex items-center gap-2 rounded-full border border-line-strong bg-white px-2.5 py-1.5 text-[.79rem] font-semibold text-ink-2 transition hover:border-maroon-600 hover:text-maroon-800"
+        className="flex min-h-11 items-center gap-2 rounded-full border border-line-strong bg-white px-2.5 py-1.5 text-[.79rem] sm:min-h-0 font-semibold text-ink-2 transition hover:border-maroon-600 hover:text-maroon-800"
       >
         <span className="grid h-6 w-6 flex-none place-items-center rounded-full bg-maroon-800 text-[.66rem] font-extrabold text-white">{peran.init}</span>
         <span className="hidden max-w-[120px] truncate sm:inline">{user.nama.split(',')[0]}</span>
@@ -132,7 +139,7 @@ function AccountMenu({ onNavigate }) {
       </button>
 
       {open && (
-        <div role="menu" className="absolute right-0 top-[calc(100%+8px)] z-[70] w-72 rounded-2xl border border-line bg-white p-1.5 shadow-pop">
+        <div role="menu" className="absolute right-0 top-[calc(100%+8px)] z-[70] w-[min(18rem,calc(100vw-2rem))] rounded-2xl border border-line bg-white p-1.5 shadow-pop">
           <div className="border-b border-line px-3 pb-3 pt-2.5">
             <div className="text-[.85rem] font-bold text-ink">{user.nama}</div>
             <div className="text-[.75rem] text-ink-3">{user.instansi}</div>
@@ -211,11 +218,11 @@ export default function Header() {
 
   return (
     <div className={`sticky top-0 z-[60] transition-transform duration-300 ease-out ${tersembunyi ? '-translate-y-full' : 'translate-y-0'}`}>
-      <div className="bg-maroon-900 py-1.5 text-[.76rem] text-white/82">
-        <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-center gap-3.5 px-5 sm:justify-between">
+      <div className="bg-maroon-900 py-1.5 text-[.72rem] text-white/82 sm:text-[.76rem]">
+        <div className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-center gap-3.5 px-4 sm:justify-between sm:px-5">
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-4 flex-none rounded-sm" style={{ background: 'linear-gradient(180deg,#C62828 50%,#fff 50%)' }} aria-hidden="true" />
-            <span>Portal Resmi <b>BRIDA Kabupaten Buleleng</b>, Pemerintah Kabupaten Buleleng, Provinsi Bali</span>
+            <span>Portal Resmi <b>BRIDA Kabupaten Buleleng</b><span className="hidden sm:inline">, Pemerintah Kabupaten Buleleng, Provinsi Bali</span></span>
           </div>
           <div className="hidden gap-4 sm:flex">
             <Link to="/etika-regulasi#pengaduan" className="text-white/90 hover:text-gold-500">Pengaduan Riset</Link>
@@ -226,12 +233,12 @@ export default function Header() {
       </div>
 
       <header className={`border-b border-line bg-white/96 backdrop-blur-md transition-shadow ${stuck ? 'shadow-lift' : ''}`}>
-        <div className="mx-auto flex max-w-[1240px] items-center gap-4 px-5 py-2.5">
-          <Link to="/" className="mr-auto flex items-center gap-3 no-underline">
+        <div className="mx-auto flex max-w-[1240px] items-center gap-3 px-4 py-2 sm:gap-4 sm:px-5 sm:py-2.5">
+          <Link to="/" className="mr-auto flex min-w-0 items-center gap-2.5 no-underline sm:gap-3">
             <LionMark size={42} />
-            <span className="hidden flex-col leading-tight sm:flex">
-              <span className="font-head text-[1rem] font-extrabold tracking-tight text-maroon-800">SINGA RISET BULELENG</span>
-              <span className="text-[.68rem] font-medium text-ink-3">Sinergi Gerakan Akademisi dan Riset Buleleng</span>
+            <span className="hidden min-w-0 flex-col leading-tight min-[370px]:flex">
+              <span className="truncate font-head text-[.82rem] font-extrabold tracking-tight text-maroon-800 sm:text-[1rem]">SINGA RISET BULELENG</span>
+              <span className="hidden text-[.68rem] font-medium text-ink-3 sm:block">Sinergi Gerakan Akademisi dan Riset Buleleng</span>
             </span>
           </Link>
 
@@ -243,9 +250,9 @@ export default function Header() {
             )}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-none items-center gap-2">
             <button type="button" onClick={() => setMobileSearch((s) => !s)} aria-label="Buka pencarian"
-              className="grid h-9.5 w-9.5 place-items-center rounded-lg border border-line-strong text-maroon-800 lg:hidden">
+              className="grid h-11 w-11 place-items-center rounded-lg border border-line-strong text-maroon-800 sm:h-9.5 sm:w-9.5 lg:hidden">
               <Icon name="search" size={18} />
             </button>
 
@@ -263,20 +270,20 @@ export default function Header() {
             )}
 
             <button type="button" onClick={() => setMobileOpen((o) => !o)} aria-label="Buka menu navigasi" aria-expanded={mobileOpen}
-              className="grid h-9.5 w-9.5 place-items-center rounded-lg border border-line-strong text-maroon-800 lg:hidden">
+              className="grid h-11 w-11 place-items-center rounded-lg border border-line-strong text-maroon-800 sm:h-9.5 sm:w-9.5 lg:hidden">
               <Icon name="menu" size={20} />
             </button>
           </div>
         </div>
 
         {mobileSearch && (
-          <div className="border-t border-line bg-surface-1 px-5 py-3 lg:hidden">
+          <div className="border-t border-line bg-surface-1 px-4 py-3 sm:px-5 lg:hidden">
             <SearchBox variant="inline" onNavigate={() => setMobileSearch(false)} />
           </div>
         )}
 
         {mobileOpen && (
-          <nav className="flex max-h-[70vh] flex-col gap-0.5 overflow-y-auto border-t border-line bg-white px-5 pb-4 pt-2.5 shadow-lift lg:hidden" aria-label="Navigasi mobile">
+          <nav className="flex max-h-[calc(100dvh-7rem)] flex-col gap-0.5 overflow-y-auto overscroll-contain border-t border-line bg-white px-4 pb-4 pt-2.5 shadow-lift sm:px-5 lg:hidden" aria-label="Navigasi mobile">
             {navItems.map((n) =>
               n.anak ? (
                 <div key={n.label}>
@@ -284,7 +291,7 @@ export default function Header() {
                     type="button"
                     onClick={() => setGrupMobile(grupMobile === n.label ? null : n.label)}
                     aria-expanded={grupMobile === n.label}
-                    className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-[.855rem] font-semibold text-ink-2 hover:bg-surface-1 hover:text-maroon-800"
+                    className="flex w-full items-center justify-between rounded-lg px-3 py-2.75 text-[.9rem] font-semibold text-ink-2 hover:bg-surface-1 hover:text-maroon-800"
                   >
                     {n.label}
                     <Icon name="chevronDown" size={15} className={`transition-transform ${grupMobile === n.label ? 'rotate-180' : ''}`} />
@@ -293,7 +300,7 @@ export default function Header() {
                     <div className="mb-1 ml-3 border-l border-line pl-3">
                       {n.anak.map((a) => (
                         <Link key={a.href} to={a.href} onClick={() => setMobileOpen(false)}
-                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[.83rem] font-semibold text-ink-2 no-underline hover:bg-surface-1 hover:text-maroon-800">
+                          className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[.86rem] font-semibold text-ink-2 no-underline hover:bg-surface-1 hover:text-maroon-800">
                           <Icon name={a.ikon} size={15} className="flex-none text-maroon-800" />
                           {a.label}
                         </Link>
@@ -302,7 +309,7 @@ export default function Header() {
                   )}
                 </div>
               ) : (
-                <NavLink key={n.href} to={n.href} end={n.href === '/'} onClick={() => setMobileOpen(false)} className={navClass}>{n.label}</NavLink>
+                <NavLink key={n.href} to={n.href} end={n.href === '/'} onClick={() => setMobileOpen(false)} className={mobileNavClass}>{n.label}</NavLink>
               )
             )}
 

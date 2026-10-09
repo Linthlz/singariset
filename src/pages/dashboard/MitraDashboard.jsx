@@ -41,7 +41,7 @@ const PESAN_STATUS = {
 
 function Card({ title, desc, action, children }) {
   return (
-    <section className="rounded-xl border border-line bg-white p-5.5">
+    <section className="rounded-xl border border-line bg-white p-4 sm:p-5.5">
       {(title || action) && (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -204,8 +204,8 @@ function PengajuanSaya() {
   ];
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div className="flex flex-col gap-4 sm:gap-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {kpi.map((k) => (
           <div key={k.l} className="rounded-xl border border-line bg-white p-4.5">
             <div className="text-[.78rem] font-semibold text-ink-3">{k.l}</div>

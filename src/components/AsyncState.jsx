@@ -32,7 +32,7 @@ export function ErrorState({ error, onRetry, title = 'Gagal memuat data', compac
 
 export function EmptyState({ title = 'Belum ada data', text, icon = 'search', action }) {
   return (
-    <div className="py-14 text-center text-ink-3">
+    <div className="py-10 text-center text-ink-3 sm:py-14">
       <Icon name={icon} size={44} className="mx-auto mb-3.5 opacity-40" />
       <h3 className="text-[1.02rem] text-ink-2">{title}</h3>
       {text && <p className="mb-0">{text}</p>}

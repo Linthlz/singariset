@@ -82,7 +82,7 @@ function RisetDetail({ riset }) {
     : (Array.isArray(riset.tim) ? riset.tim.map((nama) => ({ nama })) : []);
 
   return (
-    <section className="rounded-xl border border-line bg-white p-5">
+    <section className="rounded-xl border border-line bg-white p-4 sm:p-5">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -234,8 +234,8 @@ export default function RisetMonitoringModule({ risetData = RISET }) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div className="flex flex-col gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {[
           { label: 'Total riset', value: risetData.length, detail: 'Di direktori daerah' },
           { label: 'Sedang berjalan', value: aktif, detail: 'Belum selesai atau ditolak' },
@@ -250,7 +250,7 @@ export default function RisetMonitoringModule({ risetData = RISET }) {
         ))}
       </div>
 
-      <section className="rounded-xl border border-line bg-white p-5">
+      <section className="rounded-xl border border-line bg-white p-4 sm:p-5">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="m-0 text-[1rem]">Direktori riset daerah</h2>

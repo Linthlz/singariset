@@ -33,7 +33,7 @@ export default function DashboardLayout({ menu, active, onSelect, title, subtitl
   return (
     <div className="fixed inset-0 flex overflow-hidden bg-surface-1">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 flex w-[258px] shrink-0 flex-col bg-maroon-950 text-white transition-transform lg:static lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 flex w-[min(258px,85vw)] shrink-0 flex-col bg-maroon-950 text-white transition-transform lg:static lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
         <Link to="/" className="flex items-center gap-2.5 border-b border-white/10 px-5 py-4 no-underline">
           <LionMark size={34} />
           <span className="flex flex-col leading-tight">
@@ -81,13 +81,13 @@ export default function DashboardLayout({ menu, active, onSelect, title, subtitl
 
       {/* Konten */}
       <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-white/95 px-5 py-3.5 backdrop-blur-md">
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-white/95 px-4 py-3 backdrop-blur-md sm:px-5 sm:py-3.5">
           <button type="button" onClick={() => setOpen(true)} aria-label="Buka menu dashboard"
-            className="grid h-9 w-9 flex-none place-items-center rounded-lg border border-line-strong text-maroon-800 lg:hidden">
+            className="grid h-11 w-11 flex-none place-items-center rounded-lg border border-line-strong text-maroon-800 sm:h-9 sm:w-9 lg:hidden">
             <Icon name="menu" size={18} />
           </button>
           <div className="min-w-0 flex-1">
-            <h1 className="m-0 truncate text-[1.05rem] font-extrabold">{title}</h1>
+            <h1 className="m-0 truncate text-[.98rem] font-extrabold sm:text-[1.05rem]">{title}</h1>
             {subtitle && <p className="m-0 truncate text-[.78rem] text-ink-3">{subtitle}</p>}
           </div>
           <NotificationBell />
@@ -96,7 +96,7 @@ export default function DashboardLayout({ menu, active, onSelect, title, subtitl
           </Link>
         </header>
 
-        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto px-5 py-6">{children}</main>
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-6">{children}</main>
       </div>
     </div>
   );

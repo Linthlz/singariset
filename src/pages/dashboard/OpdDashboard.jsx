@@ -138,8 +138,8 @@ function RiwayatMonev() {
   const riwayat = entriesToRecords(data || []);
 
   return (
-    <div className="flex flex-col gap-5">
-      <section className="rounded-xl border border-line bg-white p-5.5">
+    <div className="flex flex-col gap-4 sm:gap-5">
+      <section className="rounded-xl border border-line bg-white p-4 sm:p-5.5">
         <h2 className="m-0 text-[1.05rem]">Riwayat input Monev</h2>
         <p className="mt-1 text-[.84rem] text-ink-3">Hasil monitoring instansi Anda. Perbarui jawaban bila ada perkembangan tindak lanjut, selama laporan belum diverifikasi BRIDA.</p>
 

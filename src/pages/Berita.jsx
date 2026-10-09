@@ -38,7 +38,7 @@ function TautanSosmed({ ukuran = 'kecil' }) {
           aria-label={`Lihat unggahan berita ini di ${k.nama}`}
           title={`Buka di ${k.nama}`}
           className={`grid place-items-center rounded-lg border border-line text-ink-2 transition hover:text-white ${k.warna} ${
-            kecil ? 'h-8 w-8' : 'h-9.5 w-9.5'
+            kecil ? 'h-9 w-9 sm:h-8 sm:w-8' : 'h-10 w-10 sm:h-9.5 sm:w-9.5'
           }`}
         >
           <Icon name={k.id} size={kecil ? 15 : 17} />
@@ -86,17 +86,17 @@ export default function Berita() {
         ]}
       />
 
-      <section className="py-10">
-        <div className="mx-auto max-w-[1240px] px-5">
+      <section className="py-6 sm:py-10">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
           {/* Penyaring */}
-          <Reveal className="mb-7 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Saring kategori berita">
+          <Reveal className="mb-5 flex flex-wrap items-center justify-between gap-3 sm:mb-7">
+            <div className="no-scrollbar -mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0" role="group" aria-label="Saring kategori berita">
               {kategoriList.map((k) => {
                 const aktif = kategori === k.slug;
                 return (
                   <button
                     key={k.slug || 'semua'} type="button" aria-pressed={aktif} onClick={() => pilihKategori(k.slug)}
-                    className={`rounded-full border px-3.5 py-1.75 text-[.8rem] font-semibold transition ${
+                    className={`flex-none whitespace-nowrap rounded-full border px-3.5 py-2 text-[.8rem] font-semibold transition sm:py-1.75 ${
                       aktif ? 'border-maroon-800 bg-maroon-800 text-white' : 'border-line-strong bg-white text-ink-2 hover:border-maroon-600 hover:text-maroon-800'
                     }`}
                   >
@@ -108,7 +108,7 @@ export default function Berita() {
             <input
               type="search" value={q} onChange={(e) => ubahCari(e.target.value)}
               placeholder="Cari judul berita…" aria-label="Cari berita"
-              className="input-base w-auto min-w-[240px]"
+              className="input-base w-full sm:w-auto sm:min-w-[240px]"
             />
           </Reveal>
 
@@ -132,13 +132,13 @@ export default function Berita() {
             <div className={loading ? 'opacity-60 transition-opacity' : 'transition-opacity'} aria-busy={loading}>
               {/* Berita utama */}
               {utama && (
-              <Reveal key={utama.id} className="mb-8 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+              <Reveal key={utama.id} className="mb-5 overflow-hidden sm:mb-8 rounded-2xl border border-line bg-white shadow-card">
                 <div className="grid lg:grid-cols-2">
                   <SmartImage
                     src={utama.gambar} alt={utama.judul} seed={0}
                     className="aspect-video lg:aspect-auto lg:min-h-[340px]"
                   />
-                  <div className="flex flex-col p-6 sm:p-8">
+                  <div className="flex flex-col p-4 sm:p-8">
                     <div className="mb-3 flex flex-wrap items-center gap-2.5">
                       <span className="rounded-full px-2.5 py-1 text-[.715rem] font-bold text-white" style={{ background: KAT_WARNA[utama.kategori] || '#8E1B1B' }}>
                         {utama.kategori}
@@ -149,7 +149,7 @@ export default function Berita() {
                     <div className="mb-3 flex items-center gap-1.75 text-[.78rem] font-semibold text-ink-3">
                       <Icon name="calendar" size={13} />{tanggal(utama.tanggal)} · {utama.penulis}
                     </div>
-                    <p className="mb-5 flex-1 text-[.9rem] text-ink-2">{utama.ringkas}</p>
+                    <p className="mb-4 flex-1 text-[.9rem] text-ink-2 sm:mb-5">{utama.ringkas}</p>
 
                     <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-4">
                       <button
@@ -169,7 +169,7 @@ export default function Berita() {
               )}
 
               {/* Daftar berita lain */}
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
                 {sisa.map((n, i) => (
                   <Reveal key={n.id} delay={i * 50} className="flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white shadow-card transition hover:-translate-y-1 hover:shadow-pop">
                     <SmartImage src={n.gambar} alt={n.judul} seed={i + 1} className="aspect-video">
@@ -181,7 +181,7 @@ export default function Berita() {
                       </span>
                     </SmartImage>
 
-                    <div className="flex flex-1 flex-col p-4.5">
+                    <div className="flex flex-1 flex-col p-4 sm:p-4.5">
                       <div className="mb-1.75 flex items-center gap-1.75 text-[.74rem] font-semibold text-ink-3">
                         <Icon name="calendar" size={13} />{tanggal(n.tanggal)}
                       </div>
@@ -203,7 +203,7 @@ export default function Berita() {
               </div>
 
               {totalPage > 1 && (
-                <nav className="mt-8 flex items-center justify-center gap-3" aria-label="Halaman berita">
+                <nav className="mt-6 flex flex-wrap items-center justify-center gap-2.5 sm:mt-8 sm:gap-3" aria-label="Halaman berita">
                   <button type="button" disabled={page <= 1 || loading} onClick={() => setPage((p) => p - 1)}
                     className="rounded-lg border border-line-strong bg-white px-4 py-2 text-[.84rem] font-semibold text-ink-2 transition hover:border-maroon-600 hover:text-maroon-800 disabled:opacity-40">
                     ← Sebelumnya
@@ -221,22 +221,22 @@ export default function Berita() {
       </section>
 
       {/* Ajakan mengikuti kanal */}
-      <section className="pb-16">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="rounded-2xl p-7 text-white sm:p-9" style={{ backgroundImage: 'linear-gradient(135deg,#8E1B1B,#6B1414)' }}>
-            <div className="flex flex-wrap items-center justify-between gap-6">
+      <section className="pb-10 sm:pb-16">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="rounded-2xl p-5 text-white sm:p-9" style={{ backgroundImage: 'linear-gradient(135deg,#8E1B1B,#6B1414)' }}>
+            <div className="flex flex-wrap items-center justify-between gap-5 sm:gap-6">
               <div className="max-w-[560px]">
-                <h2 className="mb-2 text-[1.35rem] text-white">Ikuti kanal resmi BRIDA Buleleng</h2>
+                <h2 className="mb-2 text-[1.2rem] text-white sm:text-[1.35rem]">Ikuti kanal resmi BRIDA Buleleng</h2>
                 <p className="m-0 text-white/80">
                   Dokumentasi kegiatan, pengumuman pendanaan, dan cuplikan hasil riset juga kami bagikan
                   melalui media sosial. Pilih kanal yang paling nyaman Anda ikuti.
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2.5">
+              <div className="grid w-full grid-cols-2 gap-2.5 sm:flex sm:w-auto sm:flex-wrap">
                 {KANAL.map((k) => (
                   <a
                     key={k.id} href={k.href} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-[.85rem] font-semibold text-white no-underline backdrop-blur transition hover:bg-white/20"
+                    className="flex items-center justify-center gap-2 rounded-lg border border-white/25 bg-white/10 px-4 py-2.75 sm:py-2.5 text-[.85rem] font-semibold text-white no-underline backdrop-blur transition hover:bg-white/20"
                   >
                     <Icon name={k.id} size={17} /> {k.nama}
                   </a>

@@ -51,10 +51,10 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-surface-1">
-      <div className="mx-auto flex min-h-screen max-w-[1240px] items-center justify-center px-5 py-12">
+      <div className="mx-auto flex min-h-screen max-w-[1240px] items-center justify-center px-4 py-8 sm:px-5 sm:py-12">
         <div className="w-full max-w-[420px]">
 
-          <Link to="/" className="mb-8 flex items-center justify-center gap-3 no-underline">
+          <Link to="/" className="mb-6 flex items-center justify-center gap-3 no-underline sm:mb-8">
             <LionMark size={44} />
             <span className="flex flex-col leading-tight">
               <span className="font-head text-[1rem] font-extrabold tracking-tight text-maroon-800">SINGA RISET BULELENG</span>
@@ -62,7 +62,7 @@ export default function Login() {
             </span>
           </Link>
 
-          <div className="rounded-xl border border-line bg-white p-7">
+          <div className="rounded-xl border border-line bg-white p-5 sm:p-7">
             <h1 className="mb-1 text-[1.35rem]">Masuk ke akun Anda</h1>
             <p className="mb-6 text-[.875rem] text-ink-2">
               Gunakan akun mitra, instansi, atau perangkat daerah yang telah terdaftar.

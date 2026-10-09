@@ -16,10 +16,10 @@ export default function RisetDetail() {
 
   if (error?.status === 404) return <NotFound message={`Riset "${slug}" tidak ditemukan dalam katalog publik.`} />;
   if (loading && !r) {
-    return <div className="mx-auto max-w-[1240px] px-5 py-12"><SkeletonGrid count={3} className="flex flex-col gap-5" itemClassName="h-48" /></div>;
+    return <div className="mx-auto max-w-[1240px] px-4 sm:px-5 py-12"><SkeletonGrid count={3} className="flex flex-col gap-5" itemClassName="h-48" /></div>;
   }
   if (error && !r) {
-    return <div className="mx-auto max-w-[1240px] px-5 py-12"><ErrorState error={error} onRetry={reload} title="Gagal memuat detail riset" /></div>;
+    return <div className="mx-auto max-w-[1240px] px-4 sm:px-5 py-12"><ErrorState error={error} onRetry={reload} title="Gagal memuat detail riset" /></div>;
   }
 
   const b = r.bidangId ? bidangById(r.bidangId) : { nama: r.bidang || 'Umum', warna: '#6B7280' };
@@ -29,9 +29,9 @@ export default function RisetDetail() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-maroon-900 py-10 text-white" style={{ backgroundImage: 'linear-gradient(135deg,#7A1616 0%,#6B1414 55%,#3B0A0A 100%)' }}>
+      <section className="relative overflow-hidden bg-maroon-900 py-8 text-white sm:py-10" style={{ backgroundImage: 'linear-gradient(135deg,#7A1616 0%,#6B1414 55%,#3B0A0A 100%)' }}>
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(560px 300px at 92% 12%, rgba(249,199,79,.18), transparent 62%)' }} />
-        <div className="relative z-10 mx-auto max-w-[1240px] px-5">
+        <div className="relative z-10 mx-auto max-w-[1240px] px-4 sm:px-5">
           <nav className="mb-4 flex flex-wrap items-center gap-2 text-[.78rem] text-white/60">
             <Link to="/" className="text-white/82 hover:text-gold-500">Beranda</Link><span className="opacity-50">/</span>
             <Link to="/riset" className="text-white/82 hover:text-gold-500">Riset Daerah</Link><span className="opacity-50">/</span>
@@ -43,16 +43,16 @@ export default function RisetDetail() {
             <span className="rounded-full bg-white/14 px-3 py-1 text-[.78rem] font-bold text-white">{r.kode}</span>
           </div>
           <h1 className="max-w-[900px] text-[clamp(1.5rem,3vw,2.2rem)] text-white">{r.judul}</h1>
-          <p className="mt-2 max-w-[720px] text-white/80">
+          <p className="mt-2 max-w-[720px] text-[.92rem] text-white/80 sm:text-base">
             {[r.pengusul, r.institusi, r.lokasi && `Kec. ${r.lokasi}`, r.periode].filter(Boolean).join(' · ')}
           </p>
         </div>
       </section>
 
-      <section className="py-10">
-        <div className="mx-auto grid max-w-[1240px] gap-6 px-5 lg:grid-cols-[1.6fr_1fr]">
-          <div className="flex flex-col gap-6">
-            <Reveal className="rounded-xl border border-line bg-white p-6 shadow-card">
+      <section className="py-6 sm:py-10">
+        <div className="mx-auto grid max-w-[1240px] gap-4 px-4 sm:gap-6 sm:px-5 lg:grid-cols-[1.6fr_1fr]">
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <Reveal className="rounded-xl border border-line bg-white p-4.5 sm:p-6 shadow-card">
               {r.abstrak && (
                 <>
                   <h2 className="text-[1.15rem]">Abstrak</h2>
@@ -75,7 +75,7 @@ export default function RisetDetail() {
               )}
             </Reveal>
 
-            <Reveal className="rounded-xl border border-line bg-white p-6 shadow-card">
+            <Reveal className="rounded-xl border border-line bg-white p-4.5 sm:p-6 shadow-card">
               <h2 className="text-[1.15rem]">Luaran yang dijanjikan</h2>
               <ul className="mb-0 list-none space-y-2 p-0 text-[.87rem]">
                 {(r.luaranList.length ? r.luaranList : ['-']).map((l) => (
@@ -85,7 +85,7 @@ export default function RisetDetail() {
               {r.penerimaManfaat && <p className="mb-0 mt-4 border-t border-line pt-4 text-[.86rem] text-ink-2"><b>Penerima manfaat langsung:</b> {r.penerimaManfaat}</p>}
             </Reveal>
 
-            <Reveal className="rounded-xl border border-line bg-white p-6 shadow-card">
+            <Reveal className="rounded-xl border border-line bg-white p-4.5 sm:p-6 shadow-card">
               <h2 className="text-[1.15rem]">Tim Peneliti</h2>
               <ul className="m-0 list-none space-y-2 p-0 text-[.87rem]">
                 {(tim.length ? tim : [{ nama: r.pengusul, institusi: r.institusi, peran: 'leader' }]).map((t) => (
@@ -98,8 +98,8 @@ export default function RisetDetail() {
             </Reveal>
           </div>
 
-          <aside className="flex flex-col gap-5">
-            <Reveal className="rounded-xl border border-line bg-white p-5.5 shadow-card">
+          <aside className="flex flex-col gap-4 sm:gap-5">
+            <Reveal className="rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card">
               <h3 className="mb-3.5 text-[1rem]">Dokumentasi kegiatan</h3>
               {dok ? (
                 <>
@@ -119,7 +119,7 @@ export default function RisetDetail() {
               )}
             </Reveal>
 
-            <Reveal className="rounded-xl border border-line bg-white p-5.5 shadow-card">
+            <Reveal className="rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card">
               <h3 className="mb-3.5 text-[1rem]">Informasi pendanaan</h3>
               <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[.84rem]">
                 <dt className="text-ink-3">Skema</dt><dd className="m-0 font-semibold">{r.skema || '-'}</dd>
@@ -129,7 +129,7 @@ export default function RisetDetail() {
             </Reveal>
 
             {r.mitraList.length > 0 && (
-              <Reveal className="rounded-xl border border-line bg-white p-5.5 shadow-card">
+              <Reveal className="rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card">
                 <h3 className="mb-3.5 text-[1rem]">Mitra Pelaksana</h3>
                 <ul className="m-0 list-none space-y-2 p-0 text-[.84rem]">
                   {[...new Set(r.mitraList)].map((m) => (
@@ -142,9 +142,9 @@ export default function RisetDetail() {
         </div>
 
         {related.length > 0 && (
-          <div className="mx-auto mt-10 max-w-[1240px] px-5">
+          <div className="mx-auto mt-8 max-w-[1240px] sm:mt-10 px-4 sm:px-5">
             <h2 className="mb-4.5 text-[1.25rem]">Riset terkait</h2>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
               {related.map((x) => <RisetCard key={x.id} r={x} />)}
             </div>
           </div>

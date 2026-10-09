@@ -17,7 +17,7 @@ import { rupiah, tanggal } from '../../lib/format.js';
 /* ---------- komponen kecil ---------- */
 function Card({ title, desc, action, children, className = '' }) {
   return (
-    <section className={`rounded-xl border border-line bg-white p-5.5 ${className}`}>
+    <section className={`rounded-xl border border-line bg-white p-4 sm:p-5.5 ${className}`}>
       {(title || action) && (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -100,7 +100,7 @@ function FormGabung({ onJoined }) {
   return (
     <Card title="Gabung ke kelompok riset" desc="Minta kode gabung kepada ketua peneliti, lalu masukkan di sini untuk menjadi anggota tim.">
       <form onSubmit={submit} noValidate className="flex flex-wrap items-start gap-2.5">
-        <input className="input-base min-w-[220px] flex-1 font-mono uppercase tracking-wider" value={kode} maxLength={20}
+        <input className="input-base min-w-[min(220px,100%)] flex-1 font-mono uppercase tracking-wider" value={kode} maxLength={20}
           onChange={(e) => setKode(e.target.value)} placeholder="Contoh: SIST-2026-AB12" aria-label="Kode gabung" />
         <button type="submit" disabled={gabung.loading}
           className="flex items-center gap-1.5 rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon-600 disabled:opacity-50">
@@ -140,7 +140,7 @@ function DaftarKelompok({ admin, bolehGabung, judulKosong, onOpen }) {
   const list = data || [];
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4 sm:gap-5">
       {bolehGabung && <FormGabung onJoined={(id) => { reload(); if (id) onOpen(id); }} />}
       <Card title="Kelompok riset" desc="Kelompok terbentuk otomatis saat usulan riset disetujui BRIDA."
         action={admin && <SinkronKelompok onSynced={reload} />}>
@@ -203,7 +203,7 @@ function EditRiset({ grupId, riset, onClose, onSaved }) {
           ))}
         </div>
         {simpan.error && <p role="alert" className="mb-3 text-[.84rem] font-semibold text-danger">{errorMessage(simpan.error)}</p>}
-        <div className="flex justify-end gap-2.5 border-t border-line pt-4">
+        <div className="flex flex-wrap justify-end gap-2.5 border-t border-line pt-4">
           <button type="button" onClick={onClose} className="rounded-lg border border-line-strong px-5 py-2.5 text-sm font-semibold text-ink-2 hover:bg-surface-1">Batal</button>
           <button type="submit" disabled={simpan.loading} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon-600 disabled:opacity-50">
             {simpan.loading ? 'Menyimpan…' : 'Simpan perubahan'}
@@ -251,7 +251,7 @@ function Pembimbing({ detail, onChanged }) {
         <div className="mt-4 border-t border-line pt-4">
           <span className="mb-1.5 block text-[.82rem] font-semibold text-ink">Ganti pembimbing</span>
           <div className="flex flex-wrap gap-2">
-            <select className="input-base min-w-[200px] flex-1" value={pilih} onChange={(e) => setPilih(e.target.value)} aria-label="Pilih reviewer">
+            <select className="input-base min-w-[min(200px,100%)] flex-1" value={pilih} onChange={(e) => setPilih(e.target.value)} aria-label="Pilih reviewer">
               <option value="">{reviewer.loading ? 'Memuat reviewer…' : 'Pilih reviewer BRIDA'}</option>
               {(reviewer.data || []).filter((u) => u.publicId !== p?.id).map((u) => <option key={u.publicId} value={u.publicId}>{u.nama}</option>)}
             </select>
@@ -392,7 +392,7 @@ function FormDokumentasi({ grupId, onClose, onSaved }) {
           </div>
         </div>
         {simpan.error && <p role="alert" className="mb-3 text-[.84rem] font-semibold text-danger">{errorMessage(simpan.error)}</p>}
-        <div className="flex justify-end gap-2.5 border-t border-line pt-4">
+        <div className="flex flex-wrap justify-end gap-2.5 border-t border-line pt-4">
           <button type="button" onClick={onClose} className="rounded-lg border border-line-strong px-5 py-2.5 text-sm font-semibold text-ink-2 hover:bg-surface-1">Batal</button>
           <button type="submit" disabled={simpan.loading} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon-600 disabled:opacity-50">
             {simpan.loading ? 'Mengunggah…' : 'Simpan dokumentasi'}
@@ -588,10 +588,10 @@ function DetailKelompok({ id, admin, onBack }) {
   const segarkan = () => reload();
 
   return (
-    <div className={`flex flex-col gap-5 ${loading ? 'opacity-80' : ''}`}>
+    <div className={`flex flex-col gap-4 sm:gap-5 ${loading ? 'opacity-80' : ''}`}>
       <button type="button" onClick={onBack} className="self-start text-[.84rem] font-semibold text-maroon-800 hover:underline">← Kembali ke daftar kelompok</button>
 
-      <section className="rounded-xl border border-line bg-white p-5.5">
+      <section className="rounded-xl border border-line bg-white p-4 sm:p-5.5">
         <div className="mb-2 flex flex-wrap items-center gap-2">
           <RoleBadge role={d.peranSaya} />
           {r && <StatusBadge status={r.status} />}
@@ -606,8 +606,8 @@ function DetailKelompok({ id, admin, onBack }) {
         )}
       </section>
 
-      <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
-        <div className="flex flex-col gap-5">
+      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[1.5fr_1fr]">
+        <div className="flex flex-col gap-4 sm:gap-5">
           {r && (
             <Card title="Informasi riset" desc={ketua ? 'Hanya Anda sebagai ketua peneliti yang dapat mengubah informasi ini.' : 'Hanya ketua peneliti yang dapat mengubah informasi ini.'}
               action={ketua && (
@@ -634,7 +634,7 @@ function DetailKelompok({ id, admin, onBack }) {
           <Luaran detail={d} />
           <Dokumentasi detail={d} />
         </div>
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4 sm:gap-5">
           <Pembimbing detail={d} onChanged={segarkan} />
           <Anggota key={d.kodeGabung} detail={d} onChanged={segarkan} onLeft={onBack} />
         </div>

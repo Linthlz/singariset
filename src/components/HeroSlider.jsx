@@ -42,7 +42,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className="relative h-180 max-h-[86vh] min-h-140 overflow-hidden bg-maroon-950 text-white sm:h-170"
+      className="relative min-h-[34rem] overflow-hidden bg-maroon-950 text-white sm:h-170 sm:max-h-[86vh] sm:min-h-140"
       aria-roledescription="carousel"
       aria-label="Sorotan utama portal"
     >
@@ -80,27 +80,27 @@ export default function HeroSlider() {
         style={{ background: 'radial-gradient(620px 360px at 88% 10%, rgba(249,199,79,.20), transparent 62%)' }}
       />
 
-      {/* Isi */}
-      <div className="relative z-10 mx-auto flex h-full max-w-[1240px] items-center px-5 py-10">
+      {/* Isi — di HP tinggi mengikuti konten (min-h warisan section) agar kontrol slide tidak terpotong */}
+      <div className="relative z-10 mx-auto flex h-full min-h-[inherit] max-w-[1240px] items-center px-4 pb-14 pt-8 sm:px-5 sm:py-10">
         <div className="grid w-full items-center gap-9">
           <div>
-            <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 py-1.5 pl-1.5 pr-3.5 text-[.77rem] font-semibold text-white/94 backdrop-blur">
+            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 py-1.5 pl-1.5 pr-3.5 text-[.72rem] sm:mb-5 sm:text-[.77rem] font-semibold text-white/94 backdrop-blur">
               <b className="rounded-full bg-gold-500 px-2.5 py-1 text-[.68rem] font-extrabold tracking-wide text-[#4A2D00]">BRIDA</b>
               Kabupaten Buleleng · Provinsi Bali
             </span>
 
             <div key={aktif} className="animate-[heroIn_1.3s_cubic-bezier(.16,1,.3,1)]">
-              <h1 className="mb-4 line-clamp-3 min-h-[3.4em] text-[clamp(1.9rem,4.4vw,3.05rem)] font-extrabold leading-[1.1] text-white">
+              <h1 className="mb-3 line-clamp-3 min-h-[3.4em] text-[clamp(1.6rem,6.4vw,3.05rem)] sm:mb-4 font-extrabold leading-[1.1] text-white">
                 {slide.judul}{' '}
                 <span style={{ backgroundImage: 'linear-gradient(180deg,#FFDE8A,#F9C74F)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   {slide.sorot}
                 </span>
                 {slide.ekor ? ` ${slide.ekor}` : ''}
               </h1>
-              <p className="mb-6.5 line-clamp-3 min-h-[4.5em] max-w-[590px] text-[1.045rem] text-white/85">{slide.teks}</p>
+              <p className="mb-5 line-clamp-3 min-h-[4.5em] max-w-[590px] text-[.95rem] text-white/85 sm:mb-6.5 sm:text-[1.045rem]">{slide.teks}</p>
             </div>
 
-            <div className="mb-5 max-w-[590px]">
+            <div className="mb-4 max-w-[590px] sm:mb-5">
               <SearchBox variant="hero" />
             </div>
 
@@ -119,16 +119,16 @@ export default function HeroSlider() {
 
             {/* Kendali slide */}
             {total > 1 && (
-              <div className="mt-7 flex items-center gap-3">
+              <div className="mt-5 flex items-center gap-3 sm:mt-7">
                 <button
                   type="button" onClick={() => ke(aktif - 1)} aria-label="Slide sebelumnya"
-                  className="grid h-9 w-9 flex-none place-items-center rounded-full border border-white/25 text-white/80 transition hover:border-gold-500 hover:bg-white/10 hover:text-white"
+                  className="grid h-11 w-11 flex-none place-items-center rounded-full border border-white/25 sm:h-9 sm:w-9 text-white/80 transition hover:border-gold-500 hover:bg-white/10 hover:text-white"
                 >
                   <Icon name="arrow" size={16} className="rotate-180" />
                 </button>
                 <button
                   type="button" onClick={() => ke(aktif + 1)} aria-label="Slide berikutnya"
-                  className="grid h-9 w-9 flex-none place-items-center rounded-full border border-white/25 text-white/80 transition hover:border-gold-500 hover:bg-white/10 hover:text-white"
+                  className="grid h-11 w-11 flex-none place-items-center rounded-full border border-white/25 sm:h-9 sm:w-9 text-white/80 transition hover:border-gold-500 hover:bg-white/10 hover:text-white"
                 >
                   <Icon name="arrow" size={16} />
                 </button>

@@ -44,22 +44,22 @@ export default function Pendanaan() {
         ]}
       />
 
-      <section className="py-14 sm:py-18">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line-strong bg-surface-2 p-5">
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Saring status pendanaan">
+      <section className="py-10 sm:py-14 lg:py-18">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="mb-5 flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-xl border border-line-strong bg-surface-2 p-3.5 sm:mb-6 sm:p-5">
+            <div className="no-scrollbar -mx-3.5 flex w-[calc(100%+1.75rem)] gap-2 overflow-x-auto px-3.5 sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0" role="group" aria-label="Saring status pendanaan">
               {STATUSES.map((s) => {
                 const n = s.id ? PENDANAAN.filter((f) => f.status === s.id).length : PENDANAAN.length;
                 const active = status === s.id;
                 return (
                   <button key={s.id || 'all'} type="button" aria-pressed={active} onClick={() => setStatus(s.id)}
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.75 text-[.8rem] font-semibold transition ${active ? 'border-maroon-800 bg-maroon-800 text-white' : 'border-line-strong bg-white text-ink-2 hover:border-maroon-600 hover:text-maroon-800'}`}>
+                    className={`inline-flex flex-none items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-2 text-[.8rem] sm:py-1.75 font-semibold transition ${active ? 'border-maroon-800 bg-maroon-800 text-white' : 'border-line-strong bg-white text-ink-2 hover:border-maroon-600 hover:text-maroon-800'}`}>
                     {s.l} <span className="opacity-70">{n}</span>
                   </button>
                 );
               })}
             </div>
-            <select value={skema} onChange={(e) => setSkema(e.target.value)} className="min-w-[220px] rounded-lg border border-line-strong bg-white px-3.5 py-2.5 text-sm outline-none focus:border-maroon-600">
+            <select value={skema} onChange={(e) => setSkema(e.target.value)} className="w-full rounded-lg sm:w-auto sm:min-w-[220px] border border-line-strong bg-white px-3.5 py-2.5 text-sm outline-none focus:border-maroon-600">
               <option value="">Semua skema</option>
               {SKEMA.map((s) => <option key={s.id} value={s.id}>{s.nama}</option>)}
             </select>
@@ -69,14 +69,14 @@ export default function Pendanaan() {
             empty={PENDANAAN.length
               ? <EmptyState title="Tidak ada skema yang cocok" text="Longgarkan filter untuk melihat skema lainnya." />
               : <EmptyState icon="money" title="Belum ada skema pendanaan" text="Skema hibah dan insentif riset akan diumumkan di halaman ini." />}>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {hits.map((f, i) => {
               const sisa = hariMenuju(f.deadline);
               const fs = FUND_STATUS[f.status] || FUND_STATUS.open;
               const dlCls = sisa < 0 ? 'bg-surface-1 text-ink-2' : sisa <= 30 ? 'bg-danger-bg text-danger font-semibold' : sisa <= 75 ? 'bg-warning-bg text-warning font-semibold' : 'bg-surface-1 text-ink-2';
               return (
                 <Reveal key={f.id} delay={(i % 3) * 90} className="h-full">
-                  <article className={`relative flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white p-5.5 shadow-card transition hover:-translate-y-1 hover:shadow-pop before:absolute before:inset-x-0 before:top-0 before:h-1 ${fs.border}`}>
+                  <article className={`relative flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card transition hover:-translate-y-1 hover:shadow-pop before:absolute before:inset-x-0 before:top-0 before:h-1 ${fs.border}`}>
                     <div className="mb-3 flex items-center justify-between">
                       <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[.715rem] font-bold before:h-1.5 before:w-1.5 before:rounded-full before:bg-current ${fs.c}`}>{fs.l}</span>
                       <span className="rounded-full bg-surface-2 px-2.5 py-1 text-[.715rem] font-bold text-ink-2">{f.kuota} kuota</span>

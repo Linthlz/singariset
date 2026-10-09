@@ -29,10 +29,10 @@ function jawabanAwal(point) {
 
 function Shell({ tahun, children }) {
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-100 px-3 py-4 sm:px-6 sm:py-8 lg:px-8">
       <div className="mx-auto max-w-4xl">
-        <div className="rounded-[26px] border border-slate-200 bg-white shadow-[0_14px_45px_rgba(15,23,42,0.08)]">
-          <div className="border-b border-slate-200 bg-gradient-to-r from-[#6b1414] via-[#7f1d1d] to-[#8b2a2a] px-5 py-6 text-white sm:px-8 lg:px-10">
+        <div className="rounded-2xl border border-slate-200 bg-white sm:rounded-[26px] shadow-[0_14px_45px_rgba(15,23,42,0.08)]">
+          <div className="border-b border-slate-200 bg-gradient-to-r from-[#6b1414] via-[#7f1d1d] to-[#8b2a2a] px-4 py-5 text-white sm:px-8 sm:py-6 lg:px-10">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-red-100">Monitoring & Evaluasi</p>
               {tahun && (
@@ -48,7 +48,7 @@ function Shell({ tahun, children }) {
               Form ini digunakan untuk memantau tindak lanjut rekomendasi hasil riset atau kajian yang telah ditetapkan oleh instansi terkait.
             </p>
           </div>
-          <div className="px-5 py-6 sm:px-8 lg:px-10">{children}</div>
+          <div className="px-4 py-5 sm:px-8 sm:py-6 lg:px-10">{children}</div>
         </div>
       </div>
     </div>
@@ -208,7 +208,7 @@ function MonevForm({ entries, onSubmitted }) {
 
   return (
     <Shell tahun={entry.batch?.tahun}>
-      <div className="mb-8 flex flex-wrap gap-3">
+      <div className="mb-6 flex flex-wrap gap-3 sm:mb-8">
         {[1, 2, 3].map((item) => {
           const active = item === step;
           const complete = item < step;
@@ -232,7 +232,7 @@ function MonevForm({ entries, onSubmitted }) {
         <form onSubmit={handleSubmit} className="space-y-8">
           {step === 1 && (
             <section className="space-y-6">
-              <div className="grid gap-5 md:grid-cols-2">
+              <div className="grid gap-4 sm:gap-5 md:grid-cols-2">
                 {entries.length > 1 && (
                   <div className="md:col-span-2">
                     <label className="mb-2 block text-sm font-semibold text-slate-700">Batch Monev</label>
@@ -299,7 +299,7 @@ function MonevForm({ entries, onSubmitted }) {
           {step === 3 && selectedTitle && (
             <section className="space-y-6">
               <div className="space-y-4">
-                <div className="rounded-2xl border border-[#f0d8d8] bg-[#fff8f8] p-5">
+                <div className="rounded-2xl border border-[#f0d8d8] bg-[#fff8f8] p-4 sm:p-5">
                   <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#7f1d1d]">Judul lengkap riset/kajian</p>
                   <h2 className="m-0 text-base font-bold leading-6 text-slate-800">{selectedTitle.judul}</h2>
                   <p className="mb-0 mt-2 text-xs text-slate-500">Isi hasil monitoring untuk setiap poin rekomendasi di bawah.</p>
@@ -309,8 +309,8 @@ function MonevForm({ entries, onSubmitted }) {
                   const response = form.rekomendasi[index] || EMPTY_REKOMENDASI;
                   const errorKey = (field) => `rekomendasi-${index}-${field}`;
                   return (
-                    <article key={point.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                      <div className="mb-5 flex items-start gap-3">
+                    <article key={point.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                      <div className="mb-4 flex sm:mb-5 items-start gap-3">
                         <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[#8b2a2a] text-sm font-bold text-white">{index + 1}</span>
                         <div>
                           <p className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-[#7f1d1d]">Poin rekomendasi {index + 1}</p>

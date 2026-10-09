@@ -57,13 +57,13 @@ export default function Publikasi() {
         ]}
       />
 
-      <section className="py-10">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-7 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Saring bidang riset">
+      <section className="py-6 sm:py-10">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="mb-5 flex flex-wrap items-center justify-between gap-3 sm:mb-7">
+            <div className="no-scrollbar -mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0" role="group" aria-label="Saring bidang riset">
               <button
                 type="button" aria-pressed={bidang === ''} onClick={() => setBidang('')}
-                className={`rounded-full border px-3.5 py-1.75 text-[.8rem] font-semibold transition ${
+                className={`flex-none whitespace-nowrap rounded-full border px-3.5 py-2 text-[.8rem] sm:py-1.75 font-semibold transition ${
                   bidang === '' ? 'border-maroon-800 bg-maroon-800 text-white' : 'border-line-strong bg-white text-ink-2 hover:border-maroon-600 hover:text-maroon-800'
                 }`}
               >
@@ -76,7 +76,7 @@ export default function Publikasi() {
                 return (
                   <button
                     key={b.id} type="button" aria-pressed={aktif} onClick={() => setBidang(b.id)}
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.75 text-[.8rem] font-semibold transition ${
+                    className={`inline-flex flex-none items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-2 text-[.8rem] sm:py-1.75 font-semibold transition ${
                       aktif ? 'border-maroon-800 bg-maroon-800 text-white' : 'border-line-strong bg-white text-ink-2 hover:border-maroon-600 hover:text-maroon-800'
                     }`}
                   >
@@ -88,7 +88,7 @@ export default function Publikasi() {
             <input
               type="search" value={q} onChange={(e) => setQ(e.target.value)}
               placeholder="Cari dokumentasi riset…" aria-label="Cari dokumentasi"
-              className="input-base w-auto min-w-[240px]"
+              className="input-base w-full sm:w-auto sm:min-w-[240px]"
             />
           </Reveal>
 
@@ -96,7 +96,7 @@ export default function Publikasi() {
             empty={DOKUMENTASI.length
               ? <EmptyState icon="camera" title="Belum ada dokumentasi yang cocok" text="Longgarkan filter atau gunakan kata kunci lain." />
               : <EmptyState icon="camera" title="Belum ada dokumentasi" text="Dokumentasi pelaksanaan riset akan tampil setelah diunggah tim peneliti." />}>
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
               {hits.map((d, i) => {
                 const b = d.bidangId ? bidangById(d.bidangId) : { nama: d.bidang || 'Umum', warna: '#6B7280' };
                 return (
@@ -131,7 +131,7 @@ export default function Publikasi() {
                       </div>
                     </div>
 
-                    <div className="flex flex-1 flex-col p-5">
+                    <div className="flex flex-1 flex-col p-4 sm:p-5">
                       <div className="mb-2.5 flex flex-wrap items-center gap-2">
                         <span className="rounded-full px-2.5 py-1 text-[.715rem] font-bold" style={{ background: b.warna + '18', color: b.warna }}>
                           {b.nama.split(' ')[0]}
@@ -189,7 +189,7 @@ export default function Publikasi() {
           <p className="mb-6 text-[.9rem] leading-relaxed text-ink-2">{detail.narasi}</p>
 
           <h4 className="mb-3 text-[.95rem]">Dokumentasi foto</h4>
-          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="mb-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3">
             {detail.foto.map((f, i) => (
               <figure key={f.src} className="m-0">
                 <SmartImage src={f.src} alt={f.ket} seed={i} className="aspect-[4/3] cursor-pointer rounded-lg">
@@ -234,7 +234,7 @@ export default function Publikasi() {
           wide
           onClose={() => setLightbox(null)}
           footer={
-            <div className="flex w-full items-center justify-between gap-3">
+            <div className="flex w-full flex-wrap items-center justify-between gap-2.5 sm:gap-3">
               <span className="text-[.8rem] text-ink-3">
                 Foto {lightbox.idx + 1} dari {lightbox.dok.foto.length}
               </span>

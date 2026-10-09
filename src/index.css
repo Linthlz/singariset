@@ -40,7 +40,10 @@
 }
 
 @layer base {
-  html { scroll-behavior: smooth; scroll-padding-top: 96px; font-size: 106.5%; }
+  /* Skala 106.5% hanya untuk layar ≥640px; di HP kembali ke 100% supaya
+     seluruh ukuran berbasis rem (teks, padding, tinggi kartu) sedikit lebih ringkas. */
+  html { scroll-behavior: smooth; scroll-padding-top: 96px; font-size: 100%; }
+  @media (min-width: 640px) { html { font-size: 106.5%; } }
   body { @apply bg-white text-ink font-sans text-[16px] leading-[1.62] antialiased; }
   h1, h2, h3, h4 { font-family: var(--font-head); @apply text-ink tracking-tight font-extrabold; }
   ::selection { background: var(--color-gold-100); color: var(--color-maroon-900); }
@@ -55,6 +58,21 @@
   }
   .input-base::placeholder {
     color: #9CA3AF;
+  }
+}
+
+/* Kolom isian di HP: sengaja di luar @layer agar menang atas utilitas text-sm.
+   Teks 16px mencegah iOS memperbesar halaman saat kolom disentuh, dan tinggi
+   minimum 44px membuat kolom nyaman ditekan dengan jari. */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]),
+  select {
+    min-height: 44px;
   }
 }
 

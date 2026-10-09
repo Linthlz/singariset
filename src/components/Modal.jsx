@@ -33,29 +33,29 @@ export default function Modal({ title, onClose, children, footer, wide = false }
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[150] grid place-items-center overflow-y-auto bg-ink/55 p-5 backdrop-blur-sm"
+      className="fixed inset-0 z-[150] grid place-items-center overflow-y-auto bg-ink/55 p-3 backdrop-blur-sm sm:p-5"
       role="dialog"
       aria-modal="true"
       aria-label={title}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       ref={hostRef}
     >
-      <div className={`flex max-h-[88vh] w-full flex-col rounded-2xl bg-white shadow-pop animate-[modalIn_.24s_cubic-bezier(.2,.9,.3,1)] ${wide ? 'max-w-[860px]' : 'max-w-[680px]'}`}>
-        <div className="flex items-start gap-4 border-b border-line px-5.5 py-5">
-          <h3 className="m-0 flex-1 text-lg font-extrabold heading-serif">{title}</h3>
+      <div className={`flex max-h-[92dvh] w-full flex-col sm:max-h-[88vh] rounded-2xl bg-white shadow-pop animate-[modalIn_.24s_cubic-bezier(.2,.9,.3,1)] ${wide ? 'max-w-[860px]' : 'max-w-[680px]'}`}>
+        <div className="flex items-start gap-3 border-b border-line px-4 py-3.5 sm:gap-4 sm:px-5.5 sm:py-5">
+          <h3 className="m-0 min-w-0 flex-1 text-base font-extrabold heading-serif sm:text-lg">{title}</h3>
           <button
             type="button"
             data-modal-close
             onClick={onClose}
             aria-label="Tutup jendela"
-            className="grid h-8 w-8 flex-none place-items-center rounded-lg bg-surface-1 text-ink-2 hover:bg-danger-bg hover:text-danger"
+            className="grid h-10 w-10 flex-none place-items-center rounded-lg bg-surface-1 sm:h-8 sm:w-8 text-ink-2 hover:bg-danger-bg hover:text-danger"
           >
             <Icon name="x" size={17} />
           </button>
         </div>
-        <div className="overflow-y-auto px-5.5 py-5.5">{children}</div>
+        <div className="overflow-y-auto px-4 py-4 sm:px-5.5 sm:py-5.5">{children}</div>
         {footer && (
-          <div className="flex flex-wrap justify-end gap-2.5 rounded-b-2xl border-t border-line bg-surface-1 px-5.5 py-4">
+          <div className="flex flex-wrap justify-end gap-2.5 rounded-b-2xl border-t border-line bg-surface-1 px-4 py-3 sm:px-5.5 sm:py-4">
             {footer}
           </div>
         )}

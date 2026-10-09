@@ -13,8 +13,8 @@ export default function ProtectedRoute({ allow, children }) {
   if (allow && !allow.includes(user.role)) {
     const beranda = ROLES[user.role].beranda;
     return (
-      <div className="grid min-h-[70vh] place-items-center bg-surface-1 px-5 py-16">
-        <div className="w-full max-w-[480px] rounded-xl border border-line bg-white p-8 text-center">
+      <div className="grid min-h-[70vh] place-items-center bg-surface-1 px-4 py-10 sm:px-5 sm:py-16">
+        <div className="w-full max-w-[480px] rounded-xl border border-line bg-white p-5 text-center sm:p-8">
           <span className="mx-auto mb-4 grid h-13 w-13 place-items-center rounded-full bg-warning-bg text-warning">
             <Icon name="lock" size={24} />
           </span>

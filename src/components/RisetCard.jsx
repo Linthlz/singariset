@@ -8,7 +8,7 @@ export default function RisetCard({ r }) {
   const sm = r.monev ? statusMeta(r.monev.status) : { label: 'Berjalan', badge: 'bg-success-bg text-success', bar: 'from-emerald-700 to-success' };
 
   return (
-    <article className="flex h-full flex-col rounded-xl border border-line bg-white p-5.5 shadow-card transition hover:-translate-y-1 hover:border-line-strong hover:shadow-pop">
+    <article className="flex h-full flex-col rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card transition hover:-translate-y-1 hover:border-line-strong hover:shadow-pop">
       <div className="mb-2.5 flex items-start justify-between gap-2.5">
         <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[.715rem] font-bold" style={{ background: b.warna + '18', color: b.warna }}>
           {b.nama.split(' ')[0]}
@@ -22,7 +22,7 @@ export default function RisetCard({ r }) {
         <Link to={`/riset/${r.slug}`} className="text-ink no-underline hover:text-maroon-800">{r.judul}</Link>
       </h3>
 
-      <p className="mb-3.5 flex-1 text-[.845rem] leading-relaxed text-ink-2 line-clamp-3">{r.tujuan}</p>
+      <p className="mb-3 flex-1 text-[.845rem] leading-relaxed text-ink-2 line-clamp-3">{r.tujuan}</p>
 
       <div className="mb-3.5 flex flex-col gap-1.5 text-[.79rem] text-ink-3">
         <div className="flex items-start gap-2"><Icon name="user" size={14} className="mt-0.5 flex-none" /><span>{[r.pengusul, r.institusi].filter(Boolean).join(' · ') || '-'}</span></div>

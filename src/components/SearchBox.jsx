@@ -54,8 +54,8 @@ export default function SearchBox({ variant = 'hero', placeholder, onNavigate })
   return (
     <div className="relative" ref={hostRef}>
       <div className={isHero
-        ? 'flex items-center gap-2.5 rounded-lg bg-white p-1.5 pl-4 shadow-pop'
-        : 'flex items-center gap-2 rounded-lg border border-line-strong bg-surface-1 px-3 py-2'}
+        ? 'flex items-center gap-2 rounded-lg bg-white p-1.5 pl-3.5 shadow-pop sm:gap-2.5 sm:pl-4'
+        : 'flex items-center gap-2 rounded-lg border border-line-strong bg-surface-1 px-3 sm:py-2'}
       >
         <Icon name="search" size={isHero ? 19 : 17} className="flex-none text-ink-3" />
         <input
@@ -76,14 +76,14 @@ export default function SearchBox({ variant = 'hero', placeholder, onNavigate })
           }
         />
         {isHero && (
-          <button type="button" onClick={submit} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-maroon-600">
+          <button type="button" onClick={submit} className="min-h-11 flex-none rounded-lg bg-maroon-800 px-4 py-2.5 text-sm font-semibold sm:min-h-0 sm:px-5 text-white transition hover:bg-maroon-600">
             Telusuri
           </button>
         )}
       </div>
 
       {open && q.trim().length >= 2 && (
-        <div className="absolute left-0 right-0 top-[calc(100%+7px)] z-40 max-h-[340px] overflow-y-auto rounded-xl border border-line bg-white p-1.5 shadow-pop">
+        <div className="absolute left-0 right-0 top-[calc(100%+7px)] z-40 max-h-[min(340px,60vh)] overflow-y-auto rounded-xl border border-line bg-white p-1.5 shadow-pop">
           {hits.length === 0 ? (
             <div className="p-4 text-center text-sm text-ink-3">
               Tidak ada hasil untuk “{q}”. Coba kata kunci lain seperti <b>subak</b>, <b>Lovina</b>, atau <b>kopi</b>.

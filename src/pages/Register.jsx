@@ -104,8 +104,8 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-surface-1">
-      <div className="mx-auto max-w-[1240px] px-5 py-12">
-        <Link to="/" className="mb-8 flex items-center justify-center gap-3 no-underline">
+      <div className="mx-auto max-w-[1240px] px-4 py-8 sm:px-5 sm:py-12">
+        <Link to="/" className="mb-6 flex items-center justify-center gap-3 no-underline sm:mb-8">
           <LionMark size={44} />
           <span className="flex flex-col leading-tight">
             <span className="font-head text-[1rem] font-extrabold tracking-tight text-maroon-800">SINGA RISET BULELENG</span>
@@ -115,7 +115,7 @@ export default function Register() {
 
         <div className="mx-auto max-w-[820px]">
           <div className="mb-6 text-center">
-            <h1 className="mb-1.5 text-[1.6rem]">Daftar akun portal</h1>
+            <h1 className="mb-1.5 text-[1.35rem] sm:text-[1.6rem]">Daftar akun portal</h1>
             <p className="mx-auto max-w-[560px] text-[.9rem] text-ink-2">
               Pilih jenis akun sesuai peran lembaga Anda dalam ekosistem riset Kabupaten Buleleng.
               Akun administrator dibuat secara internal oleh BRIDA dan tidak tersedia melalui pendaftaran mandiri.
@@ -123,13 +123,13 @@ export default function Register() {
           </div>
 
           {/* Pemilihan aktor */}
-          <div className="mb-5 grid gap-4 sm:grid-cols-2">
+          <div className="mb-4 grid gap-3 sm:mb-5 sm:grid-cols-2 sm:gap-4">
             {AKTOR.map((a) => {
               const aktif = form.role === a.id;
               return (
                 <button
                   key={a.id} type="button" onClick={() => set('role', a.id)} aria-pressed={aktif}
-                  className={`rounded-xl border-2 p-5 text-left transition ${aktif ? 'border-maroon-800 bg-maroon-50' : 'border-line bg-white hover:border-line-strong'}`}
+                  className={`rounded-xl border-2 p-4 text-left transition sm:p-5 ${aktif ? 'border-maroon-800 bg-maroon-50' : 'border-line bg-white hover:border-line-strong'}`}
                 >
                   <div className="mb-3 flex items-center gap-3">
                     <span className={`grid h-10 w-10 flex-none place-items-center rounded-lg ${aktif ? 'bg-maroon-800 text-gold-500' : 'bg-surface-2 text-maroon-800'}`}>
@@ -152,7 +152,7 @@ export default function Register() {
           </div>
 
           {/* Formulir */}
-          <form onSubmit={submit} noValidate className="rounded-xl border border-line bg-white p-7">
+          <form onSubmit={submit} noValidate className="rounded-xl border border-line bg-white p-4.5 sm:p-7">
             <h2 className="mb-1 text-[1.1rem]">Data {isOpd ? 'perangkat daerah' : 'instansi mitra'}</h2>
             <p className="mb-5 text-[.84rem] text-ink-3">Tanda <span className="text-maroon-600">*</span> menandakan isian wajib.</p>
 
@@ -291,8 +291,8 @@ function VerifikasiEmail({ email }) {
   }
 
   return (
-    <div className="grid min-h-screen place-items-center bg-surface-1 px-5 py-12">
-      <form onSubmit={submit} noValidate className="w-full max-w-[420px] rounded-xl border border-line bg-white p-7">
+    <div className="grid min-h-screen place-items-center bg-surface-1 px-4 py-8 sm:px-5 sm:py-12">
+      <form onSubmit={submit} noValidate className="w-full max-w-[420px] rounded-xl border border-line bg-white p-5 sm:p-7">
         <span className="mb-4 grid h-12 w-12 place-items-center rounded-full bg-maroon-50 text-maroon-800">
           <Icon name="mail" size={22} />
         </span>

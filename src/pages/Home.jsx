@@ -76,7 +76,7 @@ function PilarCard({ p, i }) {
       aria-label={`${p.t} — tampilkan penjelasan`}
       onClick={() => setFlip((f) => !f)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFlip((f) => !f); } }}
-      className={`flip-card h-[400px] cursor-pointer rounded-2xl outline-none focus-visible:ring-3 focus-visible:ring-maroon-600/30 sm:h-[430px] lg:h-[390px] ${flip ? 'is-flipped' : ''}`}
+      className={`flip-card h-[320px] cursor-pointer rounded-2xl outline-none focus-visible:ring-3 focus-visible:ring-maroon-600/30 sm:h-[430px] lg:h-[390px] ${flip ? 'is-flipped' : ''}`}
     >
       <div className="flip-inner">
         {/* Sisi depan — foto kegiatan */}
@@ -120,7 +120,7 @@ function NewsCard({ n, i, big, onOpen }) {
       type="button"
       onClick={() => onOpen(n)}
       className={`group relative block w-full overflow-hidden rounded-2xl border border-line text-left shadow-card transition hover:-translate-y-1 hover:shadow-pop ${
-        big ? 'aspect-[4/3] sm:aspect-[16/11] lg:aspect-auto lg:h-full lg:min-h-[420px]' : 'aspect-[4/3]'
+        big ? 'aspect-[4/3] sm:aspect-[16/11] lg:aspect-auto lg:h-full lg:min-h-[420px]' : 'aspect-[4/5] sm:aspect-[4/3]'
       }`}
     >
       <div className="absolute inset-0">
@@ -128,14 +128,14 @@ function NewsCard({ n, i, big, onOpen }) {
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
       <span
-        className="absolute left-4 top-4 z-10 rounded-full px-2.5 py-1 text-[.7rem] font-bold uppercase tracking-wide text-white"
+        className="absolute left-3 top-3 z-10 rounded-full px-2 py-0.75 text-[.62rem] sm:left-4 sm:top-4 sm:px-2.5 sm:py-1 sm:text-[.7rem] font-bold uppercase tracking-wide text-white"
         style={{ background: c }}
       >
         {n.kategori}
       </span>
-      <div className="absolute inset-x-0 bottom-0 z-10 p-4.5 sm:p-5.5">
-        <h3 className={`mb-1.5 leading-snug text-white ${big ? 'text-[1.2rem] sm:text-[1.55rem]' : 'text-[1rem]'}`}>{n.judul}</h3>
-        <div className="flex items-center gap-1.5 text-[.78rem] font-semibold text-white/78">
+      <div className={`absolute inset-x-0 bottom-0 z-10 sm:p-5.5 ${big ? 'p-4' : 'p-3'}`}>
+        <h3 className={`mb-1.5 leading-snug text-white ${big ? 'text-[1.15rem] sm:text-[1.55rem]' : 'line-clamp-4 text-[.86rem] sm:line-clamp-none sm:text-[1rem]'}`}>{n.judul}</h3>
+        <div className="flex items-center gap-1.5 text-[.7rem] font-semibold text-white/78 sm:text-[.78rem]">
           <Icon name="calendar" size={13} />{tanggal(n.tanggal)}
         </div>
       </div>
@@ -227,17 +227,17 @@ export default function Home() {
       <HeroSlider />
 
       {/* ===== 1.2 QUICK ACCESS ===== */}
-      <section className="relative z-20 -mt-8">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="relative z-20 -mt-10 sm:-mt-8">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             {QUICK.map((q, i) => (
-              <Reveal key={q.t} as={Link} delay={i * 90} to={q.h} className="group flex items-start gap-3.5 rounded-xl border border-line bg-white p-4.5 no-underline shadow-lift transition hover:-translate-y-1 hover:border-gold-500 hover:shadow-pop">
-                <span className="grid h-10.5 w-10.5 flex-none place-items-center rounded-[10px] bg-maroon-50 text-maroon-800 transition group-hover:bg-maroon-800 group-hover:text-gold-500">
+              <Reveal key={q.t} as={Link} delay={i * 90} to={q.h} className="group flex flex-col items-start gap-2.5 rounded-xl border border-line bg-white p-3.5 no-underline shadow-lift sm:flex-row sm:gap-3.5 sm:p-4.5 transition hover:-translate-y-1 hover:border-gold-500 hover:shadow-pop">
+                <span className="grid h-9.5 w-9.5 flex-none place-items-center rounded-[10px] bg-maroon-50 sm:h-10.5 sm:w-10.5 text-maroon-800 transition group-hover:bg-maroon-800 group-hover:text-gold-500">
                   <Icon name={q.ico} size={21} />
                 </span>
                 <span>
-                  <strong className="mb-0.5 block text-[.93rem] font-bold text-ink">{q.t}</strong>
-                  <span className="block text-[.785rem] leading-snug text-ink-3">{q.s}</span>
+                  <strong className="mb-0.5 block text-[.86rem] font-bold leading-snug text-ink sm:text-[.93rem]">{q.t}</strong>
+                  <span className="block text-[.75rem] leading-snug text-ink-3 sm:text-[.785rem]">{q.s}</span>
                 </span>
               </Reveal>
             ))}
@@ -246,25 +246,25 @@ export default function Home() {
       </section>
 
       {/* ===== 1.3 EKOSISTEM RISET ===== */}
-      <section className="py-14 sm:py-18" id="ekosistem">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mx-auto mb-8.5 max-w-[760px] text-center">
+      <section className="py-10 sm:py-14 lg:py-18" id="ekosistem">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="mx-auto mb-6 sm:mb-8.5 max-w-[760px] text-center">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Ekosistem Riset Buleleng</span>
             <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Riset daerah yang terhitung, terpantau, dan tercatat dampaknya</h2>
-            <p className="text-[1.02rem] text-ink-2">Setiap angka ditarik dari basis data tunggal BRIDA sehingga capaian riset, serapan anggaran, dan jangkauan wilayah dapat diaudit publik kapan saja.</p>
+            <p className="text-[.95rem] text-ink-2 sm:text-[1.02rem]">Setiap angka ditarik dari basis data tunggal BRIDA sehingga capaian riset, serapan anggaran, dan jangkauan wilayah dapat diaudit publik kapan saja.</p>
           </Reveal>
           {!EKO ? (
             stats.error
               ? <ErrorState error={stats.error} onRetry={stats.reload} title="Statistik belum dapat dimuat" />
-              : <SkeletonGrid count={8} className="grid grid-cols-2 gap-4 lg:grid-cols-4" itemClassName="h-36" />
+              : <SkeletonGrid count={8} className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" itemClassName="h-36" />
           ) : (
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             {EKO.map((e) => (
-              <Reveal key={e.l} className="rounded-xl border border-line bg-white p-5.5 shadow-card transition hover:-translate-y-1 hover:shadow-pop">
-                <span className="mb-3 grid h-9.5 w-9.5 place-items-center rounded-[10px] bg-gold-50 text-gold-600"><Icon name={e.ico} size={19} /></span>
+              <Reveal key={e.l} className="rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card transition hover:-translate-y-1 hover:shadow-pop">
+                <span className="mb-2.5 grid h-9 w-9 place-items-center rounded-[10px] bg-gold-50 sm:mb-3 sm:h-9.5 sm:w-9.5 text-gold-600"><Icon name={e.ico} size={19} /></span>
                 <CountUp value={e.v} className="font-head text-[clamp(1.7rem,3vw,2.3rem)] font-extrabold leading-tight text-maroon-800" />
-                <div className="mt-1 text-[.84rem] font-bold text-ink">{e.l}</div>
-                <div className="text-[.755rem] text-ink-3">{e.s}</div>
+                <div className="mt-1 text-[.8rem] font-bold leading-snug text-ink sm:text-[.84rem]">{e.l}</div>
+                <div className="mt-0.5 text-[.72rem] leading-snug text-ink-3 sm:text-[.755rem]">{e.s}</div>
               </Reveal>
             ))}
           </div>
@@ -273,14 +273,14 @@ export default function Home() {
       </section>
 
       {/* ===== 1.4 EMPAT PILAR ===== */}
-      <section className="py-14 sm:py-18" id="pilar">
-        <div className="mx-auto max-w-[1240px] px-5">
+      <section className="py-10 sm:py-14 lg:py-18" id="pilar">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
           <Reveal className="mb-8.5 max-w-[760px]">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Profil Sinergi Riset</span>
             <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Empat pilar kerja SINGA RISET BULELENG</h2>
-            <p className="text-[1.02rem] text-ink-2">Platform ini bukan sekadar arsip. Ia menjadi mesin tata kelola yang menautkan usulan riset dengan prioritas pembangunan daerah, lalu mengawalnya sampai terpakai di lapangan.</p>
+            <p className="text-[.95rem] text-ink-2 sm:text-[1.02rem]">Platform ini bukan sekadar arsip. Ia menjadi mesin tata kelola yang menautkan usulan riset dengan prioritas pembangunan daerah, lalu mengawalnya sampai terpakai di lapangan.</p>
           </Reveal>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {PILAR.map((p, i) => (
               <Reveal key={p.t} delay={i * 110}>
                 <PilarCard p={p} i={i} />
@@ -291,14 +291,14 @@ export default function Home() {
       </section>
 
       {/* ===== 1.7 PETA JALAN RISET — kartu foto kegiatan ===== */}
-      <section className="py-14 sm:py-18" id="petajalan">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-8 grid gap-6 lg:grid-cols-[1fr_1fr_auto] lg:items-start">
+      <section className="py-10 sm:py-14 lg:py-18" id="petajalan">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="mb-6 grid gap-4 sm:mb-8 sm:gap-6 lg:grid-cols-[1fr_1fr_auto] lg:items-start">
             <div>
               <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peta Jalan Riset 2025–2029</span>
               <h2 className="max-w-[18ch] text-[clamp(1.45rem,2.7vw,2.05rem)]">Lima tahap menuju ekosistem riset mandiri Bali Utara</h2>
             </div>
-            <p className="mb-0 self-center text-[1.02rem] text-ink-2">
+            <p className="mb-0 self-center text-[.95rem] text-ink-2 sm:text-[1.02rem]">
               Setiap tahun punya fokus program tersendiri, mulai dari penataan tata kelola sampai kemandirian pendanaan riset. Peta jalan ini juga menjadi indikator pertama dalam penilaian usulan riset oleh tim pakar BRIDA.
             </p>
             <Link
@@ -309,10 +309,11 @@ export default function Home() {
             </Link>
           </Reveal>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {/* HP: kartu digeser ke samping (snap) agar lima tahap tidak menumpuk setinggi ±1900px */}
+          <div className="no-scrollbar -mx-4 grid snap-x snap-mandatory auto-cols-[80%] grid-flow-col gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 sm:mx-0 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-5">
             {ROADMAP.map((r, i) => (
-              <Reveal key={r.tahun} delay={i * 100}>
-                <article className="group relative h-[380px] overflow-hidden rounded-2xl border border-line shadow-card transition duration-500 hover:-translate-y-1.5 hover:shadow-pop">
+              <Reveal key={r.tahun} delay={i * 100} className="snap-start">
+                <article className="group relative h-[340px] overflow-hidden sm:h-[380px] rounded-2xl border border-line shadow-card transition duration-500 hover:-translate-y-1.5 hover:shadow-pop">
                   <div className="absolute inset-0">
                     <SmartImage
                       src={r.gambar} alt={`Kegiatan BRIDA — ${r.tema}`} seed={i}
@@ -344,13 +345,13 @@ export default function Home() {
       </section>
 
       {/* ===== 1.8 PELUANG PENDANAAN ===== */}
-      <section className="py-14 sm:py-18" id="pendanaan">
-        <div className="mx-auto max-w-[1240px] px-5">
+      <section className="py-10 sm:py-14 lg:py-18" id="pendanaan">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
           <Reveal className="mb-8.5 flex flex-wrap items-end justify-between gap-4">
             <div className="max-w-[640px]">
               <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Peluang Pendanaan Riset</span>
               <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Skema hibah dan insentif yang sedang dibuka</h2>
-              <p className="mb-0 text-[1.02rem] text-ink-2">Pantau tenggat dan persyaratan tiap skema. Rincian pagu serta tata cara pengajuan mengikuti pengumuman resmi di situs penyelenggara masing-masing.</p>
+              <p className="mb-0 text-[.95rem] text-ink-2 sm:text-[1.02rem]">Pantau tenggat dan persyaratan tiap skema. Rincian pagu serta tata cara pengajuan mengikuti pengumuman resmi di situs penyelenggara masing-masing.</p>
             </div>
             <Link to="/pendanaan" className="rounded-lg border border-line-strong bg-white px-5 py-2.5 text-sm font-semibold text-maroon-800 no-underline transition hover:border-maroon-800 hover:bg-maroon-50">
               Lihat semua skema →
@@ -358,13 +359,13 @@ export default function Home() {
           </Reveal>
           <AsyncState loading={pendanaan.loading} error={pendanaan.error} isEmpty={PENDANAAN.length === 0} onRetry={pendanaan.reload}
             empty={<EmptyState icon="money" title="Belum ada skema yang dibuka" text="Pantau halaman Peluang Pendanaan untuk pengumuman berikutnya." />}>
-          <Reveal className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <Reveal className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {PENDANAAN.slice(0, 3).map((f) => {
               const sisa = hariMenuju(f.deadline);
               const fs = FUND_STATUS[f.status] || FUND_STATUS.open;
               const dlCls = sisa < 0 ? 'bg-surface-1 text-ink-2' : sisa <= 30 ? 'bg-danger-bg text-danger font-semibold' : sisa <= 75 ? 'bg-warning-bg text-warning font-semibold' : 'bg-surface-1 text-ink-2';
               return (
-                <article key={f.id} className={`relative flex flex-col overflow-hidden rounded-xl border border-line bg-white p-5.5 shadow-card transition hover:-translate-y-1 hover:shadow-pop before:absolute before:inset-x-0 before:top-0 before:h-1 ${fs.border}`}>
+                <article key={f.id} className={`relative flex flex-col overflow-hidden rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card transition hover:-translate-y-1 hover:shadow-pop before:absolute before:inset-x-0 before:top-0 before:h-1 ${fs.border}`}>
                   <div className="mb-3 flex items-center justify-between">
                     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[.715rem] font-bold before:h-1.5 before:w-1.5 before:rounded-full before:bg-current ${fs.c}`}>{fs.l}</span>
                     <span className="rounded-full bg-surface-2 px-2.5 py-1 text-[.715rem] font-bold text-ink-2">{f.kuota} kuota</span>
@@ -405,13 +406,13 @@ export default function Home() {
       </section>
 
       {/* ===== 1.9 BERITA & DISEMINASI ===== */}
-      <section className="py-14 sm:py-18" id="berita">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <section className="py-10 sm:py-14 lg:py-18" id="berita">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="mb-5 flex flex-wrap items-end justify-between gap-4 sm:mb-6">
             <div className="max-w-[640px]">
               <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Berita &amp; Diseminasi Riset</span>
               <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Kabar terkini ekosistem riset Buleleng</h2>
-              <p className="mb-0 text-[1.02rem] text-ink-2">Pengumuman pendanaan, hasil monev, adopsi kebijakan, dan agenda diseminasi dari BRIDA Kabupaten Buleleng.</p>
+              <p className="mb-0 text-[.95rem] text-ink-2 sm:text-[1.02rem]">Pengumuman pendanaan, hasil monev, adopsi kebijakan, dan agenda diseminasi dari BRIDA Kabupaten Buleleng.</p>
             </div>
             <Link to="/berita" className="rounded-lg border border-line-strong bg-white px-5 py-2.5 text-sm font-semibold text-maroon-800 no-underline transition hover:border-maroon-800 hover:bg-maroon-50">
               Lihat semua berita →
@@ -422,13 +423,13 @@ export default function Home() {
             error={berita.error}
             isEmpty={beritaSorot.length === 0}
             onRetry={berita.reload}
-            skeleton={<SkeletonGrid count={2} className="grid grid-cols-1 gap-5 lg:grid-cols-2" itemClassName="h-[420px] rounded-2xl" />}
+            skeleton={<SkeletonGrid count={2} className="grid grid-cols-1 gap-5 lg:grid-cols-2" itemClassName="h-[280px] rounded-2xl sm:h-[420px]" />}
             empty={<EmptyState icon="doc" title="Belum ada berita terbit" text="Kabar terbaru dari BRIDA Buleleng akan tampil di sini." />}
           >
             {beritaBesar && (
-              <Reveal className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+              <Reveal className="grid grid-cols-1 gap-3 sm:gap-5 lg:grid-cols-2">
                 <NewsCard key={beritaBesar.id} n={beritaBesar} i={0} big onOpen={setDetailBerita} />
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3 sm:gap-5">
                   {beritaKecil.map((n, i) => (
                     <NewsCard key={n.id} n={n} i={i + 1} onOpen={setDetailBerita} />
                   ))}
@@ -440,26 +441,26 @@ export default function Home() {
       </section>
 
       {/* ===== 1.12 MITRA STRATEGIS ===== */}
-      <section className="py-14 sm:py-18" id="mitra">
-        <div className="mx-auto max-w-[1240px] px-5">
-          <Reveal className="mx-auto mb-8.5 max-w-[760px] text-center">
+      <section className="py-10 sm:py-14 lg:py-18" id="mitra">
+        <div className="mx-auto max-w-[1240px] px-4 sm:px-5">
+          <Reveal className="mx-auto mb-6 sm:mb-8.5 max-w-[760px] text-center">
             <span className="mb-3 inline-flex items-center gap-2 text-[.74rem] font-bold uppercase tracking-widest text-maroon-600 before:h-0.5 before:w-5.5 before:rounded-full before:bg-gold-500">Mitra Strategis Pentahelix</span>
             <h2 className="text-[clamp(1.45rem,2.7vw,2.05rem)]">Perguruan tinggi, pemerintah, komunitas, dan dunia usaha</h2>
-            <p className="text-[1.02rem] text-ink-2">Lebih dari 30 lembaga litbang dan perguruan tinggi bekerja sama dengan dinas teknis, kelompok subak, pengelola wisata, dan pelaku UMKM di Kabupaten Buleleng.</p>
+            <p className="text-[.95rem] text-ink-2 sm:text-[1.02rem]">Lebih dari 30 lembaga litbang dan perguruan tinggi bekerja sama dengan dinas teknis, kelompok subak, pengelola wisata, dan pelaku UMKM di Kabupaten Buleleng.</p>
           </Reveal>
           <Reveal>
             <MitraCarousel items={MITRA_LOGO} />
           </Reveal>
 
-          <Reveal className="mt-8 rounded-xl border-none p-6.5 text-white" style={{ backgroundImage: 'linear-gradient(135deg,#8E1B1B,#6B1414)' }}>
-            <div className="flex flex-wrap items-center justify-between gap-6">
+          <Reveal className="mt-6 rounded-xl border-none p-4.5 sm:p-6.5 text-white" style={{ backgroundImage: 'linear-gradient(135deg,#8E1B1B,#6B1414)' }}>
+            <div className="flex flex-wrap items-center justify-between gap-5 sm:gap-6">
               <div className="max-w-[620px]">
                 <h3 className="mb-2 text-white">Punya kebutuhan riset di instansi atau komunitas Anda?</h3>
                 <p className="m-0 text-white/80">Sampaikan persoalan lapangan yang dihadapi dinas, subak, pokdarwis, atau UMKM Anda. BRIDA akan menjodohkannya dengan peneliti yang relevan pada batch pendanaan berikutnya.</p>
               </div>
-              <div className="flex flex-wrap gap-2.5">
-                <Link to="/kolaborasi" className="rounded-lg bg-gold-500 px-6.5 py-3.5 text-[.96rem] font-semibold text-[#4A2D00] no-underline transition hover:bg-gold-600">Ajukan kolaborasi riset</Link>
-                <Link to="/etika-regulasi" className="rounded-lg border border-white/28 bg-white/10 px-6.5 py-3.5 text-[.96rem] font-semibold text-white no-underline backdrop-blur transition hover:bg-white/20">Pelajari tata kelola</Link>
+              <div className="grid w-full gap-2.5 sm:flex sm:w-auto sm:flex-wrap">
+                <Link to="/kolaborasi" className="rounded-lg bg-gold-500 px-6.5 py-3.25 text-center text-[.92rem] sm:py-3.5 sm:text-[.96rem] font-semibold text-[#4A2D00] no-underline transition hover:bg-gold-600">Ajukan kolaborasi riset</Link>
+                <Link to="/etika-regulasi" className="rounded-lg border border-white/28 bg-white/10 px-6.5 py-3.25 text-center text-[.92rem] sm:py-3.5 sm:text-[.96rem] font-semibold text-white no-underline backdrop-blur transition hover:bg-white/20">Pelajari tata kelola</Link>
               </div>
             </div>
           </Reveal>
