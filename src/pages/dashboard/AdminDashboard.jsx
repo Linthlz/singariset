@@ -14,7 +14,7 @@ import { useMutation } from '../../hooks/useData.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useFunding, useSettings, useStats } from '../../hooks/useContent.js';
 import { useAdminNews, useNewsCategories } from '../../hooks/useNews.js';
-import { useDocumentations, useResearchDetail, useStaffResearches } from '../../hooks/useResearch.js';
+import { useResearchDetail, useStaffResearches } from '../../hooks/useResearch.js';
 import { useUsers } from '../../hooks/useUsers.js';
 import { errorMessage } from '../../services/api.js';
 import { ASSIGNABLE_ROLES, BACKEND_ROLES, roleLabel, userService, validateUserForm } from '../../services/userService.js';
@@ -638,152 +638,6 @@ function KonfirmasiHapus({ judul, nama, onClose, onConfirm }) {
   );
 }
 
-const KOSONG_DOK = { grupId: '', judul: '', tanggal: '', lokasi: '', narasi: '', video: '', foto: [] };
-const MAX_FOTO = 10;
-
-function FormDokumentasi({ data, onClose, onSaved }) {
-  const isCreate = !data;
-  const riset = useStaffResearches({ status: 'on-going', limit: 100 });
-  const [form, setForm] = useState(data ? {
-    grupId: data.grupId, judul: data.judul, tanggal: data.tanggal, lokasi: data.lokasi, narasi: data.narasi, video: data.video || '', foto: []
-  } : KOSONG_DOK);
-  const [errors, setErrors] = useState({});
-  const simpan = useMutation((f) => (isCreate
-    ? contentService.createDocumentation(f.grupId, f)
-    : contentService.updateDocumentation(data.grupId, data.id, f)));
-  const set = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setErrors((e) => ({ ...e, [k]: undefined })); };
-
-  function tambahFoto(list) {
-    const valid = Array.from(list).filter((f) => ['image/jpeg', 'image/png'].includes(f.type) && f.size <= 5 * 1024 * 1024);
-    if (valid.length < list.length) setErrors((e) => ({ ...e, foto: 'Sebagian berkas dilewati: hanya JPG/PNG maksimal 5 MB.' }));
-    setForm((f) => ({ ...f, foto: [...f.foto, ...valid.map((file) => ({ file, ket: '' }))].slice(0, MAX_FOTO) }));
-  }
-
-  async function submit(e) {
-    e.preventDefault();
-    const v = {};
-    if (isCreate && !form.grupId) v.grupId = 'Pilih riset yang didokumentasikan.';
-    if (!form.judul.trim()) v.judul = 'Judul wajib diisi.';
-    if (form.video.trim() && !/^https?:\/\//.test(form.video.trim())) v.video = 'Tautan video harus diawali http:// atau https://';
-    if (isCreate && form.foto.length === 0) v.foto = 'Unggah minimal satu foto.';
-    setErrors(v);
-    if (Object.keys(v).length) return;
-    try {
-      await simpan.mutate(form);
-      onSaved(isCreate);
-    } catch { /* ditampilkan di bawah */ }
-  }
-
-  const pilihan = (riset.data || []).filter((r) => r.grupId);
-  return (
-    <Modal title={isCreate ? 'Tambah dokumentasi' : 'Sunting dokumentasi'} wide onClose={onClose}>
-      <form onSubmit={submit} noValidate>
-        <div className="grid gap-x-4.5 sm:grid-cols-2">
-          {isCreate && (
-            <Field label="Riset yang didokumentasikan" error={errors.grupId} full>
-              <select className="input-base" value={form.grupId} onChange={(e) => set('grupId', e.target.value)}>
-                <option value="">{riset.loading ? 'Memuat riset berjalan…' : 'Pilih riset berjalan'}</option>
-                {pilihan.map((r) => <option key={r.id} value={r.grupId}>{r.kode} · {r.judul}</option>)}
-              </select>
-            </Field>
-          )}
-          <Field label="Judul dokumentasi" error={errors.judul} full>
-            <input className="input-base" maxLength={255} value={form.judul} onChange={(e) => set('judul', e.target.value)} />
-          </Field>
-          <Field label="Tanggal kegiatan">
-            <input className="input-base" type="date" value={form.tanggal} onChange={(e) => set('tanggal', e.target.value)} />
-          </Field>
-          <Field label="Lokasi">
-            <input className="input-base" maxLength={255} value={form.lokasi} onChange={(e) => set('lokasi', e.target.value)} placeholder="Contoh: Kec. Sukasada" />
-          </Field>
-          <Field label="Tautan video YouTube (opsional)" error={errors.video} full>
-            <input className="input-base" value={form.video} onChange={(e) => set('video', e.target.value)} placeholder="https://youtu.be/…" />
-          </Field>
-          <Field label="Narasi pelaksanaan" full>
-            <textarea className="input-base min-h-[110px]" value={form.narasi} onChange={(e) => set('narasi', e.target.value)} />
-          </Field>
-          {isCreate && (
-            <div className="mb-4 sm:col-span-2">
-              <span className="mb-1.5 block text-[.84rem] font-semibold text-ink">Foto kegiatan (JPG/PNG, maks. 5 MB, maks. {MAX_FOTO} foto)</span>
-              <input type="file" accept="image/jpeg,image/png" multiple className="input-base" onChange={(e) => { tambahFoto(e.target.files); e.target.value = ''; }} />
-              {form.foto.length > 0 && (
-                <ul className="m-0 mt-2.5 flex list-none flex-col gap-2 p-0">
-                  {form.foto.map((f, i) => (
-                    <li key={i} className="flex flex-wrap items-center gap-2 rounded-lg border border-line p-2 text-[.82rem]">
-                      <span className="min-w-[140px] flex-1 truncate font-semibold text-ink">{f.file.name}</span>
-                      <input className="input-base flex-[2] py-1.5" placeholder="Keterangan foto" value={f.ket}
-                        onChange={(e) => setForm((s) => ({ ...s, foto: s.foto.map((x, j) => (j === i ? { ...x, ket: e.target.value } : x)) }))} />
-                      <button type="button" aria-label={`Hapus ${f.file.name}`} onClick={() => setForm((s) => ({ ...s, foto: s.foto.filter((_, j) => j !== i) }))}
-                        className="rounded-md p-1.5 text-ink-3 hover:bg-danger-bg hover:text-danger"><Icon name="trash" size={15} /></button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {errors.foto && <span className="mt-1.5 block text-[.78rem] font-semibold text-danger">{errors.foto}</span>}
-            </div>
-          )}
-        </div>
-        {simpan.error && <p role="alert" className="mb-3 text-[.84rem] font-semibold text-danger">{errorMessage(simpan.error)}</p>}
-        <div className="flex flex-wrap justify-end gap-2.5 border-t border-line pt-4">
-          <button type="button" onClick={onClose} className="rounded-lg border border-line-strong px-5 py-2.5 text-sm font-semibold text-ink-2 hover:bg-surface-1">Batal</button>
-          <button type="submit" disabled={simpan.loading} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon-600 disabled:opacity-50">
-            {simpan.loading ? 'Menyimpan…' : isCreate ? 'Simpan dokumentasi' : 'Simpan perubahan'}
-          </button>
-        </div>
-      </form>
-    </Modal>
-  );
-}
-
-function KelolaDokumentasi() {
-  const toast = useToast();
-  const { data, loading, error, reload } = useDocumentations({ limit: 100 });
-  const [form, setForm] = useState(null);
-  const [hapus, setHapus] = useState(null);
-  const tutupForm = useCallback(() => setForm(null), []);
-  const tutupHapus = useCallback(() => setHapus(null), []);
-  const list = data || [];
-
-  return (
-    <Card title="Publikasi & dokumentasi" desc="Dokumentasi pelaksanaan riset berjalan yang tampil pada halaman Galeri Kegiatan."
-      action={<button type="button" onClick={() => setForm({})} className="flex items-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600"><Icon name="plus" size={15} /> Tambah dokumentasi</button>}>
-      <AsyncState loading={loading} error={error} isEmpty={list.length === 0} onRetry={reload}
-        skeleton={<SkeletonGrid count={3} className="flex flex-col gap-2" itemClassName="h-16" />}
-        empty={<EmptyState icon="camera" title="Belum ada dokumentasi" />}>
-        <ul className="m-0 flex list-none flex-col gap-2 p-0">
-          {list.map((d) => (
-            <li key={d.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-line p-3.5">
-              <span className="rounded-full bg-surface-2 px-2.5 py-1 text-[.71rem] font-bold text-ink-2">{(d.bidang || 'Umum').split(' ')[0]}</span>
-              <span className="min-w-[min(240px,100%)] flex-1">
-                <span className="block text-[.87rem] font-semibold text-ink">{d.judul}</span>
-                <span className="block text-[.76rem] text-ink-3">{tanggal(d.tanggal)} · {d.risetKode} · {d.foto.length} foto</span>
-              </span>
-              <button type="button" onClick={() => setForm({ data: d })} className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-ink-2 hover:border-maroon-600 hover:text-maroon-800">Sunting</button>
-              <button type="button" onClick={() => setHapus(d)} className="rounded-lg border border-line-strong px-3 py-1.5 text-[.78rem] font-semibold text-danger hover:border-danger hover:bg-danger-bg">Hapus</button>
-            </li>
-          ))}
-        </ul>
-      </AsyncState>
-
-      {form && (
-        <FormDokumentasi data={form.data} onClose={tutupForm} onSaved={(isCreate) => {
-          setForm(null);
-          toast('success', isCreate ? 'Dokumentasi ditambahkan' : 'Dokumentasi diperbarui', 'Perubahan tampil di Galeri Kegiatan.');
-          reload();
-        }} />
-      )}
-      {hapus && (
-        <KonfirmasiHapus judul="Hapus dokumentasi?" nama={hapus.judul} onClose={tutupHapus} onConfirm={async () => {
-          await contentService.deleteDocumentation(hapus.grupId, hapus.id);
-          setHapus(null);
-          toast('info', 'Dokumentasi dihapus', `"${hapus.judul}" telah dihapus.`);
-          reload();
-        }} />
-      )}
-    </Card>
-  );
-}
-
 const KOSONG_DANA = { nama: '', penyelenggara: '', skema: '', plafon: '', kuota: '', deadline: '', status: 'open', bidangTarget: [], syaratText: '', ket: '', situs: '', situsNama: '' };
 
 function FormPendanaan({ data, onClose, onSaved }) {
@@ -1036,7 +890,6 @@ function Konten() {
   return (
     <div className="flex flex-col gap-4 sm:gap-5">
       <KelolaBerita />
-      {admin && <KelolaDokumentasi />}
       {admin && <KelolaPendanaan />}
     </div>
   );

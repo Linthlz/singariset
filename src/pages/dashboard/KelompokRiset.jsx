@@ -9,7 +9,6 @@ import { useMutation } from '../../hooks/useData.js';
 import { useGroupDeliverables, useGroupDetail, useGroupDocumentations, useMyGroups } from '../../hooks/useGroups.js';
 import { useUsers } from '../../hooks/useUsers.js';
 import { errorMessage } from '../../services/api.js';
-import { contentService } from '../../services/contentService.js';
 import { EDITABLE_FIELDS, GROUP_ROLE, groupService } from '../../services/groupService.js';
 import { statusResearch } from '../../services/researchService.js';
 import { rupiah, tanggal } from '../../lib/format.js';
@@ -337,72 +336,6 @@ function Anggota({ detail, onChanged, onLeft }) {
   );
 }
 
-/* ---------- dokumentasi ---------- */
-const MAX_FOTO = 10;
-
-function FormDokumentasi({ grupId, onClose, onSaved }) {
-  const [form, setForm] = useState({ judul: '', tanggal: '', lokasi: '', video: '', narasi: '', foto: [] });
-  const [errors, setErrors] = useState({});
-  const simpan = useMutation((f) => contentService.createDocumentation(grupId, f));
-  const set = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setErrors((e) => ({ ...e, [k]: undefined })); };
-
-  function tambahFoto(list) {
-    const valid = Array.from(list).filter((f) => ['image/jpeg', 'image/png'].includes(f.type) && f.size <= 5 * 1024 * 1024);
-    if (valid.length < list.length) setErrors((e) => ({ ...e, foto: 'Sebagian berkas dilewati: hanya JPG/PNG maksimal 5 MB.' }));
-    setForm((f) => ({ ...f, foto: [...f.foto, ...valid.map((file) => ({ file, ket: '' }))].slice(0, MAX_FOTO) }));
-  }
-
-  async function submit(e) {
-    e.preventDefault();
-    const v = {};
-    if (!form.judul.trim()) v.judul = 'Judul wajib diisi.';
-    if (form.video.trim() && !/^https?:\/\//.test(form.video.trim())) v.video = 'Tautan harus diawali http:// atau https://';
-    if (form.foto.length === 0) v.foto = 'Unggah minimal satu foto.';
-    setErrors(v);
-    if (Object.keys(v).length) return;
-    try { await simpan.mutate(form); onSaved(); } catch { /* ditampilkan di bawah */ }
-  }
-
-  return (
-    <Modal title="Tambah dokumentasi kegiatan" wide onClose={onClose}>
-      <form onSubmit={submit} noValidate>
-        <div className="grid gap-x-4.5 sm:grid-cols-2">
-          <Field label="Judul kegiatan" error={errors.judul} full><input className="input-base" maxLength={255} value={form.judul} onChange={(e) => set('judul', e.target.value)} /></Field>
-          <Field label="Tanggal kegiatan"><input className="input-base" type="date" value={form.tanggal} onChange={(e) => set('tanggal', e.target.value)} /></Field>
-          <Field label="Lokasi"><input className="input-base" maxLength={255} value={form.lokasi} onChange={(e) => set('lokasi', e.target.value)} placeholder="Contoh: Kec. Sukasada" /></Field>
-          <Field label="Tautan video YouTube (opsional)" error={errors.video} full><input className="input-base" value={form.video} onChange={(e) => set('video', e.target.value)} placeholder="https://youtu.be/…" /></Field>
-          <Field label="Narasi pelaksanaan" full><textarea className="input-base min-h-[100px]" value={form.narasi} onChange={(e) => set('narasi', e.target.value)} /></Field>
-          <div className="mb-4 sm:col-span-2">
-            <span className="mb-1.5 block text-[.84rem] font-semibold text-ink">Foto (JPG/PNG, maks. 5 MB, maks. {MAX_FOTO})</span>
-            <input type="file" accept="image/jpeg,image/png" multiple className="input-base" onChange={(e) => { tambahFoto(e.target.files); e.target.value = ''; }} />
-            {form.foto.length > 0 && (
-              <ul className="m-0 mt-2.5 flex list-none flex-col gap-2 p-0">
-                {form.foto.map((f, i) => (
-                  <li key={i} className="flex flex-wrap items-center gap-2 rounded-lg border border-line p-2 text-[.82rem]">
-                    <span className="min-w-[140px] flex-1 truncate font-semibold text-ink">{f.file.name}</span>
-                    <input className="input-base flex-[2] py-1.5" placeholder="Keterangan foto" value={f.ket}
-                      onChange={(e) => setForm((s) => ({ ...s, foto: s.foto.map((x, j) => (j === i ? { ...x, ket: e.target.value } : x)) }))} />
-                    <button type="button" aria-label={`Hapus ${f.file.name}`} onClick={() => setForm((s) => ({ ...s, foto: s.foto.filter((_, j) => j !== i) }))}
-                      className="rounded-md p-1.5 text-ink-3 hover:bg-danger-bg hover:text-danger"><Icon name="trash" size={15} /></button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {errors.foto && <span className="mt-1.5 block text-[.78rem] font-semibold text-danger">{errors.foto}</span>}
-          </div>
-        </div>
-        {simpan.error && <p role="alert" className="mb-3 text-[.84rem] font-semibold text-danger">{errorMessage(simpan.error)}</p>}
-        <div className="flex flex-wrap justify-end gap-2.5 border-t border-line pt-4">
-          <button type="button" onClick={onClose} className="rounded-lg border border-line-strong px-5 py-2.5 text-sm font-semibold text-ink-2 hover:bg-surface-1">Batal</button>
-          <button type="submit" disabled={simpan.loading} className="rounded-lg bg-maroon-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-maroon-600 disabled:opacity-50">
-            {simpan.loading ? 'Mengunggah…' : 'Simpan dokumentasi'}
-          </button>
-        </div>
-      </form>
-    </Modal>
-  );
-}
-
 function Luaran({ detail }) {
   const toast = useToast();
   const { data, loading, error, reload } = useGroupDeliverables(detail.id);
@@ -520,53 +453,6 @@ function Luaran({ detail }) {
   );
 }
 
-function Dokumentasi({ detail }) {
-  const toast = useToast();
-  const { data, loading, error, reload } = useGroupDocumentations(detail.id);
-  const [tambah, setTambah] = useState(false);
-  const [hapus, setHapus] = useState(null);
-  const tutupTambah = useCallback(() => setTambah(false), []);
-  const tutupHapus = useCallback(() => setHapus(null), []);
-  const bolehUbah = ['leader', 'member', 'admin'].includes(detail.peranSaya);
-  const list = data || [];
-
-  return (
-    <Card title="Dokumentasi kegiatan" desc="Foto dan catatan pelaksanaan riset. Dokumentasi tampil di Galeri Kegiatan publik."
-      action={bolehUbah && (
-        <button type="button" onClick={() => setTambah(true)} className="flex items-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2 text-[.82rem] font-semibold text-white hover:bg-maroon-600">
-          <Icon name="plus" size={15} /> Tambah
-        </button>
-      )}>
-      <AsyncState loading={loading} error={error} isEmpty={list.length === 0} onRetry={reload}
-        skeleton={<SkeletonGrid count={2} className="flex flex-col gap-2" itemClassName="h-20" />}
-        empty={<EmptyState icon="camera" title="Belum ada dokumentasi" text={bolehUbah ? 'Unggah foto kegiatan lapangan pertama tim Anda.' : undefined} />}>
-        <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
-          {list.map((d, i) => (
-            <li key={d.id} className="flex gap-3 rounded-lg border border-line p-3">
-              <SmartImage src={d.foto[0]?.src} alt={d.foto[0]?.ket || d.judul} seed={i} className="h-16 w-24 flex-none rounded-md" />
-              <span className="min-w-0 flex-1 text-[.84rem]">
-                <span className="block font-semibold text-ink">{d.judul}</span>
-                <span className="block text-[.76rem] text-ink-3">{tanggal(d.tanggal)} · {d.foto.length} foto{d.penulis ? ` · oleh ${d.penulis}` : ''}</span>
-                <span className="mt-1 block text-[.8rem] text-ink-2 line-clamp-2">{d.narasi}</span>
-              </span>
-              {bolehUbah && (
-                <button type="button" onClick={() => setHapus(d)} aria-label={`Hapus ${d.judul}`}
-                  className="self-start rounded-md p-1.5 text-ink-3 hover:bg-danger-bg hover:text-danger"><Icon name="trash" size={15} /></button>
-              )}
-            </li>
-          ))}
-        </ul>
-      </AsyncState>
-
-      {tambah && <FormDokumentasi grupId={detail.id} onClose={tutupTambah} onSaved={() => { setTambah(false); toast('success', 'Dokumentasi ditambahkan', 'Tampil di galeri kegiatan.'); reload(); }} />}
-      {hapus && (
-        <Konfirmasi judul="Hapus dokumentasi?" tombol="Ya, hapus" onClose={tutupHapus} pesan={`"${hapus.judul}" akan dihapus.`}
-          onConfirm={async () => { await contentService.deleteDocumentation(detail.id, hapus.id); setHapus(null); toast('info', 'Dokumentasi dihapus', hapus.judul); reload(); }} />
-      )}
-    </Card>
-  );
-}
-
 /* ---------- detail kelompok ---------- */
 function DetailKelompok({ id, admin, onBack }) {
   const toast = useToast();
@@ -632,7 +518,6 @@ function DetailKelompok({ id, admin, onBack }) {
             </Card>
           )}
           <Luaran detail={d} />
-          <Dokumentasi detail={d} />
         </div>
         <div className="flex flex-col gap-4 sm:gap-5">
           <Pembimbing detail={d} onChanged={segarkan} />

@@ -2,16 +2,14 @@ import { Link, useParams } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
 import Reveal from '../components/Reveal.jsx';
 import RisetCard from '../components/RisetCard.jsx';
-import SmartImage from '../components/SmartImage.jsx';
 import { ErrorState, SkeletonGrid } from '../components/AsyncState.jsx';
 import NotFound from './NotFound.jsx';
-import { useDocumentations, usePublicResearch, usePublicResearches } from '../hooks/useResearch.js';
+import { usePublicResearch, usePublicResearches } from '../hooks/useResearch.js';
 import { bidangById, rupiah } from '../lib/format.js';
 
 export default function RisetDetail() {
   const { id: slug } = useParams();
   const { data: r, loading, error, reload } = usePublicResearch(slug);
-  const dokumentasi = useDocumentations({ research: slug, limit: 1 });
   const terkait = usePublicResearches({ category: r?.bidang || '', limit: 4 });
 
   if (error?.status === 404) return <NotFound message={`Riset "${slug}" tidak ditemukan dalam katalog publik.`} />;
@@ -23,7 +21,6 @@ export default function RisetDetail() {
   }
 
   const b = r.bidangId ? bidangById(r.bidangId) : { nama: r.bidang || 'Umum', warna: '#6B7280' };
-  const dok = dokumentasi.data?.[0];
   const related = (terkait.data || []).filter((x) => x.id !== r.id).slice(0, 3);
   const tim = r.grup?.anggota || [];
 
@@ -99,26 +96,6 @@ export default function RisetDetail() {
           </div>
 
           <aside className="flex flex-col gap-4 sm:gap-5">
-            <Reveal className="rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card">
-              <h3 className="mb-3.5 text-[1rem]">Dokumentasi kegiatan</h3>
-              {dok ? (
-                <>
-                  <div className="mb-3 grid grid-cols-3 gap-1.5">
-                    {dok.foto.slice(0, 3).map((f, i) => (
-                      <SmartImage key={f.src} src={f.src} alt={f.ket} seed={i} className="aspect-square rounded-lg" />
-                    ))}
-                  </div>
-                  <p className="mb-1 text-[.86rem] font-semibold text-ink">{dok.judul}</p>
-                  <p className="mb-3 text-[.84rem] leading-relaxed text-ink-2 line-clamp-3">{dok.narasi}</p>
-                  <Link to={`/publikasi?dok=${dok.id}`} className="flex items-center justify-center gap-1.5 rounded-lg bg-maroon-800 px-4 py-2.5 text-center text-[.85rem] font-semibold text-white no-underline hover:bg-maroon-600">
-                    Lihat dokumentasi lengkap <Icon name="arrow" size={15} />
-                  </Link>
-                </>
-              ) : (
-                <p className="m-0 text-[.84rem] text-ink-2">{dokumentasi.loading ? 'Memuat dokumentasi…' : 'Dokumentasi pelaksanaan riset ini belum diunggah oleh tim peneliti.'}</p>
-              )}
-            </Reveal>
-
             <Reveal className="rounded-xl border border-line bg-white p-4 sm:p-5.5 shadow-card">
               <h3 className="mb-3.5 text-[1rem]">Informasi pendanaan</h3>
               <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[.84rem]">

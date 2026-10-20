@@ -8,9 +8,7 @@ import RisetDetail from './pages/RisetDetail.jsx';
 import Roadmap from './pages/Roadmap.jsx';
 import Pendanaan from './pages/Pendanaan.jsx';
 import Berita from './pages/Berita.jsx';
-import Publikasi from './pages/Publikasi.jsx';
 import Kolaborasi from './pages/Kolaborasi.jsx';
-import EtikaRegulasi from './pages/EtikaRegulasi.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import MonevFormPage from './pages/MonevFormPage.jsx';
@@ -54,12 +52,10 @@ export default function App() {
         <Route path="/roadmap" element={<PageTransition><Roadmap /></PageTransition>} />
         <Route path="/pendanaan" element={<PageTransition><Pendanaan /></PageTransition>} />
         <Route path="/berita" element={<PageTransition><Berita /></PageTransition>} />
-        <Route path="/publikasi" element={<PageTransition><Publikasi /></PageTransition>} />
         <Route
           path="/kolaborasi"
           element={<ProtectedRoute allow={['mitra']}><PageTransition><Kolaborasi /></PageTransition></ProtectedRoute>}
         />
-        <Route path="/etika-regulasi" element={<PageTransition><EtikaRegulasi /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Route>
     </Routes>

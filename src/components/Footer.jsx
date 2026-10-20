@@ -86,7 +86,6 @@ export default function Footer() {
               <ul className="m-0 list-none space-y-1 p-0 text-[.74rem] sm:space-y-1.5 sm:text-[.82rem]">
                 <li><Link to="/kolaborasi" className="text-white/72 hover:text-gold-500">Pengajuan Kolaborasi</Link></li>
                 <li><Link to="/pendanaan" className="text-white/72 hover:text-gold-500">Peluang Pendanaan</Link></li>
-                <li><Link to="/publikasi" className="text-white/72 hover:text-gold-500">Galeri Kegiatan<span className="hidden sm:inline"> BRIDA</span></Link></li>
                 <li><Link to="/register" className="text-white/72 hover:text-gold-500">Daftar Akun Mitra</Link></li>
                 <li><Link to="/riset" className="text-white/72 hover:text-gold-500">Direktori Riset<span className="hidden sm:inline"> Daerah</span></Link></li>
               </ul>
@@ -95,9 +94,6 @@ export default function Footer() {
             <div>
               <h4 className="mb-1.5 text-[.66rem] font-bold uppercase tracking-widest text-white sm:mb-2.5 sm:text-[.72rem]">Tata Kelola</h4>
               <ul className="m-0 list-none space-y-1 p-0 text-[.74rem] sm:space-y-1.5 sm:text-[.82rem]">
-                <li><Link to="/etika-regulasi#klirens" className="text-white/72 hover:text-gold-500">Klirens Etik Riset</Link></li>
-                <li><Link to="/etika-regulasi#sop" className="text-white/72 hover:text-gold-500">SOP Pencairan &amp; SPJ</Link></li>
-                <li><Link to="/etika-regulasi#pengaduan" className="text-white/72 hover:text-gold-500">Pengaduan<span className="hidden sm:inline"> &amp; Whistleblowing</span></Link></li>
                 <li><Link to="/roadmap" className="text-white/72 hover:text-gold-500">Peta Jalan 2025–2029</Link></li>
                 <li><Link to="/berita" className="text-white/72 hover:text-gold-500">Berita &amp; Diseminasi</Link></li>
               </ul>
